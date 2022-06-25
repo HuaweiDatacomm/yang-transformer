@@ -1,0 +1,69 @@
+ module notifications {
+   namespace "urn:ietf:params:xml:ns:netconf:notification:1.0";
+   prefix "ncEvent";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   organization
+     "IETF NETCONF WG";
+   contact
+     "netconf@ops.ietf.org";
+   description
+     "Conversion of the 'ncEvent' XSD in the \nNETCONF Notifications RFC.";
+   reference
+     "RFC 5277.";
+   revision "2008-07-14" {
+     description
+       "RFC 5277 version.";
+   }
+   typedef streamNameType {
+     description
+       "The name of an event stream.";
+     type "string";
+   }
+   rpc create-subscription {
+     description
+       "The command to create a notification subscription. It\ntakes as argument"+
+       " the name of the notification stream\nand filter. Both of those options "+
+       "limit the content of\nthe subscription. In addition, there are two "+
+       "time-related\nparameters, startTime and stopTime, which can be used to "+
+       "\nselect the time interval of interest to the notification\nreplay "+
+       "feature.";
+     input {
+       leaf stream {
+         description
+           "An optional parameter that indicates which stream of events\nis of "+
+           "interest. If not present, then events in the default\nNETCONF stream"+
+           " will be sent.";
+         type "streamNameType";
+         default "NETCONF";
+       }
+       anyxml filter {
+         description
+           "An optional parameter that indicates which subset of all\npossible "+
+           "events is of interest. The format of this\nparameter is the same as "+
+           "that of the filter parameter\nin the NETCONF protocol operations. If"+
+           " not present,\nall events not precluded by other parameters will "+
+           "\nbe sent.";
+       }
+       leaf startTime {
+         description
+           "A parameter used to trigger the replay feature and\nindicates that "+
+           "the replay should start at the time\nspecified. If start time is not"+
+           " present, this is not a\nreplay subscription.";
+         type "yang:date-and-time";
+       }
+       leaf stopTime {
+         // must ". >= ../startTime";
+
+         description
+           "An optional parameter used with the optional replay\nfeature to "+
+           "indicate the newest notifications of\ninterest. If stop time is not "+
+           "present, the notifications\nwill continue until the subscription is "+
+           "terminated.\nMust be used with startTime.";
+         type "yang:date-and-time";
+       }
+     }
+   }
+ }
+

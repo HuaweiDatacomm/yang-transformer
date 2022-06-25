@@ -1,0 +1,87 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-mirror-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-mirror-deviations-OC-NE-X8X16";
+   prefix "mirror-devs-OC-NE-X8X16";
+   import huawei-mirror {
+     prefix "mirror";
+   }
+   import huawei-extension {
+     prefix "ext";
+   }
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-mirror module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror:port-mi"+
+             "rror-slice" {
+     deviate "add" {
+       must "count(../port-mirrors/port-mirror)>0 or count(../bas-port-mirrors/b"+
+            "as-port-mirror)>0 or\n(not(count(../port-mirrors/port-mirror)>0 or "+
+            "count(../bas-port-mirrors/bas-port-mirror)>0) and not(../port-mirro"+
+            "r-slice))";
+     }
+   }
+   ext:deviation-ext "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror"+
+                     ":port-mirror-car" {
+     ext:deviate-ext "add" {
+       ext:generated-by "system" {
+         when "count(../bas-port-mirrors/bas-port-mirror)>0";
+         description
+           "The port-mirror-car is generated automatically when bas-port-mirror "+
+           "is configured on the same interface.";
+       }
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror:port-mi"+
+             "rror-to" {
+     deviate "add" {
+       must "not(../mirror-by-directions/mirror-by-direction[direction='both'] "+
+            "and count(../mirror-to-multis/mirror-to-multi)>0)";
+     }
+     deviate "add" {
+       must "not(count(../mirror-to-multis/mirror-to-multi)>0 and ../mirror-to-n"+
+            "ull0)";
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror:mirror-"+
+             "by-directions" {
+     deviate "add" {
+       must "not(count(./mirror-by-direction)>0 and (../port-observe or "+
+            "count(../mirror-to-multis/mirror-to-multi)>0 or ../mirror-to-null0 "+
+            "or count(../integrateds/integrated)>0))";
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror:mirror-"+
+             "to-null0" {
+     deviate "add" {
+       must "not(../port-observe or count(../mirror-to-multis/mirror-to-multi)>0"+
+            " or count(../mirror-by-directions/mirror-by-direction)>0 or "+
+            "count(../integrateds/integrated)>0)";
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/mirror:mirror/mirror:integra"+
+             "teds" {
+     deviate "add" {
+       must "not(count(./integrated)>0 and (../port-observe or count(../mirror-b"+
+            "y-directions/mirror-by-direction)>0 or count(../mirror-to-multis/mi"+
+            "rror-to-multi)>0 or ../mirror-to-null0))";
+     }
+   }
+ }
+

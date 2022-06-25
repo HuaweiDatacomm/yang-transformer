@@ -1,0 +1,50 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-netconf-sync-notif {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-netconf-sync-notif";
+   prefix "netconf-sync-notif";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "The NETCONF sync notification nodes are defined in this file.";
+   reference
+     "Huawei private";
+   revision "2021-03-05" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private";
+   }
+   ext:task-name "netconf";
+   notification netconf-mda-resource-change {
+     description
+       "Generated when any kind of MDA resource file changed. Then the\nMDA "+
+       "resource package files will be regenerated.";
+     leaf resource-type {
+       type "bits" {
+         bit yang;
+         bit yang-patch;
+         bit yang-zh-cn;
+         bit yang-zh-cn-patch;
+         bit alarm;
+         bit alarm-patch;
+         bit panel;
+         bit panel-patch;
+       }
+       mandatory "true";
+       description
+         "The type of MDA resource files that changed.";
+     }
+   }
+ }
+

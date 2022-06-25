@@ -1,0 +1,1000 @@
+ module openconfig-interfaces {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/interfaces";
+   prefix "oc-if";
+   // import some basic types
+
+   import ietf-interfaces {
+     prefix "ietf-if";
+   }
+   import openconfig-yang-types {
+     prefix "oc-yang";
+   }
+   import openconfig-types {
+     prefix "oc-types";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "Model for managing network interfaces and subinterfaces.  This\nmodule "+
+     "also defines convenience types / groupings for other\nmodels to create "+
+     "references to interfaces:\n\n  base-interface-ref (type) -  reference to a"+
+     " base interface\n  interface-ref (grouping) -  container for reference to "+
+     "a\n    interface + subinterface\n  interface-ref-state (grouping) - "+
+     "container for read-only\n    (opstate) reference to interface + subinterfa"+
+     "ce\n\nThis model reuses data items defined in the IETF YANG model "+
+     "for\ninterfaces described by RFC 7223 with an alternate structure\n(partic"+
+     "ularly for operational state data) and with\nadditional configuration "+
+     "items.\n\nPortions of this code were derived from IETF RFC 7223.\nPlease "+
+     "reproduce this note if possible.\n\nIETF code is subject to the following "+
+     "copyright and license:\nCopyright (c) IETF Trust and the persons "+
+     "identified as authors of\nthe code.\nAll rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or without\nmodification, is "+
+     "permitted pursuant to, and subject to the license\nterms contained in, the"+
+     " Simplified BSD License set forth in\nSection 4.c of the IETF Trust's "+
+     "Legal Provisions Relating\nto IETF Documents (http://trustee.ietf.org/lice"+
+     "nse-info).";
+   oc-ext:openconfig-version "2.3.0";
+   revision "2018-01-05" {
+     description
+       "Add logical loopback to interface.";
+     reference
+       "2.3.0";
+   }
+   revision "2017-12-22" {
+     description
+       "Add IPv4 proxy ARP configuration.";
+     reference
+       "2.2.0";
+   }
+   revision "2017-12-21" {
+     description
+       "Added IPv6 router advertisement configuration.";
+     reference
+       "2.1.0";
+   }
+   revision "2017-07-14" {
+     description
+       "Added Ethernet/IP state data; Add dhcp-client;\nmigrate to OpenConfig "+
+       "types modules; Removed or\nrenamed opstate values";
+     reference
+       "2.0.0";
+   }
+   revision "2017-04-03" {
+     description
+       "Update copyright notice.";
+     reference
+       "1.1.1";
+   }
+   revision "2016-12-22" {
+     description
+       "Fixes to Ethernet interfaces model";
+     reference
+       "1.1.0";
+   }
+   // typedef statements
+
+   typedef base-interface-ref {
+     type "leafref" {
+       path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+     }
+     description
+       "Reusable type for by-name reference to a base interface.\nThis type may "+
+       "be used in cases where ability to reference\na subinterface is not "+
+       "required.";
+   }
+   typedef interface-id {
+     type "string";
+     description
+       "User-defined identifier for an interface, generally used to\nname a "+
+       "interface reference.  The id can be arbitrary but a\nuseful convention "+
+       "is to use a combination of base interface\nname and subinterface index.";
+   }
+   // grouping statements
+
+   // data definition statements
+
+   container interfaces {
+     description
+       "Top level container for interfaces, including configuration\nand state "+
+       "data.";
+     list interface {
+       key "name";
+       description
+         "The list of named interfaces on the device.";
+       leaf name {
+         type "leafref" {
+           path "../config/name";
+         }
+         description
+           "References the configured name of the interface";
+       }
+       container config {
+         description
+           "Configurable items at the global, physical interface\nlevel";
+         leaf name {
+           type "string";
+           description
+             "The name of the interface.\n\nA device MAY restrict the allowed "+
+             "values for this leaf,\npossibly depending on the type of the "+
+             "interface.\nFor system-controlled interfaces, this leaf is "+
+             "the\ndevice-specific name of the interface.  The 'config "+
+             "false'\nlist interfaces/interface[name]/state contains the "+
+             "currently\nexisting interfaces on the device.\n\nIf a client tries"+
+             " to create configuration for a\nsystem-controlled interface that "+
+             "is not present in the\ncorresponding state list, the server MAY "+
+             "reject\nthe request if the implementation does not support\npre-pr"+
+             "ovisioning of interfaces or if the name refers to\nan interface "+
+             "that can never exist in the system.  A\nNETCONF server MUST reply "+
+             "with an rpc-error with the\nerror-tag 'invalid-value' in this "+
+             "case.\n\nThe IETF model in RFC 7223 provides YANG features for "+
+             "the\nfollowing (i.e., pre-provisioning and arbitrary-names),\nhowe"+
+             "ver they are omitted here:\n\n  If the device supports pre-provisi"+
+             "oning of interface\n  configuration, the 'pre-provisioning' "+
+             "feature is\n  advertised.\n\n  If the device allows arbitrarily "+
+             "named user-controlled\n  interfaces, the 'arbitrary-names' feature"+
+             " is advertised.\n\nWhen a configured user-controlled interface is "+
+             "created by\nthe system, it is instantiated with the same name in "+
+             "the\n/interfaces/interface[name]/state list.";
+         }
+         leaf type {
+           type "identityref" {
+             base "ietf-if:interface-type";
+           }
+           mandatory "true";
+           description
+             "The type of the interface.\n\nWhen an interface entry is created, "+
+             "a server MAY\ninitialize the type leaf with a valid value, e.g., "+
+             "if it\nis possible to derive the type from the name of the\ninterf"+
+             "ace.\n\nIf a client tries to set the type of an interface to "+
+             "a\nvalue that can never be used by the system, e.g., if the\ntype "+
+             "is not supported or if the type does not match the\nname of the "+
+             "interface, the server MUST reject the request.\nA NETCONF server "+
+             "MUST reply with an rpc-error with the\nerror-tag 'invalid-value' "+
+             "in this case.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifType";
+         }
+         leaf loopback-mode {
+           type "boolean";
+           default "false";
+           description
+             "When set to true, the interface is logically looped back,\nsuch "+
+             "that packets that are forwarded via the interface\nare received on"+
+             " the same interface.";
+         }
+         leaf description {
+           type "string";
+           description
+             "A textual description of the interface.\n\nA server implementation"+
+             " MAY map this leaf to the ifAlias\nMIB object.  Such an implementa"+
+             "tion needs to use some\nmechanism to handle the differences in "+
+             "size and characters\nallowed between this leaf and ifAlias.  The "+
+             "definition of\nsuch a mechanism is outside the scope of this "+
+             "document.\n\nSince ifAlias is defined to be stored in non-volatile"+
+             "\nstorage, the MIB implementation MUST map ifAlias to the\nvalue "+
+             "of 'description' in the persistently stored\ndatastore.\n\nSpecifi"+
+             "cally, if the device supports ':startup', when\nifAlias is read "+
+             "the device MUST return the value of\n'description' in the "+
+             "'startup' datastore, and when it is\nwritten, it MUST be written "+
+             "to the 'running' and 'startup'\ndatastores.  Note that it is up to"+
+             " the implementation to\n\ndecide whether to modify this single "+
+             "leaf in 'startup' or\nperform an implicit copy-config from "+
+             "'running' to\n'startup'.\n\nIf the device does not support "+
+             "':startup', ifAlias MUST\nbe mapped to the 'description' leaf in "+
+             "the 'running'\ndatastore.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifAlias";
+         }
+         leaf enabled {
+           type "boolean";
+           default "true";
+           description
+             "This leaf contains the configured, desired state of the\ninterface"+
+             ".\n\nSystems that implement the IF-MIB use the value of this\nleaf"+
+             " in the 'running' datastore to set\nIF-MIB.ifAdminStatus to 'up' "+
+             "or 'down' after an ifEntry\nhas been initialized, as described in "+
+             "RFC 2863.\n\nChanges in this leaf in the 'running' datastore "+
+             "are\nreflected in ifAdminStatus, but if ifAdminStatus is\nchanged "+
+             "over SNMP, this leaf is not affected.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+         }
+       }
+       container state {
+         config "false";
+         description
+           "Operational state data at the global interface level";
+         leaf name {
+           type "string";
+           description
+             "The name of the interface.\n\nA device MAY restrict the allowed "+
+             "values for this leaf,\npossibly depending on the type of the "+
+             "interface.\nFor system-controlled interfaces, this leaf is "+
+             "the\ndevice-specific name of the interface.  The 'config "+
+             "false'\nlist interfaces/interface[name]/state contains the "+
+             "currently\nexisting interfaces on the device.\n\nIf a client tries"+
+             " to create configuration for a\nsystem-controlled interface that "+
+             "is not present in the\ncorresponding state list, the server MAY "+
+             "reject\nthe request if the implementation does not support\npre-pr"+
+             "ovisioning of interfaces or if the name refers to\nan interface "+
+             "that can never exist in the system.  A\nNETCONF server MUST reply "+
+             "with an rpc-error with the\nerror-tag 'invalid-value' in this "+
+             "case.\n\nThe IETF model in RFC 7223 provides YANG features for "+
+             "the\nfollowing (i.e., pre-provisioning and arbitrary-names),\nhowe"+
+             "ver they are omitted here:\n\n  If the device supports pre-provisi"+
+             "oning of interface\n  configuration, the 'pre-provisioning' "+
+             "feature is\n  advertised.\n\n  If the device allows arbitrarily "+
+             "named user-controlled\n  interfaces, the 'arbitrary-names' feature"+
+             " is advertised.\n\nWhen a configured user-controlled interface is "+
+             "created by\nthe system, it is instantiated with the same name in "+
+             "the\n/interfaces/interface[name]/state list.";
+         }
+         leaf type {
+           type "identityref" {
+             base "ietf-if:interface-type";
+           }
+           mandatory "true";
+           description
+             "The type of the interface.\n\nWhen an interface entry is created, "+
+             "a server MAY\ninitialize the type leaf with a valid value, e.g., "+
+             "if it\nis possible to derive the type from the name of the\ninterf"+
+             "ace.\n\nIf a client tries to set the type of an interface to "+
+             "a\nvalue that can never be used by the system, e.g., if the\ntype "+
+             "is not supported or if the type does not match the\nname of the "+
+             "interface, the server MUST reject the request.\nA NETCONF server "+
+             "MUST reply with an rpc-error with the\nerror-tag 'invalid-value' "+
+             "in this case.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifType";
+         }
+         leaf loopback-mode {
+           type "boolean";
+           default "false";
+           description
+             "When set to true, the interface is logically looped back,\nsuch "+
+             "that packets that are forwarded via the interface\nare received on"+
+             " the same interface.";
+         }
+         leaf description {
+           type "string";
+           description
+             "A textual description of the interface.\n\nA server implementation"+
+             " MAY map this leaf to the ifAlias\nMIB object.  Such an implementa"+
+             "tion needs to use some\nmechanism to handle the differences in "+
+             "size and characters\nallowed between this leaf and ifAlias.  The "+
+             "definition of\nsuch a mechanism is outside the scope of this "+
+             "document.\n\nSince ifAlias is defined to be stored in non-volatile"+
+             "\nstorage, the MIB implementation MUST map ifAlias to the\nvalue "+
+             "of 'description' in the persistently stored\ndatastore.\n\nSpecifi"+
+             "cally, if the device supports ':startup', when\nifAlias is read "+
+             "the device MUST return the value of\n'description' in the "+
+             "'startup' datastore, and when it is\nwritten, it MUST be written "+
+             "to the 'running' and 'startup'\ndatastores.  Note that it is up to"+
+             " the implementation to\n\ndecide whether to modify this single "+
+             "leaf in 'startup' or\nperform an implicit copy-config from "+
+             "'running' to\n'startup'.\n\nIf the device does not support "+
+             "':startup', ifAlias MUST\nbe mapped to the 'description' leaf in "+
+             "the 'running'\ndatastore.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifAlias";
+         }
+         leaf enabled {
+           type "boolean";
+           default "true";
+           description
+             "This leaf contains the configured, desired state of the\ninterface"+
+             ".\n\nSystems that implement the IF-MIB use the value of this\nleaf"+
+             " in the 'running' datastore to set\nIF-MIB.ifAdminStatus to 'up' "+
+             "or 'down' after an ifEntry\nhas been initialized, as described in "+
+             "RFC 2863.\n\nChanges in this leaf in the 'running' datastore "+
+             "are\nreflected in ifAdminStatus, but if ifAdminStatus is\nchanged "+
+             "over SNMP, this leaf is not affected.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+         }
+         leaf ifindex {
+           type "uint32";
+           description
+             "System assigned number for each interface.  Corresponds to\nifInde"+
+             "x object in SNMP Interface MIB";
+           reference
+             "RFC 2863 - The Interfaces Group MIB";
+         }
+         leaf admin-status {
+           type "enumeration" {
+             enum "UP" {
+               description
+                 "Ready to pass packets.";
+             }
+             enum "DOWN" {
+               description
+                 "Not ready to pass packets and not in some test mode.";
+             }
+             enum "TESTING" {
+               description
+                 "In some test mode.";
+             }
+           }
+           mandatory "true";
+           description
+             "The desired state of the interface.  In RFC 7223 this leaf\nhas "+
+             "the same read semantics as ifAdminStatus.  Here, it\nreflects the "+
+             "administrative state as set by enabling or\ndisabling the "+
+             "interface.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+         }
+         leaf oper-status {
+           type "enumeration" {
+             enum "UP" {
+               value "1";
+               description
+                 "Ready to pass packets.";
+             }
+             enum "DOWN" {
+               value "2";
+               description
+                 "The interface does not pass any packets.";
+             }
+             enum "TESTING" {
+               value "3";
+               description
+                 "In some test mode.  No operational packets can\nbe passed.";
+             }
+             enum "UNKNOWN" {
+               value "4";
+               description
+                 "Status cannot be determined for some reason.";
+             }
+             enum "DORMANT" {
+               value "5";
+               description
+                 "Waiting for some external event.";
+             }
+             enum "NOT_PRESENT" {
+               value "6";
+               description
+                 "Some component (typically hardware) is missing.";
+             }
+             enum "LOWER_LAYER_DOWN" {
+               value "7";
+               description
+                 "Down due to state of lower-layer interface(s).";
+             }
+           }
+           mandatory "true";
+           description
+             "The current operational state of the interface.\n\nThis leaf has "+
+             "the same semantics as ifOperStatus.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifOperStatus";
+         }
+         leaf last-change {
+           type "oc-types:timeticks64";
+           units "nanoseconds";
+           description
+             "This timestamp indicates the time of the last state change\nof the"+
+             " interface (e.g., up-to-down transition). This\ncorresponds to the"+
+             " ifLastChange object in the standard\ninterface MIB.\n\nThe value "+
+             "is the timestamp in nanoseconds relative to\nthe Unix Epoch (Jan "+
+             "1, 1970 00:00:00 UTC).";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifLastChange";
+         }
+         container counters {
+           description
+             "A collection of interface-related statistics objects.";
+           leaf in-octets {
+             type "oc-yang:counter64";
+             description
+               "The total number of octets received on the interface,\nincluding"+
+               " framing characters.\n\nDiscontinuities in the value of this "+
+               "counter can occur\nat re-initialization of the management "+
+               "system, and at\nother times as indicated by the value of\n'last-"+
+               "clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifHCInOctets";
+           }
+           leaf in-unicast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The number of packets, delivered by this sub-layer to a\nhigher "+
+               "(sub-)layer, that were not addressed to a\nmulticast or "+
+               "broadcast address at this sub-layer.\n\nDiscontinuities in the "+
+               "value of this counter can occur\nat re-initialization of the "+
+               "management system, and at\nother times as indicated by the value"+
+               " of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifHCInUcastPkts";
+           }
+           leaf in-broadcast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The number of packets, delivered by this sub-layer to a\nhigher "+
+               "(sub-)layer, that were addressed to a broadcast\naddress at this"+
+               " sub-layer.\n\nDiscontinuities in the value of this counter can "+
+               "occur\nat re-initialization of the management system, and "+
+               "at\nother times as indicated by the value of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB -\n        ifHCInBroadcastPkt"+
+               "s";
+           }
+           leaf in-multicast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The number of packets, delivered by this sub-layer to a\nhigher "+
+               "(sub-)layer, that were addressed to a multicast\naddress at this"+
+               " sub-layer.  For a MAC-layer protocol,\nthis includes both Group"+
+               " and Functional addresses.\n\nDiscontinuities in the value of "+
+               "this counter can occur\nat re-initialization of the management "+
+               "system, and at\nother times as indicated by the value of\n'last-"+
+               "clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB -\n        ifHCInMulticastPkt"+
+               "s";
+           }
+           leaf in-discards {
+             type "oc-yang:counter64";
+             description
+               "The number of inbound packets that were chosen to be\ndiscarded "+
+               "even though no errors had been detected to\nprevent their being "+
+               "deliverable to a higher-layer\nprotocol.  One possible reason "+
+               "for discarding such a\npacket could be to free up buffer "+
+               "space.\n\nDiscontinuities in the value of this counter can "+
+               "occur\nat re-initialization of the management system, and "+
+               "at\nother times as indicated by the value of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifInDiscards";
+           }
+           leaf in-errors {
+             type "oc-yang:counter64";
+             description
+               "For packet-oriented interfaces, the number of inbound\npackets "+
+               "that contained errors preventing them from being\ndeliverable to"+
+               " a higher-layer protocol.  For character-\noriented or "+
+               "fixed-length interfaces, the number of\ninbound transmission "+
+               "units that contained errors\npreventing them from being "+
+               "deliverable to a higher-layer\nprotocol.\n\nDiscontinuities in "+
+               "the value of this counter can occur\nat re-initialization of the"+
+               " management system, and at\nother times as indicated by the "+
+               "value of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifInErrors";
+           }
+           leaf in-unknown-protos {
+             type "oc-yang:counter64";
+             description
+               "For packet-oriented interfaces, the number of packets\nreceived "+
+               "via the interface that were discarded because\nof an unknown or "+
+               "unsupported protocol.  For\ncharacter-oriented or fixed-length "+
+               "interfaces that\nsupport protocol multiplexing, the number "+
+               "of\ntransmission units received via the interface that "+
+               "were\ndiscarded because of an unknown or unsupported protocol.\n"+
+               "For any interface that does not support protocol\nmultiplexing, "+
+               "this counter is not present.\n\nDiscontinuities in the value of "+
+               "this counter can occur\nat re-initialization of the management "+
+               "system, and at\nother times as indicated by the value of\n'last-"+
+               "clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifInUnknownProtos";
+           }
+           leaf in-fcs-errors {
+             type "oc-yang:counter64";
+             description
+               "Number of received packets which had errors in the\nframe check "+
+               "sequence (FCS), i.e., framing errors.\n\nDiscontinuities in the "+
+               "value of this counter can occur\nwhen the device is re-initializ"+
+               "ation as indicated by the\nvalue of 'last-clear'.";
+           }
+           leaf out-octets {
+             type "oc-yang:counter64";
+             description
+               "The total number of octets transmitted out of the\ninterface, "+
+               "including framing characters.\n\nDiscontinuities in the value of"+
+               " this counter can occur\nat re-initialization of the management "+
+               "system, and at\nother times as indicated by the value of\n'last-"+
+               "clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifHCOutOctets";
+           }
+           leaf out-unicast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The total number of packets that higher-level protocols\nrequest"+
+               "ed be transmitted, and that were not addressed\nto a multicast "+
+               "or broadcast address at this sub-layer,\nincluding those that "+
+               "were discarded or not sent.\n\nDiscontinuities in the value of "+
+               "this counter can occur\nat re-initialization of the management "+
+               "system, and at\nother times as indicated by the value of\n'last-"+
+               "clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifHCOutUcastPkts";
+           }
+           leaf out-broadcast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The total number of packets that higher-level protocols\nrequest"+
+               "ed be transmitted, and that were addressed to a\nbroadcast "+
+               "address at this sub-layer, including those\nthat were discarded "+
+               "or not sent.\n\nDiscontinuities in the value of this counter can"+
+               " occur\nat re-initialization of the management system, and "+
+               "at\nother times as indicated by the value of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB -\n        ifHCOutBroadcastPk"+
+               "ts";
+           }
+           leaf out-multicast-pkts {
+             type "oc-yang:counter64";
+             description
+               "The total number of packets that higher-level protocols\nrequest"+
+               "ed be transmitted, and that were addressed to a\nmulticast "+
+               "address at this sub-layer, including those\nthat were discarded "+
+               "or not sent.  For a MAC-layer\nprotocol, this includes both "+
+               "Group and Functional\naddresses.\n\nDiscontinuities in the value"+
+               " of this counter can occur\nat re-initialization of the "+
+               "management system, and at\nother times as indicated by the value"+
+               " of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB -\n        ifHCOutMulticastPk"+
+               "ts";
+           }
+           leaf out-discards {
+             type "oc-yang:counter64";
+             description
+               "The number of outbound packets that were chosen to be\ndiscarded"+
+               " even though no errors had been detected to\nprevent their being"+
+               " transmitted.  One possible reason\nfor discarding such a packet"+
+               " could be to free up buffer\nspace.\n\nDiscontinuities in the "+
+               "value of this counter can occur\nat re-initialization of the "+
+               "management system, and at\nother times as indicated by the value"+
+               " of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifOutDiscards";
+           }
+           leaf out-errors {
+             type "oc-yang:counter64";
+             description
+               "For packet-oriented interfaces, the number of outbound\npackets "+
+               "that could not be transmitted because of errors.\nFor character-"+
+               "oriented or fixed-length interfaces, the\nnumber of outbound "+
+               "transmission units that could not be\ntransmitted because of "+
+               "errors.\n\nDiscontinuities in the value of this counter can "+
+               "occur\nat re-initialization of the management system, and "+
+               "at\nother times as indicated by the value of\n'last-clear'.";
+             reference
+               "RFC 2863: The Interfaces Group MIB - ifOutErrors";
+           }
+           leaf last-clear {
+             type "oc-types:timeticks64";
+             units "nanoseconds";
+             description
+               "Timestamp of the last time the interface counters were\ncleared."+
+               "\n\nThe value is the timestamp in nanoseconds relative to\nthe "+
+               "Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
+           }
+         }
+       }
+       container subinterfaces {
+         description
+           "Enclosing container for the list of subinterfaces associated\nwith a"+
+           " physical interface";
+         list subinterface {
+           key "index";
+           description
+             "The list of subinterfaces (logical interfaces) associated\nwith a "+
+             "physical interface";
+           leaf index {
+             type "leafref" {
+               path "../config/index";
+             }
+             description
+               "The index number of the subinterface -- used to address\nthe "+
+               "logical interface";
+           }
+           container config {
+             description
+               "Configurable items at the subinterface level";
+             leaf index {
+               type "uint32";
+               default "0";
+               description
+                 "The index of the subinterface, or logical interface number.\nO"+
+                 "n systems with no support for subinterfaces, or not using\nsub"+
+                 "interfaces, this value should default to 0, i.e., the\ndefault"+
+                 " subinterface.";
+             }
+             leaf description {
+               type "string";
+               description
+                 "A textual description of the interface.\n\nA server implementa"+
+                 "tion MAY map this leaf to the ifAlias\nMIB object.  Such an "+
+                 "implementation needs to use some\nmechanism to handle the "+
+                 "differences in size and characters\nallowed between this leaf "+
+                 "and ifAlias.  The definition of\nsuch a mechanism is outside "+
+                 "the scope of this document.\n\nSince ifAlias is defined to be "+
+                 "stored in non-volatile\nstorage, the MIB implementation MUST "+
+                 "map ifAlias to the\nvalue of 'description' in the persistently"+
+                 " stored\ndatastore.\n\nSpecifically, if the device supports "+
+                 "':startup', when\nifAlias is read the device MUST return the "+
+                 "value of\n'description' in the 'startup' datastore, and when "+
+                 "it is\nwritten, it MUST be written to the 'running' and "+
+                 "'startup'\ndatastores.  Note that it is up to the implementati"+
+                 "on to\n\ndecide whether to modify this single leaf in "+
+                 "'startup' or\nperform an implicit copy-config from 'running' "+
+                 "to\n'startup'.\n\nIf the device does not support ':startup', "+
+                 "ifAlias MUST\nbe mapped to the 'description' leaf in the "+
+                 "'running'\ndatastore.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifAlias";
+             }
+             leaf enabled {
+               type "boolean";
+               default "true";
+               description
+                 "This leaf contains the configured, desired state of the\ninter"+
+                 "face.\n\nSystems that implement the IF-MIB use the value of "+
+                 "this\nleaf in the 'running' datastore to set\nIF-MIB.ifAdminSt"+
+                 "atus to 'up' or 'down' after an ifEntry\nhas been initialized,"+
+                 " as described in RFC 2863.\n\nChanges in this leaf in the "+
+                 "'running' datastore are\nreflected in ifAdminStatus, but if "+
+                 "ifAdminStatus is\nchanged over SNMP, this leaf is not "+
+                 "affected.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for logical interfaces";
+             leaf index {
+               type "uint32";
+               default "0";
+               description
+                 "The index of the subinterface, or logical interface number.\nO"+
+                 "n systems with no support for subinterfaces, or not using\nsub"+
+                 "interfaces, this value should default to 0, i.e., the\ndefault"+
+                 " subinterface.";
+             }
+             leaf description {
+               type "string";
+               description
+                 "A textual description of the interface.\n\nA server implementa"+
+                 "tion MAY map this leaf to the ifAlias\nMIB object.  Such an "+
+                 "implementation needs to use some\nmechanism to handle the "+
+                 "differences in size and characters\nallowed between this leaf "+
+                 "and ifAlias.  The definition of\nsuch a mechanism is outside "+
+                 "the scope of this document.\n\nSince ifAlias is defined to be "+
+                 "stored in non-volatile\nstorage, the MIB implementation MUST "+
+                 "map ifAlias to the\nvalue of 'description' in the persistently"+
+                 " stored\ndatastore.\n\nSpecifically, if the device supports "+
+                 "':startup', when\nifAlias is read the device MUST return the "+
+                 "value of\n'description' in the 'startup' datastore, and when "+
+                 "it is\nwritten, it MUST be written to the 'running' and "+
+                 "'startup'\ndatastores.  Note that it is up to the implementati"+
+                 "on to\n\ndecide whether to modify this single leaf in "+
+                 "'startup' or\nperform an implicit copy-config from 'running' "+
+                 "to\n'startup'.\n\nIf the device does not support ':startup', "+
+                 "ifAlias MUST\nbe mapped to the 'description' leaf in the "+
+                 "'running'\ndatastore.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifAlias";
+             }
+             leaf enabled {
+               type "boolean";
+               default "true";
+               description
+                 "This leaf contains the configured, desired state of the\ninter"+
+                 "face.\n\nSystems that implement the IF-MIB use the value of "+
+                 "this\nleaf in the 'running' datastore to set\nIF-MIB.ifAdminSt"+
+                 "atus to 'up' or 'down' after an ifEntry\nhas been initialized,"+
+                 " as described in RFC 2863.\n\nChanges in this leaf in the "+
+                 "'running' datastore are\nreflected in ifAdminStatus, but if "+
+                 "ifAdminStatus is\nchanged over SNMP, this leaf is not "+
+                 "affected.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+             }
+             leaf name {
+               type "string";
+               description
+                 "The system-assigned name for the sub-interface.  This MAY\nbe "+
+                 "a combination of the base interface name and the\nsubinterface"+
+                 " index, or some other convention used by the\nsystem.";
+             }
+             leaf ifindex {
+               type "uint32";
+               description
+                 "System assigned number for each interface.  Corresponds "+
+                 "to\nifIndex object in SNMP Interface MIB";
+               reference
+                 "RFC 2863 - The Interfaces Group MIB";
+             }
+             leaf admin-status {
+               type "enumeration" {
+                 enum "UP" {
+                   description
+                     "Ready to pass packets.";
+                 }
+                 enum "DOWN" {
+                   description
+                     "Not ready to pass packets and not in some test mode.";
+                 }
+                 enum "TESTING" {
+                   description
+                     "In some test mode.";
+                 }
+               }
+               mandatory "true";
+               description
+                 "The desired state of the interface.  In RFC 7223 this "+
+                 "leaf\nhas the same read semantics as ifAdminStatus.  Here, "+
+                 "it\nreflects the administrative state as set by enabling "+
+                 "or\ndisabling the interface.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+             }
+             leaf oper-status {
+               type "enumeration" {
+                 enum "UP" {
+                   value "1";
+                   description
+                     "Ready to pass packets.";
+                 }
+                 enum "DOWN" {
+                   value "2";
+                   description
+                     "The interface does not pass any packets.";
+                 }
+                 enum "TESTING" {
+                   value "3";
+                   description
+                     "In some test mode.  No operational packets can\nbe "+
+                     "passed.";
+                 }
+                 enum "UNKNOWN" {
+                   value "4";
+                   description
+                     "Status cannot be determined for some reason.";
+                 }
+                 enum "DORMANT" {
+                   value "5";
+                   description
+                     "Waiting for some external event.";
+                 }
+                 enum "NOT_PRESENT" {
+                   value "6";
+                   description
+                     "Some component (typically hardware) is missing.";
+                 }
+                 enum "LOWER_LAYER_DOWN" {
+                   value "7";
+                   description
+                     "Down due to state of lower-layer interface(s).";
+                 }
+               }
+               mandatory "true";
+               description
+                 "The current operational state of the interface.\n\nThis leaf "+
+                 "has the same semantics as ifOperStatus.";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifOperStatus";
+             }
+             leaf last-change {
+               type "oc-types:timeticks64";
+               units "nanoseconds";
+               description
+                 "This timestamp indicates the time of the last state change\nof"+
+                 " the interface (e.g., up-to-down transition). This\ncorrespond"+
+                 "s to the ifLastChange object in the standard\ninterface "+
+                 "MIB.\n\nThe value is the timestamp in nanoseconds relative "+
+                 "to\nthe Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
+               reference
+                 "RFC 2863: The Interfaces Group MIB - ifLastChange";
+             }
+             container counters {
+               description
+                 "A collection of interface-related statistics objects.";
+               leaf in-octets {
+                 type "oc-yang:counter64";
+                 description
+                   "The total number of octets received on the interface,\ninclu"+
+                   "ding framing characters.\n\nDiscontinuities in the value of "+
+                   "this counter can occur\nat re-initialization of the "+
+                   "management system, and at\nother times as indicated by the "+
+                   "value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifHCInOctets";
+               }
+               leaf in-unicast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The number of packets, delivered by this sub-layer to "+
+                   "a\nhigher (sub-)layer, that were not addressed to a\nmultica"+
+                   "st or broadcast address at this sub-layer.\n\nDiscontinuitie"+
+                   "s in the value of this counter can occur\nat re-initializati"+
+                   "on of the management system, and at\nother times as "+
+                   "indicated by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifHCInUcastPkts";
+               }
+               leaf in-broadcast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The number of packets, delivered by this sub-layer to "+
+                   "a\nhigher (sub-)layer, that were addressed to a broadcast\na"+
+                   "ddress at this sub-layer.\n\nDiscontinuities in the value of"+
+                   " this counter can occur\nat re-initialization of the "+
+                   "management system, and at\nother times as indicated by the "+
+                   "value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB -\n        ifHCInBroadcas"+
+                   "tPkts";
+               }
+               leaf in-multicast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The number of packets, delivered by this sub-layer to "+
+                   "a\nhigher (sub-)layer, that were addressed to a multicast\na"+
+                   "ddress at this sub-layer.  For a MAC-layer protocol,\nthis "+
+                   "includes both Group and Functional addresses.\n\nDiscontinui"+
+                   "ties in the value of this counter can occur\nat re-initializ"+
+                   "ation of the management system, and at\nother times as "+
+                   "indicated by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB -\n        ifHCInMulticas"+
+                   "tPkts";
+               }
+               leaf in-discards {
+                 type "oc-yang:counter64";
+                 description
+                   "The number of inbound packets that were chosen to be\ndiscar"+
+                   "ded even though no errors had been detected to\nprevent "+
+                   "their being deliverable to a higher-layer\nprotocol.  One "+
+                   "possible reason for discarding such a\npacket could be to "+
+                   "free up buffer space.\n\nDiscontinuities in the value of "+
+                   "this counter can occur\nat re-initialization of the "+
+                   "management system, and at\nother times as indicated by the "+
+                   "value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifInDiscards";
+               }
+               leaf in-errors {
+                 type "oc-yang:counter64";
+                 description
+                   "For packet-oriented interfaces, the number of inbound\npacke"+
+                   "ts that contained errors preventing them from being\ndeliver"+
+                   "able to a higher-layer protocol.  For character-\noriented "+
+                   "or fixed-length interfaces, the number of\ninbound "+
+                   "transmission units that contained errors\npreventing them "+
+                   "from being deliverable to a higher-layer\nprotocol.\n\nDisco"+
+                   "ntinuities in the value of this counter can occur\nat "+
+                   "re-initialization of the management system, and at\nother "+
+                   "times as indicated by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifInErrors";
+               }
+               leaf in-unknown-protos {
+                 type "oc-yang:counter64";
+                 description
+                   "For packet-oriented interfaces, the number of packets\nrecei"+
+                   "ved via the interface that were discarded because\nof an "+
+                   "unknown or unsupported protocol.  For\ncharacter-oriented or"+
+                   " fixed-length interfaces that\nsupport protocol multiplexing"+
+                   ", the number of\ntransmission units received via the "+
+                   "interface that were\ndiscarded because of an unknown or "+
+                   "unsupported protocol.\nFor any interface that does not "+
+                   "support protocol\nmultiplexing, this counter is not "+
+                   "present.\n\nDiscontinuities in the value of this counter can"+
+                   " occur\nat re-initialization of the management system, and "+
+                   "at\nother times as indicated by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifInUnknownProtos";
+               }
+               leaf out-octets {
+                 type "oc-yang:counter64";
+                 description
+                   "The total number of octets transmitted out of the\ninterface"+
+                   ", including framing characters.\n\nDiscontinuities in the "+
+                   "value of this counter can occur\nat re-initialization of the"+
+                   " management system, and at\nother times as indicated by the "+
+                   "value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifHCOutOctets";
+               }
+               leaf out-unicast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The total number of packets that higher-level protocols\nreq"+
+                   "uested be transmitted, and that were not addressed\nto a "+
+                   "multicast or broadcast address at this sub-layer,\nincluding"+
+                   " those that were discarded or not sent.\n\nDiscontinuities "+
+                   "in the value of this counter can occur\nat re-initialization"+
+                   " of the management system, and at\nother times as indicated "+
+                   "by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifHCOutUcastPkts";
+               }
+               leaf out-broadcast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The total number of packets that higher-level protocols\nreq"+
+                   "uested be transmitted, and that were addressed to a\nbroadca"+
+                   "st address at this sub-layer, including those\nthat were "+
+                   "discarded or not sent.\n\nDiscontinuities in the value of "+
+                   "this counter can occur\nat re-initialization of the "+
+                   "management system, and at\nother times as indicated by the "+
+                   "value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB -\n        ifHCOutBroadca"+
+                   "stPkts";
+               }
+               leaf out-multicast-pkts {
+                 type "oc-yang:counter64";
+                 description
+                   "The total number of packets that higher-level protocols\nreq"+
+                   "uested be transmitted, and that were addressed to a\nmultica"+
+                   "st address at this sub-layer, including those\nthat were "+
+                   "discarded or not sent.  For a MAC-layer\nprotocol, this "+
+                   "includes both Group and Functional\naddresses.\n\nDiscontinu"+
+                   "ities in the value of this counter can occur\nat re-initiali"+
+                   "zation of the management system, and at\nother times as "+
+                   "indicated by the value of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB -\n        ifHCOutMultica"+
+                   "stPkts";
+               }
+               leaf out-discards {
+                 type "oc-yang:counter64";
+                 description
+                   "The number of outbound packets that were chosen to "+
+                   "be\ndiscarded even though no errors had been detected "+
+                   "to\nprevent their being transmitted.  One possible "+
+                   "reason\nfor discarding such a packet could be to free up "+
+                   "buffer\nspace.\n\nDiscontinuities in the value of this "+
+                   "counter can occur\nat re-initialization of the management "+
+                   "system, and at\nother times as indicated by the value "+
+                   "of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifOutDiscards";
+               }
+               leaf out-errors {
+                 type "oc-yang:counter64";
+                 description
+                   "For packet-oriented interfaces, the number of outbound\npack"+
+                   "ets that could not be transmitted because of errors.\nFor "+
+                   "character-oriented or fixed-length interfaces, the\nnumber "+
+                   "of outbound transmission units that could not be\ntransmitte"+
+                   "d because of errors.\n\nDiscontinuities in the value of this"+
+                   " counter can occur\nat re-initialization of the management "+
+                   "system, and at\nother times as indicated by the value "+
+                   "of\n'last-clear'.";
+                 reference
+                   "RFC 2863: The Interfaces Group MIB - ifOutErrors";
+               }
+               leaf last-clear {
+                 type "oc-types:timeticks64";
+                 units "nanoseconds";
+                 description
+                   "Timestamp of the last time the interface counters were\nclea"+
+                   "red.\n\nThe value is the timestamp in nanoseconds relative "+
+                   "to\nthe Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+

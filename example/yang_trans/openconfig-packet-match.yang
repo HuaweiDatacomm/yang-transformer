@@ -1,0 +1,58 @@
+ module openconfig-packet-match {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/header-fields";
+   prefix "oc-pkt-match";
+   // import some basic types
+
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines data related to packet header fields\nused in matching"+
+     " operations, for example in ACLs.  When a\nfield is omitted from a match "+
+     "expression, the effect is a\nwildcard ('any') for that field.";
+   oc-ext:openconfig-version "1.1.0";
+   revision "2017-12-15" {
+     description
+       "Add MPLS packet field matches";
+     reference
+       "1.1.0";
+   }
+   revision "2017-05-26" {
+     description
+       "Separated IP matches into AFs";
+     reference
+       "1.0.0";
+   }
+   revision "2016-08-08" {
+     description
+       "OpenConfig public release";
+     reference
+       "0.2.0";
+   }
+   revision "2016-04-27" {
+     description
+       "Initial revision";
+     reference
+       "TBD";
+   }
+   // Physical Layer fields
+
+   // ethernet-header
+
+   // IP Layer
+
+   // ip-protocol-fields
+
+   // Transport fields
+
+ }
+

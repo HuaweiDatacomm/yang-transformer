@@ -1,0 +1,252 @@
+ module openconfig-routing-policy {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/routing-policy";
+   prefix "oc-rpol";
+   // import some basic types
+
+   import openconfig-policy-types {
+     prefix "oc-pol-types";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "This module describes a YANG model for routing policy\nconfiguration. It "+
+     "is a limited subset of all of the policy\nconfiguration parameters "+
+     "available in the variety of vendor\nimplementations, but supports widely "+
+     "used constructs for managing\nhow routes are imported, exported, and "+
+     "modified across different\nrouting protocols.  This module is intended to "+
+     "be used in\nconjunction with routing protocol configuration models "+
+     "(e.g.,\nBGP) defined in other modules.\n\nRoute policy expression:\n\nPoli"+
+     "cies are expressed as a set of top-level policy definitions,\neach of "+
+     "which consists of a sequence of policy statements. Policy\nstatements "+
+     "consist of simple condition-action tuples. Conditions\nmay include mutiple"+
+     " match or comparison operations, and similarly\nactions may be multitude "+
+     "of changes to route attributes or a\nfinal disposition of accepting or "+
+     "rejecting the route.\n\nRoute policy evaluation:\n\nPolicy definitions are"+
+     " referenced in routing protocol\nconfigurations using import and export "+
+     "configuration statements.\nThe arguments are members of an ordered list of"+
+     " named policy\ndefinitions which comprise a policy chain, and optionally, "+
+     "an\nexplicit default policy action (i.e., reject or accept).\n\nEvaluation"+
+     " of each policy definition proceeds by evaluating its\ncorresponding "+
+     "individual policy statements in order.  When a\ncondition statement in a "+
+     "policy statement is satisfied, the\ncorresponding action statement is "+
+     "executed.  If the action\nstatement has either accept-route or reject-rout"+
+     "e actions, policy\nevaluation of the current policy definition stops, and "+
+     "no further\npolicy definitions in the chain are evaluated.\n\nIf the "+
+     "condition is not satisfied, then evaluation proceeds to\nthe next policy "+
+     "statement.  If none of the policy statement\nconditions are satisfied, "+
+     "then evaluation of the current policy\ndefinition stops, and the next "+
+     "policy definition in the chain is\nevaluated.  When the end of the policy "+
+     "chain is reached, the\ndefault route disposition action is performed "+
+     "(i.e., reject-route\nunless an an alternate default action is specified "+
+     "for the\nchain).\n\nPolicy 'subroutines' (or nested policies) are "+
+     "supported by\nallowing policy statement conditions to reference another "+
+     "policy\ndefinition which applies conditions and actions from the\nreferenc"+
+     "ed policy before returning to the calling policy\nstatement and resuming "+
+     "evaluation.  If the called policy\nresults in an accept-route (either "+
+     "explicit or by default), then\nthe subroutine returns an effective true "+
+     "value to the calling\npolicy.  Similarly, a reject-route action returns "+
+     "false.  If the\nsubroutine returns true, the calling policy continues to "+
+     "evaluate\nthe remaining conditions (using a modified route if the\nsubrout"+
+     "ine performed any changes to the route).";
+   oc-ext:openconfig-version "3.1.1";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "3.1.1";
+   }
+   revision "2018-06-05" {
+     description
+       "Add PIM, IGMP to INSTALL_PROTOCOL_TYPES identity";
+     reference
+       "3.1.0";
+   }
+   revision "2017-07-14" {
+     description
+       "Replace policy choice node/type with policy-result\nenumeration;simplifi"+
+       "ed defined set naming;removed generic\nIGP actions; migrate to "+
+       "OpenConfig types; added mode for\nprefix sets";
+     reference
+       "3.0.0";
+   }
+   revision "2016-05-12" {
+     description
+       "OpenConfig public release";
+     reference
+       "2.0.1";
+   }
+   // OpenConfig specific extensions for module metadata.
+
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   // typedef statements
+
+   typedef policy-result-type {
+     type "enumeration" {
+       enum "ACCEPT_ROUTE" {
+         description
+           "Policy accepts the route";
+       }
+       enum "REJECT_ROUTE" {
+         description
+           "Policy rejects the route";
+       }
+     }
+     description
+       "Type used to specify route disposition in\na policy chain";
+   }
+   // grouping statements
+
+   container routing-policy {
+     description
+       "Top-level container for all routing policy configuration";
+     container defined-sets {
+       description
+         "Predefined sets of attributes used in policy match\nstatements";
+     }
+     container policy-definitions {
+       description
+         "Enclosing container for the list of top-level policy\ndefinitions";
+       list policy-definition {
+         key "name";
+         description
+           "List of top-level policy definitions, keyed by unique\nname.  These "+
+           "policy definitions are expected to be\nreferenced (by name) in "+
+           "policy chains specified in import\nor export configuration "+
+           "statements.";
+         leaf name {
+           type "leafref" {
+             path "../config/name";
+           }
+           description
+             "Reference to the list key";
+         }
+         container config {
+           description
+             "Configuration data for policy defintions";
+           leaf name {
+             type "string";
+             description
+               "Name of the top-level policy definition -- this name\nis used in"+
+               " references to the current policy";
+           }
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for policy definitions";
+           leaf name {
+             type "string";
+             description
+               "Name of the top-level policy definition -- this name\nis used in"+
+               " references to the current policy";
+           }
+         }
+         container statements {
+           description
+             "Enclosing container for policy statements";
+           list statement {
+             key "name";
+             ordered-by "user";
+             description
+               "Policy statements group conditions and actions\nwithin a policy "+
+               "definition.  They are evaluated in\nthe order specified (see the"+
+               " description of policy\nevaluation at the top of this module.";
+             leaf name {
+               type "leafref" {
+                 path "../config/name";
+               }
+               description
+                 "Reference to list key";
+             }
+             container config {
+               description
+                 "Configuration data for policy statements";
+               leaf name {
+                 type "string";
+                 description
+                   "name of the policy statement";
+               }
+             }
+             container state {
+               config "false";
+               description
+                 "Operational state data for policy statements";
+               leaf name {
+                 type "string";
+                 description
+                   "name of the policy statement";
+               }
+             }
+             container conditions {
+               description
+                 "Condition statements for the current policy statement";
+               container config {
+                 description
+                   "Configuration data for policy conditions";
+                 leaf install-protocol-eq {
+                   type "identityref" {
+                     base "oc-pol-types:INSTALL_PROTOCOL_TYPE";
+                   }
+                   description
+                     "Condition to check the protocol / method used to "+
+                     "install\nthe route into the local routing table";
+                 }
+               }
+               container state {
+                 config "false";
+                 description
+                   "Operational state data for policy conditions";
+                 leaf install-protocol-eq {
+                   type "identityref" {
+                     base "oc-pol-types:INSTALL_PROTOCOL_TYPE";
+                   }
+                   description
+                     "Condition to check the protocol / method used to "+
+                     "install\nthe route into the local routing table";
+                 }
+               }
+             }
+             container actions {
+               description
+                 "Top-level container for policy action statements";
+               container config {
+                 description
+                   "Configuration data for policy actions";
+                 leaf policy-result {
+                   type "policy-result-type";
+                   description
+                     "Select the final disposition for the route, either\naccept"+
+                     " or reject.";
+                 }
+               }
+               container state {
+                 config "false";
+                 description
+                   "Operational state data for policy actions";
+                 leaf policy-result {
+                   type "policy-result-type";
+                   description
+                     "Select the final disposition for the route, either\naccept"+
+                     " or reject.";
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+

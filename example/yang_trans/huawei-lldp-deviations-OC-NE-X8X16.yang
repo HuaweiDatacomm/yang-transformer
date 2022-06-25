@@ -1,0 +1,23 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-lldp-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-lldp-deviations-OC-NE-X8X16";
+   prefix "lldp-devs-OC-NE-X8X16";
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Link layer discovery protocol.";
+   revision "2019-04-23" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

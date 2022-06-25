@@ -1,0 +1,1627 @@
+ /*
+Copyright (C) 2020-2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-aaa {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-aaa";
+   prefix "aaa";
+   import huawei-hwtacacs {
+     prefix "hwtacacs";
+   }
+   import huawei-extension {
+     prefix "ext";
+   }
+   import huawei-pub-type {
+     prefix "pub-type";
+   }
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   include huawei-aaa-type;
+   include huawei-aaa-lam;
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Security management, which includes the management on authentication, "+
+     "authorization, accounting, domains, and users.";
+   revision "2021-09-16" {
+     description
+       "Modify path of task-group-include-maps, and add ext of authen-scheme-nam"+
+       "e, and delete default of default-admin-domain.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-06-23" {
+     description
+       "Modify path of include-user-group-name.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-03-17" {
+     description
+       "Add read|write|execute|debug node of list user-group-task-group-map.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-01-28" {
+     description
+       "Add read|write|execute|debug node of list user-group-task-group-map.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-01-20" {
+     description
+       "Add no-response-authorization node.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-07-01" {
+     description
+       "Add node constraint information.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-06-17" {
+     description
+       "Add management-user-qrys node.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-03-02" {
+     description
+       "Init revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef authen-change {
+     type "enumeration" {
+       enum "none" {
+         value "0";
+         description
+           "Change authen mode (none).";
+       }
+       enum "hwtacacs-local" {
+         value "1";
+         description
+           "Tacs authentication fails, switch to local.";
+       }
+     }
+     description
+       "Authen change switch.";
+   }
+   container aaa {
+     description
+       "Security management, which includes the management on authentication, "+
+       "authorization, accounting, domains, and users.";
+     container tasks {
+       config "false";
+       description
+         "List of tasks.";
+       list task {
+         key "name";
+         config "false";
+         description
+           "Statistics of minimum unit for dividing rights on an NE. Tasks can "+
+           "be determined when an NE is delivered. Tasks cannot be customized.";
+         leaf name {
+           type "string" {
+             length "1..32";
+           }
+           config "false";
+           description
+             "Name of a task, it is not case sensitive.";
+         }
+       }
+     }
+     container task-groups {
+       description
+         "List of task groups.";
+       list task-group {
+         key "name";
+         max-elements "256";
+         description
+           "Configure a collection of certain tasks. The default task groups "+
+           "cannot be removed and are set in the system before the NE delivery.";
+         leaf name {
+           type "string" {
+             length "1..32";
+             pattern "[^A-Z/\\*\":?<>|]+";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Name of a task group.";
+         }
+         container task-group-include-maps {
+           description
+             "List of the task groups included in a main task group.";
+           list task-group-include-map {
+             key "include-task-group-name";
+             max-elements "1";
+             description
+               "Configure task group included in a main task group.";
+             leaf include-task-group-name {
+               type "leafref" {
+                 path "../../../../task-group/name";
+               }
+               must "(../../../name!=current())";
+               description
+                 "Name of included task group, it is not case sensitive.";
+             }
+           }
+         }
+         container task-group-task-maps {
+           description
+             "List of the tasks included in a task group.";
+           list task-group-task-map {
+             key "task-name";
+             description
+               "Configure task in a task group. The default task group cannot be"+
+               " modified.";
+             leaf task-name {
+               type "string" {
+                 length "1..32";
+                 pattern "[^A-Z]+";
+               }
+               ext:case-sensitivity "lower-only";
+               must "(../write='enable' or ../execute='enable' or ../debug='enab"+
+                    "le' or ../read='enable')";
+               description
+                 "Name of a task. It must be an existing task.";
+             }
+             leaf read {
+               type "aaa-enable-type";
+               must "not(../write='disable' and ../execute='disable' and "+
+                    "../debug='disable') or (../write='disable' and ../execute='"+
+                    "disable' and ../debug='disable' and ../read!=../write)";
+               default "disable";
+               description
+                 "To determine whether a task has the read right.";
+             }
+             leaf write {
+               type "aaa-enable-type";
+               default "disable";
+               description
+                 "To determine whether a task has the write right.";
+             }
+             leaf execute {
+               type "aaa-enable-type";
+               default "disable";
+               description
+                 "To determine whether a task has the operation right.";
+             }
+             leaf debug {
+               type "aaa-enable-type";
+               default "disable";
+               description
+                 "To determine whether a task has the debug right.";
+             }
+           }
+         }
+       }
+     }
+     container user-groups {
+       description
+         "List of user groups.";
+       list user-group {
+         key "name";
+         max-elements "64";
+         description
+           "Configure a collection of certain users. Certain default user groups"+
+           " are set before an NE is delivered and cannot be deleted.";
+         leaf name {
+           type "string" {
+             length "1..32";
+             pattern "[^A-Z/\\*\":?<>|]+";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Name of a user group.";
+         }
+         container user-group-task-group-maps {
+           description
+             "List of the task groups included in a user group.";
+           list user-group-task-group-map {
+             key "task-group-name";
+             description
+               "Configure task group in a user group.";
+             leaf task-group-name {
+               type "leafref" {
+                 path "../../../../../task-groups/task-group/name";
+               }
+               description
+                 "Name of a task group, it is not case sensitive.";
+             }
+           }
+         }
+         container user-group-include-maps {
+           description
+             "List of the user groups included in a main user group.";
+           list user-group-include-map {
+             key "include-user-group-name";
+             max-elements "1";
+             description
+               "Configure user group included in a main user group.";
+             leaf include-user-group-name {
+               type "leafref" {
+                 path "../../../../user-group/name";
+               }
+               must "(../../../name!=current())";
+               description
+                 "Name of a user group, it is not case sensitive.";
+             }
+           }
+         }
+       }
+     }
+     container authentication-schemes {
+       description
+         "List of authentication scheme.";
+       list authentication-scheme {
+         key "authen-scheme-name";
+         max-elements "32";
+         description
+           "Configure authentication scheme. The default authentication scheme "+
+           "cannot be deleted.";
+         leaf authen-scheme-name {
+           type "string" {
+             length "1..32";
+             pattern "[^A-Z/\\*\":?<>|]+";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Name of an authentication scheme.";
+         }
+         choice authen-mode-type {
+           description
+             "Sorting method of authentication mode.";
+           case ordered-strictly {
+             description
+               "Ordered strictly case.";
+             leaf first-authen-mode {
+               type "aaa-authen-mode";
+               must "(../first-authen-mode!='invalid' )";
+               default "local";
+               description
+                 "Preferred authentication mode. The second, third, or fourth "+
+                 "authentication mode is used only when the first authentication"+
+                 " mode does not respond. The first authentication mode cannot "+
+                 "be set to unavailable.";
+             }
+             leaf second-authen-mode {
+               type "aaa-authen-mode";
+               must "(../second-authen-mode!='radius-proxy' and (((../first-auth"+
+                    "en-mode='none' or ../first-authen-mode='radius-proxy') and "+
+                    "(../second-authen-mode='invalid')) or ((../first-authen-mod"+
+                    "e!='none' and ../first-authen-mode!='radius-proxy') and "+
+                    "../first-authen-mode!=../second-authen-mode)))";
+               default "invalid";
+               description
+                 "Authentication mode with the preference lower than the first "+
+                 "authentication mode. The second authentication mode is used "+
+                 "when the first authentication mode does not respond. If the "+
+                 "setting of the second authentication mode is unavailable, the "+
+                 "third and fourth authentication modes fail to be set.";
+             }
+             leaf third-authen-mode {
+               type "aaa-authen-mode";
+               must "(../third-authen-mode!='radius-proxy' and ((../second-authe"+
+                    "n-mode ='none' or ../second-authen-mode='invalid') and "+
+                    "(../third-authen-mode='invalid') ) or ((../second-authen-mo"+
+                    "de !='none' and ../second-authen-mode!='invalid'  and "+
+                    "../first-authen-mode!='radius-proxy') and ../third-authen-m"+
+                    "ode!=../second-authen-mode and ../third-authen-mode!=../fir"+
+                    "st-authen-mode ))";
+               default "invalid";
+               description
+                 "Authentication mode with the preference lower than the first "+
+                 "and second authentication modes. The third authentication mode"+
+                 " is used when the first and second authentication modes do not"+
+                 " respond. If the setting of the third authentication mode is "+
+                 "unavailable, the fourth authentication mode fails to be set.";
+             }
+             leaf fourth-authen-mode {
+               type "aaa-authen-mode";
+               must "(../fourth-authen-mode='none' and ../first-authen-mode!='in"+
+                    "valid' and ../first-authen-mode!='none' and ../first-authen"+
+                    "-mode!='radius-proxy' and ../second-authen-mode!='invalid' "+
+                    "and ../second-authen-mode!='none' and ../third-authen-mode!"+
+                    "='invalid' and ../third-authen-mode!='none' ) or ../fourth-"+
+                    "authen-mode='invalid' ";
+               default "invalid";
+               description
+                 "Authentication mode with the least preference. The fourth "+
+                 "authentication mode is used when the first, second, and third "+
+                 "authentication modes do not respond. If the setting of the "+
+                 "fourth authentication mode is unavailable or the fourth "+
+                 "authentication mode does not respond, the authentication "+
+                 "fails.";
+             }
+           }
+         }
+         leaf authentication-change {
+           type "authen-change";
+           default "none";
+           description
+             "Enable/disable auto change authen mode.";
+         }
+       }
+     }
+     container authorization-schemes {
+       description
+         "List of authorization scheme.";
+       list authorization-scheme {
+         key "author-scheme-name";
+         max-elements "32";
+         description
+           "Configure authorization scheme. The default authorization scheme "+
+           "cannot be deleted.";
+         leaf author-scheme-name {
+           type "string" {
+             length "1..32";
+             pattern "[^A-Z/\\*\":?<>|]+";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Name of an authorization scheme. The name uniquely identifies the "+
+             "authorization scheme and can be used in the domain.";
+         }
+         choice author-mode-type {
+           description
+             "Sorting method of authorization mode.";
+           case ordered-strictly {
+             description
+               "Ordered strictly case.";
+             leaf first-author-mode {
+               type "aaa-author-mode";
+               must "../first-author-mode='local' or ../first-author-mode='hwtac"+
+                    "acs' or ../first-author-mode='if-authenticated' or "+
+                    "../first-author-mode='none'";
+               default "local";
+               description
+                 "Preferred authorization mode. The second, third, or fourth "+
+                 "authorization mode can be used only when the first authorizati"+
+                 "on mode does not respond. The first authorization mode must be"+
+                 " available.";
+             }
+             leaf second-author-mode {
+               type "aaa-author-mode";
+               must "(../first-author-mode='none' and (../second-author-mode='in"+
+                    "valid') ) or (../first-author-mode!='invalid' and "+
+                    "../first-author-mode!='none' and ../second-author-mode!=../"+
+                    "first-author-mode)";
+               default "invalid";
+               description
+                 "Authorization mode with the preference next to the first "+
+                 "authorization mode. It is used when the first authorization "+
+                 "mode does not respond. If the setting of the second authorizat"+
+                 "ion mode is unavailable, the third and fourth authorization "+
+                 "modes fail to be set.";
+             }
+             leaf third-author-mode {
+               type "aaa-author-mode";
+               must "((../second-author-mode='none' or ../second-author-mode='in"+
+                    "valid') and ../third-author-mode='invalid' ) or (../second-"+
+                    "author-mode !='none' and ../second-author-mode!='invalid'  "+
+                    "and ../first-author-mode!='none' and ../third-author-mode!="+
+                    "../second-author-mode and ../third-author-mode!=../first-au"+
+                    "thor-mode ) or (../first-author-mode='none' and (../third-a"+
+                    "uthor-mode='invalid') )";
+               default "invalid";
+               description
+                 "Authorization mode with the preference next to the first and "+
+                 "second authorization modes. It is used when the first and "+
+                 "second authorization modes do not respond. If the setting of "+
+                 "the third authorization mode is unavailable, the fourth "+
+                 "authorization mode fails to be set.";
+             }
+             leaf fourth-author-mode {
+               type "aaa-author-mode";
+               must "(../fourth-author-mode='none' and ../first-author-mode!='in"+
+                    "valid' and ../first-author-mode!='none' and ../second-autho"+
+                    "r-mode!='invalid' and ../second-author-mode!='none' and "+
+                    "../third-author-mode!='invalid' and ../third-author-mode!='"+
+                    "none' ) or ../fourth-author-mode='invalid' ";
+               default "invalid";
+               description
+                 "Authorization mode with the least preference. It is used when "+
+                 "the first, second, and third authorization modes do not "+
+                 "respond. If the setting of the fourth authorization mode is "+
+                 "unavailable or the fourth authorization mode does not respond,"+
+                 " the authorization fails.";
+             }
+           }
+         }
+         leaf no-lvl-first-cmd-author {
+           type "aaa-author-cmd-mode";
+           must "../no-lvl-first-cmd-author='local' or ../no-lvl-first-cmd-autho"+
+                "r='hwtacacs'";
+           default "local";
+           description
+             "Configures the first authorization mode for users of user group.";
+         }
+         leaf no-lvl-second-cmd-author {
+           type "aaa-author-cmd-mode";
+           must "(../no-lvl-first-cmd-author='local' and (../no-lvl-second-cmd-a"+
+                "uthor='invalid' or ../no-lvl-second-cmd-author='hwtacacs') ) or"+
+                " ((not(../no-lvl-first-cmd-author='local') and (../no-lvl-secon"+
+                "d-cmd-author='invalid' or ../no-lvl-second-cmd-author='local') "+
+                "))";
+           default "invalid";
+           description
+             "Configures the second authorization mode for users of user group.";
+         }
+         leaf no-response-policy {
+           type "author-no-res-policy-type";
+           default "online";
+           description
+             "Configures a policy for a scenario where no responses are obtained"+
+             " during command line-based authorization.";
+         }
+         leaf no-response-times {
+           when "../no-response-policy='offline'";
+           type "uint32" {
+             range "1..10";
+           }
+           default "5";
+           description
+             "Configures the number of times of failed authorization.";
+         }
+         container authorization-cmds {
+           description
+             "List of authorization cmd.";
+           list authorization-cmd {
+             key "level";
+             description
+               "Configure authorization cmd.";
+             leaf level {
+               type "uint32" {
+                 range "0..15";
+               }
+               description
+                 "The level of authorization cmd.";
+             }
+             choice cmd-author-mode-type {
+               description
+                 "Sorting method of cmd authorization mode.";
+               case ordered-strictly {
+                 description
+                   "Ordered strictly case.";
+                 leaf first-cmd-author {
+                   type "aaa-author-cmd-mode";
+                   must "../first-cmd-author='local' or ../first-cmd-author='hwt"+
+                        "acacs'";
+                   default "local";
+                   description
+                     "First cmd authorization mode.";
+                 }
+                 leaf second-cmd-author {
+                   type "aaa-author-cmd-mode";
+                   must "(../first-cmd-author='local' and (../second-cmd-author="+
+                        "'invalid' or ../second-cmd-author='hwtacacs') ) or "+
+                        "((not(../first-cmd-author='local') and (../second-cmd-a"+
+                        "uthor='invalid' or ../second-cmd-author='local') ))";
+                   default "invalid";
+                   description
+                     "Second cmd authorization mode.";
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+     container accounting-schemes {
+       description
+         "List of accounting scheme.";
+       list accounting-scheme {
+         key "acct-scheme-name";
+         max-elements "256";
+         description
+           "Configure accounting scheme. The default accounting scheme cannot be"+
+           " deleted.";
+         leaf acct-scheme-name {
+           type "string" {
+             length "1..32";
+             pattern "[^A-Z/\\*\":?<>|]+";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Accounting scheme name.";
+         }
+         leaf accounting-mode {
+           type "aaa-acct-mode";
+           must "../accounting-mode='radius' or ../accounting-mode='hwtacacs' or"+
+                " ../accounting-mode='none'";
+           default "none";
+           description
+             "Accounting Mode.";
+         }
+       }
+     }
+     container domains {
+       description
+         "List of domain.";
+       list domain {
+         key "name";
+         max-elements "1024";
+         description
+           "Configure in a domain, users apply the same authentication/authoriza"+
+           "tion scheme or server. The default domain cannot be deleted.";
+         leaf name {
+           type "string" {
+             length "1..64";
+             pattern "([^A-Z*?\"']{3,})|[^A-Z*?\"'-]|([^A-Z*?\"'-][^A-Z*?\"'])|("+
+                     "[^A-Z*?\"'][^A-Z*?\"'-])";
+           }
+           ext:case-sensitivity "lower-only";
+           description
+             "Name of a domain.";
+         }
+         leaf admin-level {
+           type "uint32" {
+             range "0..15";
+           }
+           description
+             "The admin level of domain. If the command level adjustment "+
+             "function is disabled, the value of adminLevel ranges from 0 to 3. "+
+             "If the command level adjustment function is enabled, the value of "+
+             "adminLevel ranges from 0 to 15.";
+         }
+         leaf authen-scheme-name {
+           type "leafref" {
+             path "../../../authentication-schemes/authentication-scheme/authen-"+
+                  "scheme-name";
+           }
+           ext:dynamic-default {
+             ext:default-value "default0" {
+               when "../name = 'default0'";
+             }
+             ext:default-value "default1" {
+               when "../name = 'default1'";
+             }
+             ext:default-value "default" {
+               when "../name = 'default_admin'";
+             }
+             ext:default-value "default1";
+           }
+           description
+             "Name of the authentication scheme used by the domain, it is not "+
+             "case sensitive. The default value varies according to domains. The"+
+             " default value is restored when the node is deleted.";
+         }
+         leaf author-scheme-name {
+           type "leafref" {
+             path "../../../authorization-schemes/authorization-scheme/author-sc"+
+                  "heme-name";
+           }
+           description
+             "Name of the authorization scheme used by the domain, it is not "+
+             "case sensitive. The default value varies according to domains. The"+
+             " default value is restored when the node is deleted.";
+         }
+         leaf acct-scheme-name {
+           type "leafref" {
+             path "../../../accounting-schemes/accounting-scheme/acct-scheme-nam"+
+                  "e";
+           }
+           ext:dynamic-default {
+             ext:default-value "default0" {
+               when "../name = 'default0'";
+             }
+             ext:default-value "default1" {
+               when "../name = 'default1'";
+             }
+             ext:default-value "default0" {
+               when "../name = 'default_admin'";
+             }
+             ext:default-value "default1";
+           }
+           description
+             "Name of the accounting scheme used by the domain, it is not case "+
+             "sensitive. The default value varies according to domains. The "+
+             "default value is restored when the node is deleted.";
+         }
+         leaf access-limit {
+           type "int32" {
+             range "0..2147483647";
+           }
+           description
+             "Domain max access number. The default value is defined in the PAF "+
+             "file and is restored when the node is deleted.";
+         }
+         leaf radius-server-template {
+           type "string" {
+             length "1..32";
+           }
+           description
+             "Name of the RADIUS server used by the domain, it is not case "+
+             "sensitive.";
+         }
+         leaf hwtacacs-server-template {
+           type "leafref" {
+             path "/hwtacacs:hwtacacs/hwtacacs:templates/hwtacacs:template/hwtac"+
+                  "acs:name";
+           }
+           description
+             "Name of the HWTACACS server used by the domain, it is not case "+
+             "sensitive.";
+         }
+         leaf state {
+           type "aaa-state-type";
+           default "active";
+           description
+             "Activated state of the domain.";
+         }
+         leaf time-range-enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the time range function used by a domain.";
+         }
+         leaf service-terminal {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in Terminal mode.";
+         }
+         leaf service-telnet {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in Telnet mode.";
+         }
+         leaf service-ftp {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in FTP mode.";
+         }
+         leaf service-ppp {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in PPP mode.";
+         }
+         leaf service-ssh {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in SSH mode.";
+         }
+         leaf service-qx {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in QX mode.";
+         }
+         leaf service-snmp {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in SNMP mode.";
+         }
+         leaf service-mml {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in MML mode.";
+         }
+         leaf service-http {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable users to log in HTTP mode.";
+         }
+         leaf online-num {
+           type "int32" {
+             range "0..2147483647";
+           }
+           config "false";
+           description
+             "Online number of the domain.";
+         }
+       }
+     }
+     container login-alarm-threshold {
+       description
+         "Configure alarm when manager login failed frequently.";
+       leaf report-times {
+         type "uint16" {
+           range "0..100";
+         }
+         units "min";
+         must "../resume-times<=../report-times";
+         default "30";
+         description
+           "Login Alarm report times.";
+       }
+       leaf resume-times {
+         type "uint16" {
+           range "0..100";
+         }
+         must "../resume-times<=../report-times";
+         default "20";
+         description
+           "Login Alarm resume times.";
+       }
+       leaf period {
+         type "uint16" {
+           range "1..120";
+         }
+         units "min";
+         default "5";
+         description
+           "Login Alarm period.";
+       }
+     }
+     container alive-user-qrys {
+       config "false";
+       description
+         "List of alive users.";
+       list alive-user-qry {
+         key "user-id";
+         config "false";
+         description
+           "Statistics of active users.";
+         leaf user-id {
+           type "uint32";
+           config "false";
+           description
+             "User ID.";
+         }
+         leaf user-name {
+           type "string" {
+             length "1..253";
+           }
+           config "false";
+           description
+             "Name of an access user, it is not case sensitive.";
+         }
+         leaf level {
+           type "uint32" {
+             range "0..15";
+           }
+           config "false";
+           description
+             "User level.";
+         }
+         leaf user-group-name {
+           type "string" {
+             length "1..32";
+           }
+           config "false";
+           description
+             "Specifies the name of a user group, it is not case sensitive.";
+         }
+         leaf name {
+           type "string" {
+             length "1..64";
+           }
+           config "false";
+           description
+             "Name of a domain, it is not case sensitive.";
+         }
+         leaf access-type {
+           type "aaa-user-access-type";
+           config "false";
+           description
+             "Access type.";
+         }
+         leaf authen-type {
+           type "aaa-authen-access-type";
+           config "false";
+           description
+             "Authentication Type.";
+         }
+         leaf authen-method {
+           type "aaa-authen-mode";
+           config "false";
+           description
+             "Alive user current authentication mode.";
+         }
+         leaf authen-state {
+           type "aaa-authen-state-type";
+           config "false";
+           description
+             "Authentication state.";
+         }
+         leaf author-method {
+           type "aaa-author-mode";
+           config "false";
+           description
+             "Current authorization mode.";
+         }
+         leaf author-state {
+           type "aaa-author-state-type";
+           config "false";
+           description
+             "Author state.";
+         }
+         leaf acct-method {
+           type "aaa-acct-mode";
+           config "false";
+           description
+             "Current accounting Mode.";
+         }
+         leaf acct-state {
+           type "aaa-acct-state-type";
+           config "false";
+           description
+             "Accounting state.";
+         }
+       }
+     }
+     container global-policy {
+       description
+         "Configure global policy.";
+       leaf domain-location {
+         type "aaa-domain-location-type";
+         default "after-delimiter";
+         description
+           "Domain Location.";
+       }
+       leaf domain-parse-direction {
+         type "aaa-parse-direction-type";
+         default "left-to-right";
+         description
+           "Domain Parse Direction.";
+       }
+       leaf default-admin-domain {
+         type "leafref" {
+           path "../../domains/domain/name";
+         }
+         description
+           "Admin user default domain.";
+       }
+       leaf default-access-domain {
+         type "leafref" {
+           path "../../domains/domain/name";
+         }
+         description
+           "Access user default domain.";
+       }
+       leaf parse-priority {
+         type "aaa-parse-priority-type";
+         default "domain-first";
+         description
+           "Specifies priorities for parsing domain names.";
+       }
+       leaf realm-location {
+         type "aaa-realm-location-type";
+         default "before-delimiter";
+         description
+           "Specifies a position for a realm domain name.";
+       }
+       leaf real-name-delimiter {
+         type "string" {
+           length "1";
+           pattern "[/:<>\\|@%']";
+         }
+         description
+           "Specifies a realm name delimiter used to parse the user account. The"+
+           " value is a single character. It can be one of the following "+
+           "symbols: back-slant, /, :, <, >, |, @, %, '.";
+       }
+       leaf real-name-parse-direction {
+         type "aaa-parse-direction-type";
+         default "left-to-right";
+         description
+           "Specifies a parsing direction for the realm name.";
+       }
+       leaf roam-character {
+         type "string" {
+           length "1";
+           pattern "[/:*<>\\|]";
+         }
+         default ":";
+         description
+           "Specifies an identifier for a roaming user. The value is a single "+
+           "character. It can be one of the following symbols: back-slant, /, :,"+
+           " *, <, >, |.";
+       }
+     }
+     container recording {
+       description
+         "Configure recording function.";
+       container function {
+         description
+           "Configure recording function.";
+         leaf cmd-record-scheme {
+           type "leafref" {
+             path "../../schemes/scheme/name";
+           }
+           description
+             "The recording scheme used by cmd recording.";
+         }
+         leaf system-record-scheme {
+           type "leafref" {
+             path "../../schemes/scheme/name";
+           }
+           description
+             "Configures a solution to record system events. Currently, only "+
+             "events triggered by the reboot command are recorded.";
+         }
+         leaf outbound-record-scheme {
+           type "leafref" {
+             path "../../schemes/scheme/name";
+           }
+           description
+             "Records remote login operations for the device that functions as "+
+             "the client.";
+         }
+       }
+       container schemes {
+         description
+           "List of recording scheme.";
+         list scheme {
+           key "name";
+           description
+             "Configure recording scheme.";
+           leaf name {
+             type "string" {
+               length "1..32";
+               pattern "[^A-Z/\\*\":?<>|]+";
+             }
+             ext:case-sensitivity "lower-only";
+             description
+               "Recording scheme name.";
+           }
+           leaf tacacs-group {
+             type "leafref" {
+               path "/hwtacacs:hwtacacs/hwtacacs:templates/hwtacacs:template/hwt"+
+                    "acacs:name";
+             }
+             description
+               "The binded HWTACACS server.";
+           }
+         }
+       }
+     }
+     container online-offline-rec-switch {
+       description
+         "Configure whether to enable login failure and logout recording for "+
+         "management users.";
+       leaf login-fail-rec-switch {
+         type "aaa-enable-type";
+         default "enable";
+         description
+           "Enables recording of login failures.";
+       }
+       leaf logout-rec-switch {
+         type "aaa-enable-type";
+         default "enable";
+         description
+           "Enables recording of normal and abnormal logouts.";
+       }
+       leaf abnormal-logout-rec-switch {
+         type "aaa-enable-type";
+         default "enable";
+         description
+           "Enables recording of abnormal logouts.";
+       }
+       leaf normal-logout-rec-switch {
+         type "aaa-enable-type";
+         default "enable";
+         description
+           "Enables recording of normal logouts.";
+       }
+     }
+     container abnormal-offline-hidens {
+       description
+         "List of the function that replaces the abnormal offline reason with "+
+         "'the user requests to go offline'.";
+       list abnormal-offline-hiden {
+         key "hidden-id";
+         description
+           "Configure the function that replaces the abnormal offline reason "+
+           "with 'the user requests to go offline'.";
+         leaf hidden-id {
+           type "uint32" {
+             range "2..18";
+           }
+           description
+             "Specifies an ID for an abnormal logout reason.";
+         }
+       }
+     }
+     container lam {
+       description
+         "Configure the local account and related policy management functions.";
+       container login-failed-limit {
+         description
+           "Configure login failed times limit in special period.";
+         leaf failed-times {
+           type "uint32" {
+             range "0..10";
+           }
+           default "5";
+           description
+             "Indicates the consecutive failure times. 0 indicates that the "+
+             "number of times for a user to fail the authentification continuous"+
+             "ly is not restricted.";
+         }
+         leaf period {
+           type "uint32" {
+             range "1..120";
+           }
+           units "min";
+           default "5";
+           description
+             "Specifies a period for consecutive authentication failures.";
+         }
+         leaf reactive-time {
+           type "uint32" {
+             range "0..1000";
+           }
+           units "min";
+           default "5";
+           description
+             "Specifies an automatic activation time for a locked account. 0 "+
+             "indicates that the locked account will not be unlocked automatical"+
+             "ly.";
+         }
+       }
+       container user-security-policy {
+         description
+           "Configure local user security policy.";
+         leaf security-policy {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable the local user security policy function.";
+         }
+         leaf user-aging-period {
+           type "uint32" {
+             range "1..365";
+           }
+           description
+             "The period of user age.";
+         }
+         leaf user-name-min-len {
+           type "uint32" {
+             range "0..253";
+           }
+           default "0";
+           description
+             "The minimum length of username, 0 indicates that the length is not"+
+             " limited.";
+         }
+       }
+       container password-policy {
+         description
+           "Configure local-user password policy.";
+         leaf expire-days {
+           type "uint16" {
+             range "0..365";
+           }
+           units "d";
+           must "../prompt-days<=../expire-days";
+           default "0";
+           description
+             "Password expire days, 0 indicates that password is useful "+
+             "forever.";
+         }
+         leaf prompt-days {
+           type "uint16" {
+             range "0..180";
+           }
+           units "d";
+           must "../prompt-days<=../expire-days";
+           default "0";
+           description
+             "Password promptdays.";
+         }
+         leaf change-check {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the function to prompt a user to change the "+
+             "password upon first-time use.";
+         }
+         leaf complexity-check {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable password complexity check.";
+         }
+         leaf pwd-min-length {
+           type "uint32" {
+             range "3..128";
+           }
+           description
+             "Specifies a minimum password length for local users.";
+         }
+         leaf history-pwd-num {
+           type "uint32" {
+             range "1..20";
+           }
+           default "10";
+           description
+             "History password number.";
+         }
+         leaf pwd-force-change {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable the function of forcing a user to change the "+
+             "password upon first use.";
+         }
+       }
+       container forbidden-word-rules {
+         description
+           "List of password black.";
+         list forbidden-word-rule {
+           key "forbidden-word";
+           description
+             "Configure password forbidden rule.";
+           leaf forbidden-word {
+             type "string" {
+               length "1..255";
+             }
+             ext:case-sensitivity "lower-or-upper";
+             description
+               "Forbidden word.";
+           }
+         }
+       }
+       container users {
+         description
+           "List of local user.";
+         list user {
+           key "name";
+           max-elements "1024";
+           description
+             "Configure local user.";
+           leaf name {
+             type "string" {
+               length "1..253";
+               pattern "[^A-Z]+";
+             }
+             description
+               "Name of a local user. The minimum length of a username is "+
+               "determined by user-name-min-len and security-policy. If "+
+               "security-policy is set to false and user-name-min-len is "+
+               "configured, the configuration takes effect. When security-policy"+
+               " is set to true, the minimum length of the username must be at "+
+               "least 6 characters. If user-name-min-len is configured and the "+
+               "user-name-min-len value is greater than 6 characters, the "+
+               "minimum length of the username is equal to the user-name-min-len"+
+               " value. If security-policy is set to false and user-name-min-len"+
+               " is not configured, the minimum length of the username is 1. If "+
+               "the username contains more than 32 characters, service-snmp "+
+               "cannot be set to true.";
+           }
+           leaf end-life-date {
+             type "pub-type:date";
+             description
+               "The end date of local user's life.";
+           }
+           leaf is-login-anytime {
+             type "boolean";
+             must "(not(../begin-login-day='sun' and ../end-login-day='sat' and "+
+                  "../begin-login-time='00:00:00' and ../end-login-time='23:59:5"+
+                  "9') and ../is-login-anytime='false') or (../begin-login-day='"+
+                  "sun' and ../end-login-day='sat' and ../begin-login-time='00:0"+
+                  "0:00' and ../end-login-time='23:59:59' and ../is-login-anytim"+
+                  "e='true')";
+             default "true";
+             description
+               "Enable/disable the flag of login anytime.";
+           }
+           leaf begin-login-day {
+             type "lam-weekday-type";
+             must "not(../is-login-anytime='true') or (../is-login-anytime='true"+
+                  "' and ../begin-login-day='sun')";
+             default "sun";
+             description
+               "The begin day of week for login.";
+           }
+           leaf end-login-day {
+             type "lam-weekday-type";
+             must "not(../is-login-anytime='true') or (../is-login-anytime='true"+
+                  "' and ../end-login-day='sat')";
+             default "sat";
+             description
+               "The end day of week for login.";
+           }
+           leaf begin-login-time {
+             type "pub-type:time";
+             must "not(../is-login-anytime='true') or (../is-login-anytime='true"+
+                  "' and ../begin-login-time='00:00:00')";
+             default "00:00:00";
+             description
+               "The begin time of every login day. The begin-login-time must be "+
+               "five or more minutes earlier than the end-login-time.";
+           }
+           leaf end-login-time {
+             type "pub-type:time";
+             must "not(../is-login-anytime='true') or (../is-login-anytime='true"+
+                  "' and ../end-login-time='23:59:59')";
+             default "23:59:59";
+             description
+               "The end time of every login day. The end-login-time must be five"+
+               " or more minutes later than the begin-login-time.";
+           }
+           leaf aging-in-days {
+             type "uint32" {
+               range "0..365";
+             }
+             units "d";
+             description
+               "The user will age if not online in the special days.";
+           }
+           leaf password-expire-in-days {
+             type "uint32" {
+               range "0..999";
+             }
+             units "d";
+             description
+               "The passowrd will expire in the special days.";
+           }
+           leaf group-name {
+             type "string" {
+               length "1..32";
+             }
+             description
+               "Name of the user group where the user belongs, it must be an "+
+               "existing user group. The user inherits all the rights of the "+
+               "user group.";
+           }
+           leaf state {
+             type "user-state-type";
+             default "active";
+             description
+               "Activated state of a user.";
+           }
+           leaf failed-times {
+             when "../state='active'";
+             type "uint32" {
+               range "0..10";
+             }
+             must "(../interval) and ((../interval!=0) or (../failed-times=0 and"+
+                  " ../interval=0))";
+             default "0";
+             description
+               "When user continuous authen failed times reach the limit, the "+
+               "user is locked.";
+           }
+           leaf interval {
+             when "../state='active'";
+             type "uint32" {
+               range "0..65535";
+             }
+             units "min";
+             must "(../failed-times) and ((../failed-times!=0) or (../failed-tim"+
+                  "es=0 and ../interval=0))";
+             default "0";
+             description
+               "Set a user lockout period (in minutes). If a user is locked due "+
+               "to consecutive authentication failures, the user is automaticall"+
+               "y unlocked after the set period expires. 0 indicats that the "+
+               "locked user is not automatically unlocked.";
+           }
+           leaf password-type {
+             type "aaa-pwd-mode-type";
+             must "../password";
+             default "irreversible-cipher";
+             description
+               "Set a password type, which can be cipher or irreversible-cipher."+
+               " Cipher passwords are encrypted and generated using the "+
+               "reversible algorithm, while irreversible-cipher passwords are "+
+               "encrypted and generated using the irreversible algorithm.";
+           }
+           leaf password {
+             type "pub-type:password-extend" {
+               length "1..268";
+             }
+             mandatory "true";
+             description
+               "Login password of a user, which is a string ranging from 1 to "+
+               "128 characters for a unencrypted password and 32 to 268 "+
+               "characters for a encrypted password. The password can contain "+
+               "letters, numbers, and special characters. Chinese characters are"+
+               " not supported. The minimum length and complexity of a user "+
+               "password are restricted by pwd-min-length, security-policy, "+
+               "complexity-check, and forbidden-word. When security-policy is "+
+               "set to true, the minimum length of a password is 8 characters. "+
+               "In addition, complexity verification is enabled. The complexity "+
+               "requirements are as follows: (1) A password must contain digits,"+
+               " uppercase letters, lowercase letters, and special characters. "+
+               "Spaces and question marks are not supported. If the password is "+
+               "enclosed in quotation marks, spaces are allowed in the password."+
+               " (2) The password cannot contain an account or the reverse "+
+               "string of an account. (3) The new password cannot be the same as"+
+               " any of the previous 10 passwords. (If the new password is the "+
+               "same as the current password, the new password is also "+
+               "considered as a history password. That is, the current password "+
+               "is included in the 10 history passwords.) This parameter takes "+
+               "effect when the password complexity check is enabled (complexity"+
+               "-check is set to true). If forbidden-word is configured, the "+
+               "password cannot contain forbidden words. If only the pwd-min-len"+
+               "gth value is set, the pwd-min-length setting takes effect. If "+
+               "the minimum length of a user password is set and the user "+
+               "security policy is enabled, the minimum length of a password "+
+               "cannot be less than 8 characters. If the minimum length of a "+
+               "password is set and the pwd-min-length value is greater than 8 "+
+               "characters, the minimum length of a password is determined by "+
+               "the pwd-min-length value.";
+           }
+           leaf level {
+             type "uint32" {
+               range "0..15";
+             }
+             description
+               "Login level of a local user. If the command level adjustment "+
+               "function is disabled, the value of userLevel ranges from 0 to 3."+
+               " If the command level adjustment function is enabled, the value "+
+               "of userLevel ranges from 0 to 15.";
+           }
+           leaf ftp-dir {
+             type "string" {
+               length "1..255";
+             }
+             description
+               "FTP user directory.";
+           }
+           leaf service-terminal {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through a terminal.";
+           }
+           leaf service-telnet {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through Telnet.";
+           }
+           leaf service-ftp {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through FTP.";
+           }
+           leaf service-ppp {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through PPP.";
+           }
+           leaf service-ssh {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through SSH.";
+           }
+           leaf service-qx {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through QX.";
+           }
+           leaf service-snmp {
+             type "boolean";
+             must "(../service-snmp='false') or (../service-snmp='true' and "+
+                  "string-length(current()/../name)<32)";
+             default "false";
+             description
+               "Enable/disable login through SNMP.";
+           }
+           leaf service-mml {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through MML.";
+           }
+           leaf service-http {
+             type "boolean";
+             default "false";
+             description
+               "Enable/disable login through HTTP.";
+           }
+           leaf max-access-num {
+             type "int32" {
+               range "1..2147483647";
+             }
+             description
+               "The local user max access number.";
+           }
+           leaf idle-cut-enable {
+             type "boolean";
+             default "true";
+             description
+               "Enable/disable configures the idle cut function for a local "+
+               "user.";
+           }
+           leaf begin-life-date {
+             type "pub-type:date";
+             config "false";
+             description
+               "The begin date of local user's life.";
+           }
+           leaf last-login-time {
+             type "yang:date-and-time";
+             config "false";
+             description
+               "The last login time.";
+           }
+           leaf is-aged {
+             type "aaa-bool-type";
+             config "false";
+             description
+               "Whether the user is aged now.";
+           }
+           leaf is-locked {
+             type "aaa-bool-type";
+             config "false";
+             description
+               "Whether the user is locked now.";
+           }
+           leaf left-lock-time {
+             type "uint32" {
+               range "1..4294967295";
+             }
+             units "s";
+             config "false";
+             description
+               "Left lock time of locked user.";
+           }
+           leaf is-terminal-locked {
+             type "aaa-bool-type";
+             config "false";
+             description
+               "Whether the user is terminal locked now.";
+           }
+           leaf terminal-left-lock-time {
+             type "uint32" {
+               range "1..4294967295";
+             }
+             units "s";
+             config "false";
+             description
+               "Left lock time of terminal locked user.";
+           }
+           leaf pass-modify-time {
+             type "yang:date-and-time";
+             config "false";
+             description
+               "Password modify time.";
+           }
+           leaf is-pass-expired {
+             type "is-pass-expired-type";
+             config "false";
+             description
+               "Whether the password of this user name expires.";
+           }
+           leaf is-pass-changed {
+             type "boolean";
+             config "false";
+             description
+               "Whether the password of this user name is changed by the user.";
+           }
+           leaf alive-num {
+             type "int32" {
+               range "0..2147483647";
+             }
+             config "false";
+             description
+               "Online number of the local user.";
+           }
+         }
+       }
+     }
+     container local-server {
+       description
+         "Configure a local AAA server. You can perform access security "+
+         "configurations for local users.";
+       container login-failed-limit {
+         description
+           "Configure the maximum number of login attempts allowed in the "+
+           "specified period.";
+         leaf failed-times {
+           type "uint32" {
+             range "0..10";
+           }
+           default "5";
+           description
+             "Indicates the consecutive failure times. 0 indicates that the "+
+             "number of times that a user fails authentication continuously is "+
+             "not restricted.";
+         }
+         leaf period {
+           type "uint32" {
+             range "1..120";
+           }
+           units "min";
+           default "5";
+           description
+             "Specifies a period for consecutive authentication failures.";
+         }
+         leaf reactive-time {
+           type "uint32" {
+             range "0..1000";
+           }
+           units "min";
+           default "5";
+           description
+             "Specifies an automatic activation time for a locked account. 0 "+
+             "indicates that the locked account will not be unlocked automatical"+
+             "ly.";
+         }
+       }
+       container user-security-policy {
+         description
+           "Configure a local user security policy.";
+         leaf user-aging-period {
+           type "uint32" {
+             range "1..365";
+           }
+           description
+             "Specifies an aging period for an administrator.";
+         }
+         leaf user-name-min-len {
+           type "uint32" {
+             range "0..253";
+           }
+           default "0";
+           description
+             "Specifies the minimum length for user names. 0 indicates that the "+
+             "length is not limited.";
+         }
+       }
+       container password-policy {
+         description
+           "Configure a local user password policy.";
+         leaf expire-days {
+           type "uint16" {
+             range "0..365";
+           }
+           units "d";
+           must "../prompt-days<=../expire-days";
+           default "0";
+           description
+             "Specifies an expiration period for a password. 0 indicates that a "+
+             "password is permanently valid.";
+         }
+         leaf prompt-days {
+           type "uint16" {
+             range "0..180";
+           }
+           units "d";
+           must "../prompt-days<=../expire-days";
+           default "0";
+           description
+             "Specifies a remaining validity period for a password.";
+         }
+         leaf change-check {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable mandatory password change when a password is used "+
+             "for the first time.";
+         }
+         leaf complexity-check {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable password complexity enhancement.";
+         }
+         leaf pwd-min-length {
+           type "uint32" {
+             range "3..128";
+           }
+           description
+             "Specifies the minimum length for passwords configured for local "+
+             "users.";
+         }
+       }
+     }
+   }
+   ext:task-name "aaa";
+ }
+

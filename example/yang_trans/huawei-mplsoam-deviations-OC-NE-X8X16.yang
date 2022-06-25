@@ -1,0 +1,137 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-mplsoam-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-mplsoam-deviations-OC-NE-X8X16";
+   prefix "mplsoam-devs-OC-NE-X8X16";
+   import huawei-mplsoam {
+     prefix "mplsoam";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Multiprotocol Label Switching (MPLS) operations, administration and "+
+     "maintenance (OAM), provides the following functions: fault management, "+
+     "performance monitoring, and protection switching.";
+   revision "2019-10-18" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef l2vc-type-deviations {
+     type "enumeration" {
+       enum "atm-1to1-vcc" {
+         value "12";
+         description
+           "The VC type is ATM-1to1-VCC.";
+       }
+       enum "atm-1to1-vpc" {
+         value "13";
+         description
+           "The VC type is ATM-1to1-VPC.";
+       }
+       enum "atm-aal5-pdu" {
+         value "14";
+         description
+           "The VC type is ATM-aal5-pdu.";
+       }
+       enum "atm-aal5-sdu" {
+         value "2";
+         description
+           "The VC type is ATM-aal5-sdu.";
+       }
+       enum "atm-nto1-vcc" {
+         value "9";
+         description
+           "The VC type is ATM-nto1-VCC.";
+       }
+       enum "atm-nto1-vpc" {
+         value "10";
+         description
+           "The VC type is ATM-nto1-VPC.";
+       }
+       enum "atm-trans-cell" {
+         value "3";
+         description
+           "The VC type is ATM-trans-cell.";
+       }
+       enum "cep" {
+         value "16";
+         description
+           "The VC type is CEP.";
+       }
+       enum "cesopsn-basic" {
+         value "21";
+         description
+           "The VC type is CESoPSN-basic.";
+       }
+       enum "ethernet" {
+         value "5";
+         description
+           "The VC type is ethernet.";
+       }
+       enum "hdlc" {
+         value "6";
+         description
+           "The VC type is HDLC.";
+       }
+       enum "ip-interworking" {
+         value "64";
+         description
+           "The VC type is IP-interworking.";
+       }
+       enum "ip-layer2" {
+         value "11";
+         description
+           "The VC type is IP-Layer2.";
+       }
+       enum "ppp" {
+         value "7";
+         description
+           "The VC type is PPP.";
+       }
+       enum "satop-e1" {
+         value "17";
+         description
+           "The VC type is SAToP-E1.";
+       }
+       enum "satop-e3" {
+         value "19";
+         description
+           "The VC type is SAToP-E3.";
+       }
+       enum "satop-t1" {
+         value "18";
+         description
+           "The VC type is SAToP-T1.";
+       }
+       enum "vlan" {
+         value "4";
+         description
+           "The VC type is VLAN.";
+       }
+     }
+     description
+       "L2vc type.";
+   }
+   deviation "/mplsoam:mplsoam/mplsoam:vll-pws/mplsoam:vll-pw/mplsoam:remote-vc-"+
+             "type" {
+     deviate "replace" {
+       type "mplsoam-devs-OC-NE-X8X16:l2vc-type-deviations";
+     }
+   }
+   deviation "/mplsoam:mplsoam/mplsoam:vsi-pws/mplsoam:vsi-pw/mplsoam:remote-vc-"+
+             "type" {
+     deviate "replace" {
+       type "mplsoam-devs-OC-NE-X8X16:l2vc-type-deviations";
+     }
+   }
+ }
+

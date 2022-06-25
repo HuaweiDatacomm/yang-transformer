@@ -1,0 +1,25 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-openconfig-if-ethernet-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-openconfig-if-ethernet-deviations-OC-NE-X8X"+
+             "16";
+   prefix "of-interfaces-eth-devs-OC-NE-X8X16";
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Openconfig ethernet interface management.";
+   revision "2020-05-12" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

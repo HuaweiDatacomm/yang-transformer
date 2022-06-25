@@ -1,0 +1,25 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ submodule huawei-nqa-server {
+   yang-version "1";
+   belongs-to huawei-nqa {
+     prefix "nqa";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Description of submodule nqa-server.";
+   revision "2019-10-25" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

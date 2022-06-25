@@ -1,0 +1,25 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-unicast-fwd-notification-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-unicast-fwd-notification-deviations-OC-NE-X"+
+             "8X16";
+   prefix "unicast-fwd-notification-devs-OC-NE-X8X16";
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-unicast-fwd-notificati"+
+     "on module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

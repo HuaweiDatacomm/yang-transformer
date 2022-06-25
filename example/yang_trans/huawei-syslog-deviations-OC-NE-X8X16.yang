@@ -1,0 +1,52 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-syslog-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-syslog-deviations-OC-NE-X8X16";
+   prefix "syslog-devs-OC-NE-X8X16";
+   import huawei-syslog {
+     prefix "syslog";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-syslog module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef logfile-type-deviations {
+     type "enumeration" {
+       enum "log" {
+         value "1";
+         description
+           "Log logfile.";
+       }
+       enum "security" {
+         value "3";
+         description
+           "Security logfile.";
+       }
+       enum "debug" {
+         value "6";
+         description
+           "Debug logfile.";
+       }
+     }
+     description
+       "The type of log.";
+   }
+   deviation "/syslog:syslog/syslog:logfiles/syslog:logfile/syslog:logfile-type" {
+     deviate "replace" {
+       type "syslog-devs-OC-NE-X8X16:logfile-type-deviations";
+     }
+   }
+ }
+

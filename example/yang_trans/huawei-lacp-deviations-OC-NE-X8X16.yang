@@ -1,0 +1,25 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-lacp-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-lacp-deviations-OC-NE-X8X16";
+   prefix "lacp-devs-OC-NE-X8X16";
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Link Aggregation Control Protocol (LACP) management, which includes static"+
+     " LACP configuration, dynamic LACP learning.";
+   revision "2020-05-18" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

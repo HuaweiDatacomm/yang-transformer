@@ -1,0 +1,63 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-openconfig-vlan-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-openconfig-vlan-deviations-OC-NE-X8X16";
+   prefix "of-vlan-devs-OC-NE-X8X16";
+   import openconfig-vlan {
+     prefix "oc-vlan";
+   }
+   import openconfig-vlan-types {
+     prefix "oc-vlan-types";
+   }
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Openconfig VLAN management.";
+   revision "2020-10-23" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:config/oc-vlan:tpid" {
+     deviate "add" {
+       must "../tpid!='oc-vlan-types:TPID_ANY'";
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-vlan:vlan/oc-vlan:match/oc-vlan:single-tagged/oc-vlan:co"+
+             "nfig/oc-vlan:vlan-id" {
+     deviate "add" {
+       must "not(../../../oc-vlan:double-tagged/oc-vlan:config/oc-vlan:inner-vla"+
+            "n-id) and not(../../../oc-vlan:double-tagged/oc-vlan:config/oc-vlan"+
+            ":outer-vlan-id)";
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-vlan:vlan/oc-vlan:match/oc-vlan:double-tagged/oc-vlan:co"+
+             "nfig/oc-vlan:inner-vlan-id" {
+     deviate "add" {
+       must "../outer-vlan-id and not(../../../oc-vlan:single-tagged/oc-vlan:con"+
+            "fig/oc-vlan:vlan-id)";
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-vlan:vlan/oc-vlan:match/oc-vlan:double-tagged/oc-vlan:co"+
+             "nfig/oc-vlan:outer-vlan-id" {
+     deviate "add" {
+       must "../inner-vlan-id and not(../../../oc-vlan:single-tagged/oc-vlan:con"+
+            "fig/oc-vlan:vlan-id)";
+     }
+   }
+ }
+

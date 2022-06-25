@@ -1,0 +1,62 @@
+ /*
+Copyright (C) 2019-2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-macm-notification {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-macm-notification";
+   prefix "macm-notification";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Notification of macm-notification.";
+   revision "2020-03-30" {
+     description
+       "The modifications in the schema file are synchronized to the YANG file.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-07-08" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   notification lr-mac-exceed {
+     description
+       "The number of MAC routes on the device exceeded the maximum value.";
+     leaf vstm-cur-mac-num {
+       type "uint32";
+       description
+         "Current MAC route number of the device.";
+     }
+     leaf vstm-max-mac-num {
+       type "uint32";
+       description
+         "Maximum number of MAC addresses.";
+     }
+   }
+   notification lr-mac-exceed-clear {
+     description
+       "The number of MAC routes on the device fell below the maximum value.";
+     leaf vstm-cur-mac-num {
+       type "uint32";
+       description
+         "Current MAC route number of the device.";
+     }
+     leaf vstm-max-mac-num {
+       type "uint32";
+       description
+         "Maximum number of MAC addresses.";
+     }
+   }
+   ext:task-name "vstm";
+ }
+

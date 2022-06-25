@@ -1,0 +1,33 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-keychain-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-keychain-deviations-OC-NE-X8X16";
+   prefix "keychain-devs-OC-NE-X8X16";
+   import huawei-keychain {
+     prefix "keychain";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Keychain.";
+   revision "2021-08-20" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/keychain:keychain/keychain:keychains/keychain:keychain/keychain:a"+
+             "bs-key-ids" {
+     deviate "add" {
+       must "count(abs-key-id[default-send-key-id='true'])<=1";
+     }
+   }
+ }
+

@@ -1,0 +1,47 @@
+ module openconfig-segment-routing {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/sr";
+   prefix "oc-sr";
+   // import some basic types
+
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "Configuration and operational state parameters relating to the\nsegment "+
+     "routing. This module defines a number of elements which are\ninstantiated "+
+     "in multiple places throughout the OpenConfig collection\nof models.\n\nPar"+
+     "ticularly:\n  - SRGB+LB dataplane instances - directly instantied by SR.\n"+
+     "  - SRGB+LB dataplane reservations - instantiated within MPLS and future "+
+     "SR\n                                  dataplanes.\n  - SR SID advertisemen"+
+     "ts - instantiated within the relevant IGP.\n  - SR-specific counters - "+
+     "instantied within the relevant dataplane.";
+   oc-ext:openconfig-version "0.0.3";
+   revision "2017-01-12" {
+     description
+       "Minor compliance fixes.";
+     reference
+       "0.0.3";
+   }
+   revision "2016-12-15" {
+     description
+       "Updated revision of SR module.";
+     reference
+       "0.0.2";
+   }
+   revision "2016-07-28" {
+     description
+       "Initial revision of SR module.";
+     reference
+       "0.0.1";
+   }
+ }
+

@@ -1,0 +1,51 @@
+ module openconfig-system-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:openconfig-system-deviations-OC-NE-X8X16";
+   prefix "of-sys-devs-OC-NE-X8X16";
+   import openconfig-system {
+     prefix "oc-sys";
+   }
+   organization
+     "Huawei Technologies Co.,Ltd.";
+   contact
+     "Huawei Industrial Base Bantian, Longgang Shenzhen 518129\n People's "+
+     "Republic of China\n Website: http://www.huawei.com Email: support@huawei.c"+
+     "om";
+   description
+     "Model for managing system-wide services and functions on\nnetwork "+
+     "devices.\n\nPortions of this code were derived from IETF RFC 7317.\nPlease"+
+     " reproduce this note if possible.\n\nIETF code is subject to the following"+
+     " copyright and license:\nCopyright (c) IETF Trust and the persons "+
+     "identified as authors of\nthe code.\nAll rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or without\nmodification, is "+
+     "permitted pursuant to, and subject to the license\nterms contained in, the"+
+     " Simplified BSD License set forth in\nSection 4.c of the IETF Trust's "+
+     "Legal Provisions Relating\nto IETF Documents (http://trustee.ietf.org/lice"+
+     "nse-info).";
+   revision "2018-04-20";
+   deviation "/oc-sys:system/oc-sys:dns/oc-sys:host-entries/oc-sys:host-entry/oc"+
+             "-sys:config/oc-sys:hostname" {
+     deviate "replace" {
+       type "string" {
+         length "1..255";
+       }
+     }
+   }
+   deviation "/oc-sys:system/oc-sys:dns/oc-sys:host-entries/oc-sys:host-entry/oc"+
+             "-sys:state/oc-sys:hostname" {
+     deviate "replace" {
+       type "string" {
+         length "1..255";
+       }
+     }
+   }
+   deviation "/oc-sys:system/oc-sys:dns/oc-sys:host-entries/oc-sys:host-entry" {
+     deviate "add" {
+       must "(/oc-sys:system/oc-sys:dns/oc-sys:host-entries/oc-sys:host-entry/oc"+
+            "-sys:config/oc-sys:ipv4-address) or (/oc-sys:system/oc-sys:dns/oc-s"+
+            "ys:host-entries/oc-sys:host-entry/oc-sys:config/oc-sys:ipv6-address"+
+            ")";
+     }
+   }
+ }
+

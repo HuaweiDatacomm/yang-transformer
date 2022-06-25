@@ -1,0 +1,23 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-vlan-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-vlan-deviations-OC-NE-X8X16";
+   prefix "vlan-devs-OC-NE-X8X16";
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "VLAN management.";
+   revision "2020-05-21" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

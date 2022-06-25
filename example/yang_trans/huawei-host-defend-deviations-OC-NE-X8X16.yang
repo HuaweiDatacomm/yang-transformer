@@ -1,0 +1,61 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-host-defend-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-host-defend-deviations-OC-NE-X8X16";
+   prefix "host-defend-devs-OC-NE-X8X16";
+   import huawei-host-defend {
+     prefix "host-defend";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Host Defend.";
+   revision "2020-02-04" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef packet-header-link-type-deviations {
+     type "enumeration" {
+       enum "ethernet" {
+         value "1";
+         description
+           "Ethernet of link type.";
+       }
+       enum "ppp" {
+         value "2";
+         description
+           "PPP protocol of link type.";
+       }
+       enum "hdlc" {
+         value "3";
+         description
+           "HDLC protocol of link type.";
+       }
+     }
+     description
+       "Packet header link type.";
+   }
+   deviation "/host-defend:start-packet-header-obtain/host-defend:input/host-def"+
+             "end:interface-or-link-type/host-defend:link-type-based/host-defend"+
+             ":link-type" {
+     deviate "replace" {
+       type "host-defend-devs-OC-NE-X8X16:packet-header-link-type-deviations";
+     }
+   }
+   deviation "/host-defend:stop-packet-header-obtain/host-defend:input/host-defe"+
+             "nd:type/host-defend:condition-based/host-defend:interface-or-link-"+
+             "type/host-defend:link-type-based/host-defend:link-type" {
+     deviate "replace" {
+       type "host-defend-devs-OC-NE-X8X16:packet-header-link-type-deviations";
+     }
+   }
+ }
+

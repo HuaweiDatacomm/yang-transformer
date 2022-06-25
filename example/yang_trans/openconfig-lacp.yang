@@ -1,0 +1,136 @@
+ module openconfig-lacp {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/lacp";
+   prefix "oc-lacp";
+   // import some basic types
+
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module describes configuration and operational state\ndata for Link "+
+     "Aggregation Control Protocol (LACP) for\nmanaging aggregate interfaces.   "+
+     "It works in conjunction with\nthe OpenConfig interfaces and aggregate "+
+     "interfaces models.";
+   oc-ext:openconfig-version "1.1.0";
+   revision "2017-05-05" {
+     description
+       "Add member local and remote port num";
+     reference
+       "1.1.0";
+   }
+   revision "2016-05-26" {
+     description
+       "OpenConfig public release";
+     reference
+       "1.0.2";
+   }
+   // typedef statements
+
+   typedef lacp-activity-type {
+     type "enumeration" {
+       enum "ACTIVE" {
+         description
+           "Interface is an active member, i.e., will detect and\nmaintain "+
+           "aggregates";
+       }
+       enum "PASSIVE" {
+         description
+           "Interface is a passive member, i.e., it participates\nwith an active"+
+           " partner";
+       }
+     }
+     description
+       "Describes the LACP membership type, active or passive, of the\ninterface"+
+       " in the aggregate";
+     reference
+       "IEEE 802.1AX-2008";
+   }
+   typedef lacp-period-type {
+     type "enumeration" {
+       enum "FAST" {
+         description
+           "Send LACP packets every second";
+       }
+       enum "SLOW" {
+         description
+           "Send LACP packets every 30 seconds";
+       }
+     }
+     description
+       "Defines the period options for the time between sending\nLACP messages";
+     reference
+       "IEEE 802.3ad";
+   }
+   // grouping statements
+
+   // data definition statements
+
+   container lacp {
+     description
+       "Configuration and operational state data for LACP protocol\noperation on"+
+       " the aggregate interface";
+     container interfaces {
+       description
+         "Enclosing container for the list of LACP-enabled\ninterfaces";
+       list interface {
+         key "name";
+         description
+           "List of aggregate interfaces managed by LACP";
+         leaf name {
+           type "leafref" {
+             path "../config/name";
+           }
+           description
+             "Reference to the list key";
+         }
+         container config {
+           description
+             "Configuration data for each LACP aggregate interface";
+           leaf name {
+             type "oc-if:base-interface-ref";
+             description
+               "Reference to the interface on which LACP should be\nconfigured. "+
+               "  The type of the target interface must be\nieee8023adLag";
+           }
+           leaf interval {
+             type "lacp-period-type";
+             default "SLOW";
+             description
+               "Set the period between LACP messages -- uses\nthe lacp-period-ty"+
+               "pe enumeration.";
+           }
+           leaf lacp-mode {
+             type "lacp-activity-type";
+             default "ACTIVE";
+             description
+               "ACTIVE is to initiate the transmission of LACP packets.\nPASSIVE"+
+               " is to wait for peer to initiate the transmission of\nLACP "+
+               "packets.";
+           }
+           leaf system-priority {
+             type "uint16";
+             description
+               "Sytem priority used by the node on this LAG interface.\nLower "+
+               "value is higher priority for determining which node\nis the "+
+               "controlling system.";
+           }
+         }
+       }
+     }
+   }
+   // augment statements
+
+ }
+

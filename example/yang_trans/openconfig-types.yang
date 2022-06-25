@@ -1,0 +1,144 @@
+ module openconfig-types {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/openconfig-types";
+   prefix "oc-types";
+   // import statements
+
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "This module contains a set of general type definitions that\nare used "+
+     "across OpenConfig models. It can be imported by modules\nthat make use of "+
+     "these types.";
+   oc-ext:openconfig-version "0.6.0";
+   revision "2019-04-16" {
+     description
+       "Clarify definition of timeticks64.";
+     reference
+       "0.6.0";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.5.1";
+   }
+   revision "2018-05-05" {
+     description
+       "Add grouping of min-max-time and\nincluded them to all stats with "+
+       "min/max/avg";
+     reference
+       "0.5.0";
+   }
+   revision "2018-01-16" {
+     description
+       "Add interval to min/max/avg stats; add percentage stat";
+     reference
+       "0.4.0";
+   }
+   revision "2017-08-16" {
+     description
+       "Apply fix for ieetfloat32 length parameter";
+     reference
+       "0.3.3";
+   }
+   revision "2017-01-13" {
+     description
+       "Add ADDRESS_FAMILY identity";
+     reference
+       "0.3.2";
+   }
+   revision "2016-11-14" {
+     description
+       "Correct length of ieeefloat32";
+     reference
+       "0.3.1";
+   }
+   revision "2016-11-11" {
+     description
+       "Additional types - ieeefloat32 and routing-password";
+     reference
+       "0.3.0";
+   }
+   revision "2016-05-31" {
+     description
+       "OpenConfig public release";
+     reference
+       "0.2.0";
+   }
+   // OpenConfig specific extensions for module metadata.
+
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   typedef std-regexp {
+     type "string";
+     description
+       "This type definition is a placeholder for a standard\ndefinition of a "+
+       "regular expression that can be utilised in\nOpenConfig models. Further "+
+       "discussion is required to\nconsider the type of regular expressions that"+
+       " are to be\nsupported. An initial proposal is POSIX compatible.";
+   }
+   typedef timeticks64 {
+     type "uint64";
+     units "nanoseconds";
+     description
+       "The timeticks64 represents the time, modulo 2^64 in\nnanoseconds between"+
+       " two epochs. The leaf using this\ntype must define the epochs that tests"+
+       " are relative to.";
+   }
+   typedef routing-password {
+     type "string";
+     description
+       "This type is indicative of a password that is used within\na routing "+
+       "protocol which can be returned in plain text to the\nNMS by the local "+
+       "system. Such passwords are typically stored\nas encrypted strings. Since"+
+       " the encryption used is generally\nwell known, it is possible to extract"+
+       " the original value from\nthe string - and hence this format is not "+
+       "considered secure.\nLeaves specified with this type should not be "+
+       "modified by\nthe system, and should be returned to the end-user in "+
+       "plain\ntext. This type exists to differentiate passwords, which\nmay be "+
+       "sensitive, from other string leaves. It could, for\nexample, be used by "+
+       "the NMS to censor this data when\nviewed by particular users.";
+   }
+   typedef stat-interval {
+     type "uint64";
+     units "nanoseconds";
+     description
+       "A time interval over which a set of statistics is computed.\nA common "+
+       "usage is to report the interval over which\navg/min/max stats are "+
+       "computed and reported.";
+   }
+   identity ADDRESS_FAMILY {
+     description
+       "A base identity for all address families";
+   }
+   identity IPV4 {
+     base "ADDRESS_FAMILY";
+     description
+       "The IPv4 address family";
+   }
+   identity IPV6 {
+     base "ADDRESS_FAMILY";
+     description
+       "The IPv6 address family";
+   }
+   identity MPLS {
+     base "ADDRESS_FAMILY";
+     description
+       "The MPLS address family";
+   }
+   identity L2_ETHERNET {
+     base "ADDRESS_FAMILY";
+     description
+       "The 802.3 Ethernet address family";
+   }
+ }
+

@@ -1,0 +1,142 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-bfd-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-bfd-deviations-OC-NE-X8X16";
+   prefix "bfd-devs-OC-NE-X8X16";
+   import huawei-bfd {
+     prefix "bfd";
+   }
+   import huawei-devm {
+     prefix "devm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Bidirectional Forwarding Detection (BFD) is a detection mechanism used "+
+     "uniformly on the entire network. BFD is used to rapidly detect and monitor"+
+     " the connectivity of links or IP routes on a network.";
+   revision "2019-04-23" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef display-type-deviations {
+     type "enumeration" {
+       enum "all" {
+         value "0";
+         description
+           "All BFD sessions.";
+       }
+       enum "discriminator" {
+         value "4";
+         description
+           "Discriminator-specified BFD session.";
+       }
+     }
+     description
+       "BFD session type.";
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:static/bfd:"+
+             "static-session-link-type/bfd:ip/bfd:ip-address-type/bfd:ipv4/bfd:s"+
+             "elect-board-slot-static-ipv4" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:static/bfd:"+
+             "static-session-link-type/bfd:ip/bfd:ip-address-type/bfd:ipv4/bfd:s"+
+             "elect-board-slot2-static-ipv4" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:auto/bfd:au"+
+             "to-session-link-type/bfd:ip/bfd:address-type/bfd:ipv4/bfd:select-b"+
+             "oard-slot-auto-ipv4" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+     deviate "add" {
+       must "not(../bfd:out-if-name-auto-ip)";
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:auto/bfd:au"+
+             "to-session-link-type/bfd:ip/bfd:address-type/bfd:ipv4/bfd:select-b"+
+             "oard-slot2-auto-ipv4" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:static/bfd:"+
+             "static-session-link-type/bfd:ip/bfd:ip-address-type/bfd:ipv6/bfd:s"+
+             "elect-board-slot-static-ipv6" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+     deviate "add" {
+       must "not(../bfd:out-if-name-static-ipv6)";
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:static/bfd:"+
+             "static-session-link-type/bfd:ip/bfd:ip-address-type/bfd:ipv6/bfd:s"+
+             "elect-board-slot2-static-ipv6" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:auto/bfd:au"+
+             "to-session-link-type/bfd:ip/bfd:address-type/bfd:ipv6/bfd:select-b"+
+             "oard-slot-auto-ipv6" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+     deviate "add" {
+       must "not(../bfd:out-if-name-auto-ip)";
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:session-type/bfd:auto/bfd:au"+
+             "to-session-link-type/bfd:ip/bfd:address-type/bfd:ipv6/bfd:select-b"+
+             "oard-slot2-auto-ipv6" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:bfd/bfd:sessions/bfd:session/bfd:groups/bfd:group/bfd:sub-sel"+
+             "ect-slot-id" {
+     deviate "replace" {
+       type "leafref" {
+         path "/devm:devm/devm:lpu-boards/devm:lpu-board/devm:position";
+       }
+     }
+   }
+   deviation "/bfd:reset-bfd-statistics/bfd:input/bfd:reset-type" {
+     deviate "replace" {
+       type "bfd-devs-OC-NE-X8X16:display-type-deviations";
+     }
+   }
+ }
+

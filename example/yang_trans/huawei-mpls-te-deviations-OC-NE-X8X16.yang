@@ -1,0 +1,79 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-mpls-te-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-mpls-te-deviations-OC-NE-X8X16";
+   prefix "mpls-te-devs-OC-NE-X8X16";
+   import huawei-mpls-te {
+     prefix "mpls-te";
+   }
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   import huawei-tunnel-management {
+     prefix "tnlm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Specifies the multi-protocol label switching protocol.";
+   revision "2019-03-27" {
+     description
+       "Init revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef tunnel-protect-switch-type-deviations {
+     type "enumeration" {
+       enum "clear" {
+         value "1";
+         description
+           "Clear all of the externally initiated switch commands.";
+       }
+       enum "lock" {
+         value "2";
+         description
+           "Traffic is locked on the working path (LOCK-P).";
+       }
+       enum "force" {
+         value "3";
+         description
+           "Forcible switch from the working path to the protection path.";
+       }
+       enum "manual" {
+         value "4";
+         description
+           "Manual switch from the working path to the protection path.";
+       }
+     }
+     description
+       "Tunnel protect switch type.";
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/tnlm:tunnel-protocol/tnlm:ty"+
+             "pe/mpls-te:mpls-te/mpls-te:te-tunnel/mpls-te:tunnel-mode/mpls-te:p"+
+             "2p-rsvp-te/mpls-te:rsvp-te/mpls-te:lsp-paths/mpls-te:lsp-path/mpls"+
+             "-te:explicit-path-name" {
+     deviate "add" {
+       must "../../../path-disjoint-calculate = 'false'";
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/tnlm:tunnel-protocol/tnlm:ty"+
+             "pe/mpls-te:mpls-te/mpls-te:te-tunnel/mpls-te:tunnel-mode/mpls-te:p"+
+             "2p-rsvp-te/mpls-te:rsvp-te/mpls-te:lsp-paths/mpls-te:lsp-path/mpls"+
+             "-te:hop-limit" {
+     deviate "add" {
+       must "../../../path-disjoint-calculate = 'false'";
+     }
+   }
+   deviation "/mpls-te:tunnel-protect-switch/mpls-te:input/mpls-te:operation" {
+     deviate "replace" {
+       type "mpls-te-devs-OC-NE-X8X16:tunnel-protect-switch-type-deviations";
+     }
+   }
+ }
+

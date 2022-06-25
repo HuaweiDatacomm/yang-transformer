@@ -1,0 +1,63 @@
+ module ietf-snmp {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-snmp";
+   prefix "snmp";
+   include ietf-snmp-common {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-engine {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-target {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-notification {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-proxy {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-community {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-usm {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-tsm {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-vacm {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-tls {
+     revision-date "2014-12-10";
+   }
+   include ietf-snmp-ssh {
+     revision-date "2014-12-10";
+   }
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\nWG Chair: Thomas Nadeau\n          <mailto:tnadeau@lucidvision.com"+
+     ">\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@jaco"+
+     "bs-university.de>\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-"+
+     "f.com>\nEditor:   Juergen Schoenwaelder\n          <mailto:j.schoenwaelder"+
+     "@jacobs-university.de>";
+   description
+     "This module contains a collection of YANG definitions for\nconfiguring "+
+     "SNMP engines.\nCopyright (c) 2014 IETF Trust and the persons identified "+
+     "as\nauthors of the code.  All rights reserved.\nRedistribution and use in "+
+     "source and binary forms, with or\nwithout modification, is permitted "+
+     "pursuant to, and subject\nto the license terms contained in, the "+
+     "Simplified BSD License\nset forth in Section 4.c of the IETF Trust's Legal"+
+     " Provisions\nRelating to IETF Documents\n(http://trustee.ietf.org/license-"+
+     "info).\nThis version of this YANG module is part of RFC 7407; see\nthe RFC"+
+     " itself for full legal notices.";
+   revision "2014-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7407: A YANG Data Model for SNMP Configuration";
+   }
+ }
+

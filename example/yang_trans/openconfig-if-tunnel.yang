@@ -1,0 +1,188 @@
+ module openconfig-if-tunnel {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/interfaces/tunnel";
+   prefix "oc-tun";
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   import openconfig-inet-types {
+     prefix "oc-inet";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "This model adds extensions to the OpenConfig interfaces\nmodel to "+
+     "configure tunnel interfaces on a network\ndevice.";
+   oc-ext:openconfig-version "0.1.1";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.1.1";
+   }
+   revision "2018-01-05" {
+     description
+       "Initial tunnel model";
+     reference
+       "0.1.0";
+   }
+   // OpenConfig specific extensions for module metadata.
+
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   augment "/oc-if:interfaces/oc-if:interface" {
+     description
+       "Augment to add tunnel configuration to interfaces";
+     container tunnel {
+       description
+         "In the case that the interface is logical tunnel\ninterface, the "+
+         "parameters for the tunnel are\nspecified within this subtree. Tunnel "+
+         "interfaces\nhave only a single logical subinterface associated\nwith "+
+         "them.";
+       container config {
+         description
+           "Configuration parameters associated with the\ntunnel interface";
+         leaf src {
+           type "oc-inet:ip-address";
+           description
+             "The source address that should be used for the\ntunnel.";
+         }
+         leaf dst {
+           type "oc-inet:ip-address";
+           description
+             "The destination address for the tunnel.";
+         }
+       }
+       container state {
+         config "false";
+         description
+           "Operational state parameters associated with\nthe tunnel interface.";
+         leaf src {
+           type "oc-inet:ip-address";
+           description
+             "The source address that should be used for the\ntunnel.";
+         }
+         leaf dst {
+           type "oc-inet:ip-address";
+           description
+             "The destination address for the tunnel.";
+         }
+       }
+       container ipv4 {
+         description
+           "Parameters for the IPv4 address family.";
+         container addresses {
+           description
+             "Enclosing container for address list";
+           list address {
+             key "ip";
+             description
+               "The list of configured IPv4 addresses on the interface.";
+             leaf ip {
+               type "leafref" {
+                 path "../config/ip";
+               }
+               description
+                 "References the configured IP address";
+             }
+             container config {
+               description
+                 "Configuration data for each configured IPv4\naddress on the "+
+                 "interface";
+               leaf ip {
+                 type "oc-inet:ipv4-address";
+                 description
+                   "The IPv4 address on the interface.";
+               }
+               leaf prefix-length {
+                 type "uint8" {
+                   range "0..32";
+                 }
+                 description
+                   "The length of the subnet prefix.";
+               }
+             }
+             container state {
+               config "false";
+               description
+                 "Operational state data for each IPv4 address\nconfigured on "+
+                 "the interface";
+               leaf ip {
+                 type "oc-inet:ipv4-address";
+                 description
+                   "The IPv4 address on the interface.";
+               }
+               leaf prefix-length {
+                 type "uint8" {
+                   range "0..32";
+                 }
+                 description
+                   "The length of the subnet prefix.";
+               }
+             }
+           }
+         }
+         container config {
+           description
+             "Top-level IPv4 configuration data for the interface";
+           leaf enabled {
+             type "boolean";
+             default "true";
+             description
+               "Controls whether IPv4 is enabled or disabled on this\ninterface."+
+               "  When IPv4 is enabled, this interface is\nconnected to an IPv4 "+
+               "stack, and the interface can send\nand receive IPv4 packets.";
+           }
+           leaf mtu {
+             type "uint16" {
+               range "68..max";
+             }
+             units "octets";
+             description
+               "The size, in octets, of the largest IPv4 packet that the\ninterf"+
+               "ace will send and receive.\n\nThe server may restrict the "+
+               "allowed values for this leaf,\ndepending on the interface's "+
+               "type.\n\nIf this leaf is not configured, the operationally used "+
+               "MTU\ndepends on the interface's type.";
+             reference
+               "RFC 791: Internet Protocol";
+           }
+         }
+         container state {
+           config "false";
+           description
+             "Top level IPv4 operational state data";
+           leaf enabled {
+             type "boolean";
+             default "true";
+             description
+               "Controls whether IPv4 is enabled or disabled on this\ninterface."+
+               "  When IPv4 is enabled, this interface is\nconnected to an IPv4 "+
+               "stack, and the interface can send\nand receive IPv4 packets.";
+           }
+           leaf mtu {
+             type "uint16" {
+               range "68..max";
+             }
+             units "octets";
+             description
+               "The size, in octets, of the largest IPv4 packet that the\ninterf"+
+               "ace will send and receive.\n\nThe server may restrict the "+
+               "allowed values for this leaf,\ndepending on the interface's "+
+               "type.\n\nIf this leaf is not configured, the operationally used "+
+               "MTU\ndepends on the interface's type.";
+             reference
+               "RFC 791: Internet Protocol";
+           }
+         }
+       }
+     }
+   }
+ }
+

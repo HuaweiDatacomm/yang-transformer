@@ -1,0 +1,82 @@
+ module nc-notifications {
+   namespace "urn:ietf:params:xml:ns:netmod:notification";
+   prefix "manageEvent";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   import notifications {
+     prefix "ncEvent";
+   }
+   organization
+     "IETF NETCONF WG";
+   contact
+     "netconf@ietf.org";
+   description
+     "Conversion of the 'manageEvent' XSD in the NETCONF\nNotifications RFC.";
+   reference
+     "RFC 5277";
+   revision "2008-07-14" {
+     description
+       "RFC 5277 version.";
+   }
+   container netconf {
+     description
+       "Top-level element in the notification namespace";
+     config "false";
+     container streams {
+       description
+         "The list of event streams supported by the system. When\na query is "+
+         "issued, the returned set of streams is \ndetermined based on user "+
+         "privileges.";
+       list stream {
+         description
+           "Stream name, description and other information.";
+         key "name";
+         min-elements "1";
+         leaf name {
+           description
+             "The name of the event stream. If this is the default\nNETCONF "+
+             "stream, this must have the value 'NETCONF'.";
+           type "ncEvent:streamNameType";
+         }
+         leaf description {
+           description
+             "A description of the event stream, including such\ninformation as "+
+             "the type of events that are sent over\nthis stream.";
+           type "string";
+           mandatory "true";
+         }
+         leaf replaySupport {
+           description
+             "A description of the event stream, including such\ninformation as "+
+             "the type of events that are sent over\nthis stream.";
+           type "boolean";
+           mandatory "true";
+         }
+         leaf replayLogCreationTime {
+           description
+             "The timestamp of the creation of the log used to support\nthe "+
+             "replay function on this stream. Note that this might\nbe earlier "+
+             "then the earliest available notification in\nthe log. This object "+
+             "is updated if the log resets for \nsome reason.  This object MUST "+
+             "be present if replay is\nsupported.";
+           type "yang:date-and-time";
+           // xsd:dateTime is wrong!
+
+         }
+       }
+     }
+   }
+   notification replayComplete {
+     description
+       "This notification is sent to signal the end of a replay\nportion of a "+
+       "subscription.";
+   }
+   notification notificationComplete {
+     description
+       "This notification is sent to signal the end of a notification\nsubscript"+
+       "ion. It is sent in the case that stopTime was\nspecified during the "+
+       "creation of the subscription..";
+   }
+ }
+

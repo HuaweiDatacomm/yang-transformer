@@ -1,0 +1,51 @@
+ module iana-crypt-hash {
+   namespace "urn:ietf:params:xml:ns:yang:iana-crypt-hash";
+   prefix "ianach";
+   organization
+     "IANA";
+   contact
+     "        Internet Assigned Numbers Authority\nPostal: ICANN\n        12025 "+
+     "Waterfront Drive, Suite 300\n        Los Angeles, CA  90094-2536\n        "+
+     "United States\nTel:    +1 310 301 5800\nE-Mail: iana@iana.org>";
+   description
+     "This YANG module defines a type for storing passwords\nusing a hash "+
+     "function and features to indicate which hash\nfunctions are supported by "+
+     "an implementation.\nThe latest revision of this YANG module can be "+
+     "obtained from\nthe IANA web site.\nRequests for new values should be made "+
+     "to IANA via\nemail (iana@iana.org).\nCopyright (c) 2014 IETF Trust and the"+
+     " persons identified as\nauthors of the code.  All rights reserved.\nRedist"+
+     "ribution and use in source and binary forms, with or\nwithout modification"+
+     ", is permitted pursuant to, and subject\nto the license terms contained "+
+     "in, the Simplified BSD License\nset forth in Section 4.c of the IETF "+
+     "Trust's Legal Provisions\nRelating to IETF Documents\n(http://trustee.ietf"+
+     ".org/license-info).\nThe initial version of this YANG module is part of "+
+     "RFC 7317;\nsee the RFC itself for full legal notices.";
+   revision "2014-08-06" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7317: A YANG Data Model for System Management";
+   }
+   feature crypt-hash-md5 {
+     description
+       "Indicates that the device supports the MD5\nhash function in 'crypt-hash"+
+       "' values.";
+     reference
+       "RFC 1321: The MD5 Message-Digest Algorithm";
+   }
+   feature crypt-hash-sha-256 {
+     description
+       "Indicates that the device supports the SHA-256\nhash function in "+
+       "'crypt-hash' values.";
+     reference
+       "FIPS.180-4.2012: Secure Hash Standard (SHS)";
+   }
+   feature crypt-hash-sha-512 {
+     description
+       "Indicates that the device supports the SHA-512\nhash function in "+
+       "'crypt-hash' values.";
+     reference
+       "FIPS.180-4.2012: Secure Hash Standard (SHS)";
+   }
+ }
+

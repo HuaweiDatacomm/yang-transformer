@@ -1,0 +1,36 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-twamp-responder-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-twamp-responder-deviations-OC-NE-X8X16";
+   prefix "twamp-responder-devs-OC-NE-X8X16";
+   import huawei-twamp-responder {
+     prefix "twamp-responder";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-twamp-responder "+
+     "module.";
+   revision "2019-12-27" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/twamp-responder:twamp-responder/twamp-responder:responder/twamp-r"+
+             "esponder:test-sessions/twamp-responder:test-session/twamp-responde"+
+             "r:session-id" {
+     deviate "replace" {
+       type "uint32" {
+         range "1..16384";
+       }
+     }
+   }
+ }
+

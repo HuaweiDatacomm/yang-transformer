@@ -1,0 +1,56 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-bras-ipv6-address-manage-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-bras-ipv6-address-manage-deviations-OC-NE-X"+
+             "8X16";
+   prefix "bras-ipv6-address-manage-devs-OC-NE-X8X16";
+   import huawei-bras-ipv6-address-manage {
+     prefix "bras-ipv6-address-manage";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-bras-ipv6-address-mana"+
+     "ge module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef prefix-type-deviations {
+     type "enumeration" {
+       enum "local" {
+         value "1";
+         description
+           "Local type.";
+       }
+       enum "delegation" {
+         value "2";
+         description
+           "Delegation type.";
+       }
+       enum "remote" {
+         value "3";
+         description
+           "Remote type.";
+       }
+     }
+     description
+       "IPv6 prefix type.";
+   }
+   deviation "/bras-ipv6-address-manage:bras-ipv6-address-manage/bras-ipv6-addre"+
+             "ss-manage:ipv6-prefixs/bras-ipv6-address-manage:ipv6-prefix/bras-i"+
+             "pv6-address-manage:type" {
+     deviate "replace" {
+       type "bras-ipv6-address-manage-devs-OC-NE-X8X16:prefix-type-deviations";
+     }
+   }
+ }
+

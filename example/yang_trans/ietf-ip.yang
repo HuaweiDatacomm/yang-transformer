@@ -1,0 +1,706 @@
+ module ietf-ip {
+   yang-version "1.1";
+   namespace "urn:ietf:params:xml:ns:yang:ietf-ip";
+   prefix "ip";
+   import ietf-interfaces {
+     prefix "if";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   organization
+     "IETF NETMOD (Network Modeling) Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/netmod/>\nWG List:  <mailto:net"+
+     "mod@ietf.org>\n\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-f."+
+     "com>";
+   description
+     "This module contains a collection of YANG definitions for\nmanaging IP "+
+     "implementations.\n\nCopyright (c) 2018 IETF Trust and the persons "+
+     "identified as\nauthors of the code.  All rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or\nwithout modification, is "+
+     "permitted pursuant to, and subject\nto the license terms contained in, the"+
+     " Simplified BSD License\nset forth in Section 4.c of the IETF Trust's "+
+     "Legal Provisions\nRelating to IETF Documents\n(https://trustee.ietf.org/li"+
+     "cense-info).\n\nThis version of this YANG module is part of RFC 8344; "+
+     "see\nthe RFC itself for full legal notices.";
+   revision "2018-02-22" {
+     description
+       "Updated to support NMDA.";
+     reference
+       "RFC 8344: A YANG Data Model for IP Management";
+   }
+   revision "2014-06-16" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7277: A YANG Data Model for IP Management";
+   }
+   /*
+   * Features
+   */
+   feature ipv4-non-contiguous-netmasks {
+     description
+       "Indicates support for configuring non-contiguous\nsubnet masks.";
+   }
+   feature ipv6-privacy-autoconf {
+     description
+       "Indicates support for privacy extensions for stateless address\nautoconf"+
+       "iguration in IPv6.";
+     reference
+       "RFC 4941: Privacy Extensions for Stateless Address\n        Autoconfigur"+
+       "ation in IPv6";
+   }
+   /*
+   * Typedefs
+   */
+   typedef ip-address-origin {
+     type "enumeration" {
+       enum "other" {
+         description
+           "None of the following.";
+       }
+       enum "static" {
+         description
+           "Indicates that the address has been statically\nconfigured -- for "+
+           "example, using the Network Configuration\nProtocol (NETCONF) or a "+
+           "command line interface.";
+       }
+       enum "dhcp" {
+         description
+           "Indicates an address that has been assigned to this\nsystem by a "+
+           "DHCP server.";
+       }
+       enum "link-layer" {
+         description
+           "Indicates an address created by IPv6 stateless\nautoconfiguration "+
+           "that embeds a link-layer address in its\ninterface identifier.";
+       }
+       enum "random" {
+         description
+           "Indicates an address chosen by the system at\nrandom, e.g., an IPv4 "+
+           "address within 169.254/16, a\ntemporary address as described in RFC "+
+           "4941, or a\nsemantically opaque address as described in RFC 7217.";
+         reference
+           "RFC 4941: Privacy Extensions for Stateless Address\n        "+
+           "Autoconfiguration in IPv6\nRFC 7217: A Method for Generating "+
+           "Semantically Opaque\n          Interface Identifiers with IPv6 "+
+           "Stateless\n          Address Autoconfiguration (SLAAC)";
+       }
+     }
+     description
+       "The origin of an address.";
+   }
+   typedef neighbor-origin {
+     type "enumeration" {
+       enum "other" {
+         description
+           "None of the following.";
+       }
+       enum "static" {
+         description
+           "Indicates that the mapping has been statically\nconfigured -- for "+
+           "example, using NETCONF or a command line\ninterface.";
+       }
+       enum "dynamic" {
+         description
+           "Indicates that the mapping has been dynamically resolved\nusing, for"+
+           " example, IPv4 ARP or the IPv6 Neighbor\nDiscovery protocol.";
+       }
+     }
+     description
+       "The origin of a neighbor entry.";
+   }
+   /*
+   * Data nodes
+   */
+   augment "/if:interfaces/if:interface" {
+     description
+       "IP parameters on interfaces.\n\nIf an interface is not capable of "+
+       "running IP, the server\nmust not allow the client to configure these "+
+       "parameters.";
+     container ipv4 {
+       presence "Enables IPv4 unless the 'enabled' leaf\n(which defaults to "+
+                "'true') is set to 'false'";
+       description
+         "Parameters for the IPv4 address family.";
+       leaf enabled {
+         type "boolean";
+         default "true";
+         description
+           "Controls whether IPv4 is enabled or disabled on this\ninterface.  "+
+           "When IPv4 is enabled, this interface is\nconnected to an IPv4 stack,"+
+           " and the interface can send\nand receive IPv4 packets.";
+       }
+       leaf forwarding {
+         type "boolean";
+         default "false";
+         description
+           "Controls IPv4 packet forwarding of datagrams received by,\nbut not "+
+           "addressed to, this interface.  IPv4 routers\nforward datagrams.  "+
+           "IPv4 hosts do not (except those\nsource-routed via the host).";
+       }
+       leaf mtu {
+         type "uint16" {
+           range "68..max";
+         }
+         units "octets";
+         description
+           "The size, in octets, of the largest IPv4 packet that the\ninterface "+
+           "will send and receive.\n\nThe server may restrict the allowed values"+
+           " for this leaf,\n   depending on the interface's type.\n\nIf this "+
+           "leaf is not configured, the operationally used MTU\ndepends on the "+
+           "interface's type.";
+         reference
+           "RFC 791: Internet Protocol";
+       }
+       list address {
+         key "ip";
+         description
+           "The list of IPv4 addresses on the interface.";
+         leaf ip {
+           type "inet:ipv4-address-no-zone";
+           description
+             "The IPv4 address on the interface.";
+         }
+         choice subnet {
+           mandatory "true";
+           description
+             "The subnet can be specified as a prefix length or,\nif the server "+
+             "supports non-contiguous netmasks, as\na netmask.";
+           leaf prefix-length {
+             type "uint8" {
+               range "0..32";
+             }
+             description
+               "The length of the subnet prefix.";
+           }
+         }
+         leaf origin {
+           type "ip-address-origin";
+           config "false";
+           description
+             "The origin of this address.";
+         }
+       }
+       list neighbor {
+         key "ip";
+         description
+           "A list of mappings from IPv4 addresses to\nlink-layer addresses.\n\n"+
+           "Entries in this list in the intended configuration are\nused as "+
+           "static entries in the ARP Cache.\n\nIn the operational state, this "+
+           "list represents the ARP\nCache.";
+         reference
+           "RFC 826: An Ethernet Address Resolution Protocol";
+         leaf ip {
+           type "inet:ipv4-address-no-zone";
+           description
+             "The IPv4 address of the neighbor node.";
+         }
+         leaf link-layer-address {
+           type "yang:phys-address";
+           mandatory "true";
+           description
+             "The link-layer address of the neighbor node.";
+         }
+         leaf origin {
+           type "neighbor-origin";
+           config "false";
+           description
+             "The origin of this neighbor entry.";
+         }
+       }
+     }
+     container ipv6 {
+       presence "Enables IPv6 unless the 'enabled' leaf\n(which defaults to "+
+                "'true') is set to 'false'";
+       description
+         "Parameters for the IPv6 address family.";
+       leaf enabled {
+         type "boolean";
+         default "true";
+         description
+           "Controls whether IPv6 is enabled or disabled on this\ninterface.  "+
+           "When IPv6 is enabled, this interface is\nconnected to an IPv6 stack,"+
+           " and the interface can send\nand receive IPv6 packets.";
+       }
+       leaf forwarding {
+         type "boolean";
+         default "false";
+         description
+           "Controls IPv6 packet forwarding of datagrams received by,\nbut not "+
+           "addressed to, this interface.  IPv6 routers\nforward datagrams.  "+
+           "IPv6 hosts do not (except those\nsource-routed via the host).";
+         reference
+           "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)\n        "+
+           "Section 6.2.1, IsRouter";
+       }
+       leaf mtu {
+         type "uint32" {
+           range "1280..max";
+         }
+         units "octets";
+         description
+           "The size, in octets, of the largest IPv6 packet that the\ninterface "+
+           "will send and receive.\n\nThe server may restrict the allowed values"+
+           " for this leaf,\ndepending on the interface's type.\n\nIf this leaf "+
+           "is not configured, the operationally used MTU\ndepends on the "+
+           "interface's type.";
+         reference
+           "RFC 8200: Internet Protocol, Version 6 (IPv6)\n        Specification"+
+           "\n        Section 5";
+       }
+       list address {
+         key "ip";
+         description
+           "The list of IPv6 addresses on the interface.";
+         leaf ip {
+           type "inet:ipv6-address-no-zone";
+           description
+             "The IPv6 address on the interface.";
+         }
+         leaf prefix-length {
+           type "uint8" {
+             range "0..128";
+           }
+           mandatory "true";
+           description
+             "The length of the subnet prefix.";
+         }
+         leaf origin {
+           type "ip-address-origin";
+           config "false";
+           description
+             "The origin of this address.";
+         }
+         leaf status {
+           type "enumeration" {
+             enum "preferred" {
+               description
+                 "This is a valid address that can appear as the\ndestination or"+
+                 " source address of a packet.";
+             }
+             enum "deprecated" {
+               description
+                 "This is a valid but deprecated address that should\nno longer "+
+                 "be used as a source address in new\ncommunications, but "+
+                 "packets addressed to such an\naddress are processed as "+
+                 "expected.";
+             }
+             enum "invalid" {
+               description
+                 "This isn't a valid address, and it shouldn't appear\nas the "+
+                 "destination or source address of a packet.";
+             }
+             enum "inaccessible" {
+               description
+                 "The address is not accessible because the interface\nto which "+
+                 "this address is assigned is not\noperational.";
+             }
+             enum "unknown" {
+               description
+                 "The status cannot be determined for some reason.";
+             }
+             enum "tentative" {
+               description
+                 "The uniqueness of the address on the link is being\nverified. "+
+                 " Addresses in this state should not be\nused for general "+
+                 "communication and should only be\nused to determine the "+
+                 "uniqueness of the address.";
+             }
+             enum "duplicate" {
+               description
+                 "The address has been determined to be non-unique on\nthe link "+
+                 "and so must not be used.";
+             }
+             enum "optimistic" {
+               description
+                 "The address is available for use, subject to\nrestrictions, "+
+                 "while its uniqueness on a link is\nbeing verified.";
+             }
+           }
+           config "false";
+           description
+             "The status of an address.  Most of the states correspond\nto "+
+             "states from the IPv6 Stateless Address\nAutoconfiguration "+
+             "protocol.";
+           reference
+             "RFC 4293: Management Information Base for the\n        Internet "+
+             "Protocol (IP)\n        - IpAddressStatusTC\nRFC 4862: IPv6 "+
+             "Stateless Address Autoconfiguration";
+         }
+       }
+       list neighbor {
+         key "ip";
+         description
+           "A list of mappings from IPv6 addresses to\nlink-layer addresses.\n\n"+
+           "Entries in this list in the intended configuration are\nused as "+
+           "static entries in the Neighbor Cache.\n\nIn the operational state, "+
+           "this list represents the\nNeighbor Cache.";
+         reference
+           "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)";
+         leaf ip {
+           type "inet:ipv6-address-no-zone";
+           description
+             "The IPv6 address of the neighbor node.";
+         }
+         leaf link-layer-address {
+           type "yang:phys-address";
+           mandatory "true";
+           description
+             "The link-layer address of the neighbor node.\n\nIn the operational"+
+             " state, if the neighbor's 'state' leaf\nis 'incomplete', this leaf"+
+             " is not instantiated.";
+         }
+         leaf origin {
+           type "neighbor-origin";
+           config "false";
+           description
+             "The origin of this neighbor entry.";
+         }
+         leaf is-router {
+           type "empty";
+           config "false";
+           description
+             "Indicates that the neighbor node acts as a router.";
+         }
+         leaf state {
+           type "enumeration" {
+             enum "incomplete" {
+               description
+                 "Address resolution is in progress, and the\nlink-layer address"+
+                 " of the neighbor has not yet been\ndetermined.";
+             }
+             enum "reachable" {
+               description
+                 "Roughly speaking, the neighbor is known to have been\nreachabl"+
+                 "e recently (within tens of seconds ago).";
+             }
+             enum "stale" {
+               description
+                 "The neighbor is no longer known to be reachable, but\nuntil "+
+                 "traffic is sent to the neighbor no attempt\nshould be made to "+
+                 "verify its reachability.";
+             }
+             enum "delay" {
+               description
+                 "The neighbor is no longer known to be reachable, and\ntraffic "+
+                 "has recently been sent to the neighbor.\nRather than probe the"+
+                 " neighbor immediately, however,\ndelay sending probes for a "+
+                 "short while in order to\ngive upper-layer protocols a chance "+
+                 "to provide\nreachability confirmation.";
+             }
+             enum "probe" {
+               description
+                 "The neighbor is no longer known to be reachable, and\nunicast "+
+                 "Neighbor Solicitation probes are being sent\nto verify "+
+                 "reachability.";
+             }
+           }
+           config "false";
+           description
+             "The Neighbor Unreachability Detection state of this\nentry.";
+           reference
+             "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)\n        "+
+             "Section 7.3.2";
+         }
+       }
+       leaf dup-addr-detect-transmits {
+         type "uint32";
+         default "1";
+         description
+           "The number of consecutive Neighbor Solicitation messages\nsent while"+
+           " performing Duplicate Address Detection on a\ntentative address.  A "+
+           "value of zero indicates that\nDuplicate Address Detection is not "+
+           "performed on\ntentative addresses.  A value of one indicates a "+
+           "single\ntransmission with no follow-up retransmissions.";
+         reference
+           "RFC 4862: IPv6 Stateless Address Autoconfiguration";
+       }
+     }
+   }
+   /*
+   * Legacy operational state data nodes
+   */
+   augment "/if:interfaces-state/if:interface" {
+     status "deprecated";
+     description
+       "Data nodes for the operational state of IP on interfaces.";
+     container ipv4 {
+       presence "Present if IPv4 is enabled on this interface";
+       config "false";
+       status "deprecated";
+       description
+         "Interface-specific parameters for the IPv4 address family.";
+       leaf forwarding {
+         type "boolean";
+         status "deprecated";
+         description
+           "Indicates whether IPv4 packet forwarding is enabled or\ndisabled on "+
+           "this interface.";
+       }
+       leaf mtu {
+         type "uint16" {
+           range "68..max";
+         }
+         units "octets";
+         status "deprecated";
+         description
+           "The size, in octets, of the largest IPv4 packet that the\ninterface "+
+           "will send and receive.";
+         reference
+           "RFC 791: Internet Protocol";
+       }
+       list address {
+         key "ip";
+         status "deprecated";
+         description
+           "The list of IPv4 addresses on the interface.";
+         leaf ip {
+           type "inet:ipv4-address-no-zone";
+           status "deprecated";
+           description
+             "The IPv4 address on the interface.";
+         }
+         choice subnet {
+           status "deprecated";
+           description
+             "The subnet can be specified as a prefix length or,\nif the server "+
+             "supports non-contiguous netmasks, as\na netmask.";
+           leaf prefix-length {
+             type "uint8" {
+               range "0..32";
+             }
+             status "deprecated";
+             description
+               "The length of the subnet prefix.";
+           }
+         }
+         leaf origin {
+           type "ip-address-origin";
+           status "deprecated";
+           description
+             "The origin of this address.";
+         }
+       }
+       list neighbor {
+         key "ip";
+         status "deprecated";
+         description
+           "A list of mappings from IPv4 addresses to\nlink-layer addresses.\n\n"+
+           "This list represents the ARP Cache.";
+         reference
+           "RFC 826: An Ethernet Address Resolution Protocol";
+         leaf ip {
+           type "inet:ipv4-address-no-zone";
+           status "deprecated";
+           description
+             "The IPv4 address of the neighbor node.";
+         }
+         leaf link-layer-address {
+           type "yang:phys-address";
+           status "deprecated";
+           description
+             "The link-layer address of the neighbor node.";
+         }
+         leaf origin {
+           type "neighbor-origin";
+           status "deprecated";
+           description
+             "The origin of this neighbor entry.";
+         }
+       }
+     }
+     container ipv6 {
+       presence "Present if IPv6 is enabled on this interface";
+       config "false";
+       status "deprecated";
+       description
+         "Parameters for the IPv6 address family.";
+       leaf forwarding {
+         type "boolean";
+         default "false";
+         status "deprecated";
+         description
+           "Indicates whether IPv6 packet forwarding is enabled or\ndisabled on "+
+           "this interface.";
+         reference
+           "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)\n        "+
+           "Section 6.2.1, IsRouter";
+       }
+       leaf mtu {
+         type "uint32" {
+           range "1280..max";
+         }
+         units "octets";
+         status "deprecated";
+         description
+           "The size, in octets, of the largest IPv6 packet that the\ninterface "+
+           "will send and receive.";
+         reference
+           "RFC 8200: Internet Protocol, Version 6 (IPv6)\n        Specification"+
+           "\n        Section 5";
+       }
+       list address {
+         key "ip";
+         status "deprecated";
+         description
+           "The list of IPv6 addresses on the interface.";
+         leaf ip {
+           type "inet:ipv6-address-no-zone";
+           status "deprecated";
+           description
+             "The IPv6 address on the interface.";
+         }
+         leaf prefix-length {
+           type "uint8" {
+             range "0..128";
+           }
+           mandatory "true";
+           status "deprecated";
+           description
+             "The length of the subnet prefix.";
+         }
+         leaf origin {
+           type "ip-address-origin";
+           status "deprecated";
+           description
+             "The origin of this address.";
+         }
+         leaf status {
+           type "enumeration" {
+             enum "preferred" {
+               description
+                 "This is a valid address that can appear as the\ndestination or"+
+                 " source address of a packet.";
+             }
+             enum "deprecated" {
+               description
+                 "This is a valid but deprecated address that should\nno longer "+
+                 "be used as a source address in new\ncommunications, but "+
+                 "packets addressed to such an\naddress are processed as "+
+                 "expected.";
+             }
+             enum "invalid" {
+               description
+                 "This isn't a valid address, and it shouldn't appear\nas the "+
+                 "destination or source address of a packet.";
+             }
+             enum "inaccessible" {
+               description
+                 "The address is not accessible because the interface\nto which "+
+                 "this address is assigned is not\noperational.";
+             }
+             enum "unknown" {
+               description
+                 "The status cannot be determined for some reason.";
+             }
+             enum "tentative" {
+               description
+                 "The uniqueness of the address on the link is being\nverified. "+
+                 " Addresses in this state should not be\nused for general "+
+                 "communication and should only be\nused to determine the "+
+                 "uniqueness of the address.";
+             }
+             enum "duplicate" {
+               description
+                 "The address has been determined to be non-unique on\nthe link "+
+                 "and so must not be used.";
+             }
+             enum "optimistic" {
+               description
+                 "The address is available for use, subject to\nrestrictions, "+
+                 "while its uniqueness on a link is\nbeing verified.";
+             }
+           }
+           status "deprecated";
+           description
+             "The status of an address.  Most of the states correspond\nto "+
+             "states from the IPv6 Stateless Address\nAutoconfiguration "+
+             "protocol.";
+           reference
+             "RFC 4293: Management Information Base for the\n        Internet "+
+             "Protocol (IP)\n        - IpAddressStatusTC\nRFC 4862: IPv6 "+
+             "Stateless Address Autoconfiguration";
+         }
+       }
+       list neighbor {
+         key "ip";
+         status "deprecated";
+         description
+           "A list of mappings from IPv6 addresses to\nlink-layer addresses.\n\n"+
+           "This list represents the Neighbor Cache.";
+         reference
+           "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)";
+         leaf ip {
+           type "inet:ipv6-address-no-zone";
+           status "deprecated";
+           description
+             "The IPv6 address of the neighbor node.";
+         }
+         leaf link-layer-address {
+           type "yang:phys-address";
+           status "deprecated";
+           description
+             "The link-layer address of the neighbor node.";
+         }
+         leaf origin {
+           type "neighbor-origin";
+           status "deprecated";
+           description
+             "The origin of this neighbor entry.";
+         }
+         leaf is-router {
+           type "empty";
+           status "deprecated";
+           description
+             "Indicates that the neighbor node acts as a router.";
+         }
+         leaf state {
+           type "enumeration" {
+             enum "incomplete" {
+               description
+                 "Address resolution is in progress, and the\nlink-layer address"+
+                 " of the neighbor has not yet been\ndetermined.";
+             }
+             enum "reachable" {
+               description
+                 "Roughly speaking, the neighbor is known to have been\nreachabl"+
+                 "e recently (within tens of seconds ago).";
+             }
+             enum "stale" {
+               description
+                 "The neighbor is no longer known to be reachable, but\nuntil "+
+                 "traffic is sent to the neighbor no attempt\nshould be made to "+
+                 "verify its reachability.";
+             }
+             enum "delay" {
+               description
+                 "The neighbor is no longer known to be reachable, and\ntraffic "+
+                 "has recently been sent to the neighbor.\nRather than probe the"+
+                 " neighbor immediately, however,\ndelay sending probes for a "+
+                 "short while in order to\ngive upper-layer protocols a chance "+
+                 "to provide\nreachability confirmation.";
+             }
+             enum "probe" {
+               description
+                 "The neighbor is no longer known to be reachable, and\nunicast "+
+                 "Neighbor Solicitation probes are being sent\nto verify "+
+                 "reachability.";
+             }
+           }
+           status "deprecated";
+           description
+             "The Neighbor Unreachability Detection state of this\nentry.";
+           reference
+             "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)\n        "+
+             "Section 7.3.2";
+         }
+       }
+     }
+   }
+ }
+

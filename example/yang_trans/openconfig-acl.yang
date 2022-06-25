@@ -1,0 +1,139 @@
+ module openconfig-acl {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/acl";
+   prefix "oc-acl";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines configuration and operational state\ndata for network "+
+     "access control lists (i.e., filters, rules,\netc.).  ACLs are organized "+
+     "into ACL sets, with each set\ncontaining one or more ACL entries.  ACL "+
+     "sets are identified\nby a unique name, while each entry within a set is "+
+     "assigned\na sequence-id that determines the order in which the ACL\nrules "+
+     "are applied to a packet.\n\nIndividual ACL rules specify match criteria "+
+     "based on fields in\nthe packet, along with an action that defines how "+
+     "matching\npackets should be handled. Entries have a type that indicates\nt"+
+     "he type of match criteria, e.g., MAC layer, IPv4, IPv6, etc.";
+   oc-ext:openconfig-version "1.0.0";
+   revision "2017-05-26" {
+     description
+       "Separated ACL entries by type";
+     reference
+       "1.0.0";
+   }
+   revision "2016-08-08" {
+     description
+       "OpenConfig public release";
+     reference
+       "0.2.0";
+   }
+   revision "2016-01-22" {
+     description
+       "Initial revision";
+     reference
+       "TBD";
+   }
+   identity ACL_TYPE {
+     description
+       "Base identity for types of ACL sets";
+   }
+   identity ACL_IPV4 {
+     base "ACL_TYPE";
+     description
+       "IP-layer ACLs with IPv4 addresses";
+   }
+   identity ACL_IPV6 {
+     base "ACL_TYPE";
+     description
+       "IP-layer ACLs with IPv6 addresses";
+   }
+   identity ACL_L2 {
+     base "ACL_TYPE";
+     description
+       "MAC-layer ACLs";
+   }
+   identity ACL_MIXED {
+     base "ACL_TYPE";
+     description
+       "Mixed-mode ACL that specifies L2 and L3 protocol\nfields.  This ACL type"+
+       " is not implemented by many\nrouting/switching devices.";
+   }
+   // ACL action type
+
+   identity FORWARDING_ACTION {
+     description
+       "Base identity for actions in the forwarding category";
+   }
+   identity ACCEPT {
+     base "FORWARDING_ACTION";
+     description
+       "Accept the packet";
+   }
+   identity DROP {
+     base "FORWARDING_ACTION";
+     description
+       "Drop packet without sending any ICMP error message";
+   }
+   identity REJECT {
+     base "FORWARDING_ACTION";
+     description
+       "Drop the packet and send an ICMP error message to the source";
+   }
+   identity LOG_ACTION {
+     description
+       "Base identity for defining the destination for logging\nactions";
+   }
+   identity LOG_SYSLOG {
+     base "LOG_ACTION";
+     description
+       "Log the packet in Syslog";
+   }
+   identity LOG_NONE {
+     base "LOG_ACTION";
+     description
+       "No logging";
+   }
+   identity ACL_COUNTER_CAPABILITY {
+     description
+       "Base identity for system to indicate how it is able to report\ncounters";
+   }
+   identity INTERFACE_ONLY {
+     base "ACL_COUNTER_CAPABILITY";
+     description
+       "ACL counters are available and reported only per interface";
+   }
+   identity AGGREGATE_ONLY {
+     base "ACL_COUNTER_CAPABILITY";
+     description
+       "ACL counters are aggregated over all interfaces, and reported\nonly per "+
+       "ACL entry";
+   }
+   identity INTERFACE_AGGREGATE {
+     base "ACL_COUNTER_CAPABILITY";
+     description
+       "ACL counters are reported per interface, and also aggregated\nand "+
+       "reported per ACL entry.";
+   }
+   // grouping statements
+
+   // input interface
+
+   // Action Type
+
+   // Access List Entries
+
+   // data definition statements
+
+   // augment statements
+
+ }
+

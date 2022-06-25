@@ -1,0 +1,171 @@
+ /*****************************************************************************
+*Copyright (C) 2019-2020 Huawei Technologies Co., Ltd. All rights reserved.
+*Module description & tree structure
+*tree:
+******************************************************************************/
+
+ module huawei-flow-recognition {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-flow-recognition";
+   prefix "flow-recognition";
+   import huawei-pub-type {
+     prefix "pub-type";
+   }
+   import huawei-extension {
+     prefix "ext";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   import huawei-ethernet {
+     prefix "ethernet";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Flow recognition.";
+   reference
+     "Huawei private.";
+   revision "2020-03-27" {
+     description
+       "Added configure function to the YANG file.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-06-13" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "esqm";
+   container flow-recognition {
+     description
+       "Collect flow information.";
+     container streaminfos {
+       config "false";
+       description
+         "List of flow information.";
+       list streaminfo {
+         key "src-mac dst-mac src-ip-addr dst-ip-addr src-port dst-port "+
+             "protocol";
+         description
+           "Statistics of flow information.";
+         leaf src-mac {
+           type "pub-type:mac-address";
+           description
+             "\"Source mac address.\"";
+         }
+         leaf dst-mac {
+           type "pub-type:mac-address";
+           description
+             "\"Destination mac address.\"";
+         }
+         leaf src-ip-addr {
+           type "inet:ip-address-no-zone";
+           description
+             "\"IP source address.\"";
+         }
+         leaf dst-ip-addr {
+           type "inet:ip-address-no-zone";
+           description
+             "\"IP destination address.\"";
+         }
+         leaf src-port {
+           type "uint16";
+           description
+             "\"Source port.\"";
+         }
+         leaf dst-port {
+           type "uint16";
+           description
+             "\"Destination port.\"";
+         }
+         leaf protocol {
+           type "uint8";
+           description
+             "\"Protocol,eg 6 (TCP).\"";
+         }
+         leaf direction {
+           type "uint8";
+           description
+             "\"Direction.\"";
+         }
+         leaf if-name {
+           type "pub-type:if-name";
+           description
+             "\"Interface Name.\"";
+         }
+         leaf time-stamp-sec {
+           type "uint32";
+           units "s";
+           description
+             "\"Seconds from 1970.\"";
+         }
+         leaf time-stamp-nsec {
+           type "uint32";
+           units "ns";
+           description
+             "\"Nano-seconds in 1 sec.\"";
+         }
+         leaf packet-num {
+           type "uint64";
+           description
+             "\"The packets num of the flow.\"";
+         }
+         leaf bytes-num {
+           type "uint64";
+           description
+             "\"The bytes num of the flow.\"";
+         }
+       }
+     }
+   }
+   augment "/ifm:ifm/ifm:interfaces/ifm:interface" {
+     description
+       "Configure the flow recognition for interface.";
+     container flow-recognition {
+       description
+         "Configure the flow recognition management.";
+       container flow-enables {
+         description
+           "List of the interface flow recognition.";
+         list flow-enable {
+           must "not(../../../ethernet:ethernet/ethernet:main-interface/ethernet"+
+                ":l2-attribute)";
+           must "../../../ifm:type='100GE' or\n../../../ifm:type='25GE' "+
+                "or\n../../../ifm:type='200GE' or\n../../../ifm:type='400GE' "+
+                "or\n../../../ifm:type='40GE' or\n../../../ifm:type='10GE' "+
+                "or\n../../../ifm:type='50GE' or\n../../../ifm:type='10x10GE' "+
+                "or\n../../../ifm:type='3x40GE' or\n../../../ifm:type='4x10GE' "+
+                "or\n../../../ifm:type='4x25GE' or\n../../../ifm:type='50|100GE'"+
+                " or\n../../../ifm:type='Ethernet' or\n../../../ifm:type='Gigabi"+
+                "tEthernet' or\n../../../ifm:type='XGigabitEthernet' or\n../../."+
+                "./ifm:type='FlexE'";
+           key "direction";
+           leaf direction {
+             type "enumeration" {
+               enum "inbound" {
+                 value "0";
+                 description
+                   "Indicates the interface flow recognition inbound mode.";
+               }
+             }
+             description
+               "Direction of interface flow recognition mode.";
+           }
+           description
+             "Configure the interface flow recognition mode.";
+         }
+       }
+     }
+   }
+ }
+

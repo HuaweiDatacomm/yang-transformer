@@ -1,0 +1,145 @@
+ module ietf-x509-cert-to-name {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-x509-cert-to-name";
+   prefix "x509c2n";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\n\nWG Chair: Thomas Nadeau\n          <mailto:tnadeau@lucidvision.c"+
+     "om>\n\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@"+
+     "jacobs-university.de>\n\nEditor:   Martin Bjorklund\n          <mailto:mbj"+
+     "@tail-f.com>\n\nEditor:   Juergen Schoenwaelder\n          <mailto:j.schoe"+
+     "nwaelder@jacobs-university.de>";
+   description
+     "This module contains a collection of YANG definitions for\nextracting a "+
+     "name from an X.509 certificate.\nThe algorithm used to extract a name from"+
+     " an X.509 certificate\nwas first defined in RFC 6353.\n\nCopyright (c) "+
+     "2014 IETF Trust and the persons identified as\nauthors of the code.  All "+
+     "rights reserved.\n\nRedistribution and use in source and binary forms, "+
+     "with or\nwithout modification, is permitted pursuant to, and subject\nto "+
+     "the license terms contained in, the Simplified BSD License\nset forth in "+
+     "Section 4.c of the IETF Trust's Legal Provisions\nRelating to IETF "+
+     "Documents\n(http://trustee.ietf.org/license-info).\n\nThis version of this"+
+     " YANG module is part of RFC 7407; see\nthe RFC itself for full legal "+
+     "notices.";
+   reference
+     "RFC 6353: Transport Layer Security (TLS) Transport Model for\nthe Simple "+
+     "Network Management Protocol (SNMP)";
+   revision "2014-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7407: A YANG Data Model for SNMP Configuration";
+   }
+   typedef tls-fingerprint {
+     type "yang:hex-string" {
+       pattern "([0-9a-fA-F]){2}(:([0-9a-fA-F]){2}){0,254}";
+     }
+     description
+       "A fingerprint value that can be used to uniquely reference\nother data "+
+       "of potentially arbitrary length.\n\nA tls-fingerprint value is composed "+
+       "of a 1-octet hashing\nalgorithm identifier followed by the fingerprint "+
+       "value.  The\nfirst octet value identifying the hashing algorithm is "+
+       "taken\nfrom the IANA 'TLS HashAlgorithm Registry' (RFC 5246).  "+
+       "The\nremaining octets are filled using the results of the hashing\nalgor"+
+       "ithm.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.SnmpTLSFingerprint"+
+       "";
+   }
+   /* Identities */
+   identity cert-to-name {
+     description
+       "Base identity for algorithms to derive a name from a\ncertificate.";
+   }
+   identity specified {
+     base "cert-to-name";
+     description
+       "Directly specifies the name to be used for the certificate.\nThe value "+
+       "of the leaf 'name' in the cert-to-name list is\nused.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertSpeci"+
+       "fied";
+   }
+   identity san-rfc822-name {
+     base "cert-to-name";
+     description
+       "Maps a subjectAltName's rfc822Name to a name.  The local part\nof the "+
+       "rfc822Name is passed unaltered, but the host-part of\nthe name must be "+
+       "passed in lowercase.  For example, the\nrfc822Name field FooBar@Example."+
+       "COM is mapped to name\nFooBar@example.com.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertSANRF"+
+       "C822Name";
+   }
+   identity san-dns-name {
+     base "cert-to-name";
+     description
+       "Maps a subjectAltName's dNSName to a name after first\nconverting it to "+
+       "all lowercase (RFC 5280 does not specify\nconverting to lowercase, so "+
+       "this involves an extra step).\nThis mapping results in a 1:1 corresponde"+
+       "nce between\nsubjectAltName dNSName values and the name values.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertSANDN"+
+       "SName";
+   }
+   identity san-ip-address {
+     base "cert-to-name";
+     description
+       "Maps a subjectAltName's iPAddress to a name by\ntransforming the "+
+       "binary-encoded address as follows:\n\n  1) for IPv4, the value is "+
+       "converted into a\n     decimal-dotted quad address (e.g., '192.0.2.1')."+
+       "\n\n  2) for IPv6 addresses, the value is converted into a\n     "+
+       "32-character, all-lowercase hexadecimal string\n     without any colon "+
+       "separators.\n\nThis mapping results in a 1:1 correspondence between\nsub"+
+       "jectAltName iPAddress values and the name values.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertSANIp"+
+       "Address";
+   }
+   identity san-any {
+     base "cert-to-name";
+     description
+       "Maps any of the following fields using the corresponding\nmapping "+
+       "algorithms:\n\n  +------------+-----------------+\n  | Type       | "+
+       "Algorithm       |\n  |------------+-----------------|\n  | rfc822Name | "+
+       "san-rfc822-name |\n  | dNSName    | san-dns-name    |\n  | iPAddress  | "+
+       "san-ip-address  |\n  +------------+-----------------+\n\nThe first "+
+       "matching subjectAltName value found in the\ncertificate of the above "+
+       "types MUST be used when deriving\nthe name.  The mapping algorithm "+
+       "specified in the\n'Algorithm' column MUST be used to derive the "+
+       "name.\n\nThis mapping results in a 1:1 correspondence between\nsubjectAl"+
+       "tName values and name values.  The three sub-mapping\nalgorithms "+
+       "produced by this combined algorithm cannot produce\nconflicting results "+
+       "between themselves.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertSANAn"+
+       "y";
+   }
+   identity common-name {
+     base "cert-to-name";
+     description
+       "Maps a certificate's CommonName to a name after converting\nit to a "+
+       "UTF-8 encoding.  The usage of CommonNames is\ndeprecated, and users are "+
+       "encouraged to use subjectAltName\nmapping methods instead.  This mapping"+
+       " results in a 1:1\ncorrespondence between certificate CommonName values "+
+       "and name\nvalues.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the Simple"+
+       " Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlstmCertCommo"+
+       "nName";
+   }
+   /*
+   * Groupings
+   */
+ }
+

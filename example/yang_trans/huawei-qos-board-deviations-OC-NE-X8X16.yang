@@ -1,0 +1,45 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-qos-board-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-qos-board-deviations-OC-NE-X8X16";
+   prefix "qos-board-devs-OC-NE-X8X16";
+   import huawei-qos-board {
+     prefix "qos-board";
+   }
+   import huawei-devm {
+     prefix "devm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-qos-board module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/devm:devm/devm:lpu-boards/devm:lpu-board/qos-board:qos/qos-board:"+
+             "traffic-policy-matchs/qos-board:traffic-policy-match" {
+     deviate "add" {
+       must "(((qos-board:type='ip-layer-push' or qos-board:type='ip-layer-pop' "+
+            "or qos-board:type='rule-packet') and not(../qos-board:traffic-polic"+
+            "y-match[qos-board:type='mpls-layer-push']) and not(../qos-board:tra"+
+            "ffic-policy-match[qos-board:type='mpls-layer-pop'])) or ((qos-board"+
+            ":type='mpls-layer-push' or qos-board:type='mpls-layer-pop') and "+
+            "not(../qos-board:traffic-policy-match[qos-board:type='ip-layer-push"+
+            "']) and not(../qos-board:traffic-policy-match[qos-board:type='ip-la"+
+            "yer-pop']) and not(../qos-board:traffic-policy-match[qos-board:type"+
+            "='rule-packet'])) or (qos-board:type='mpls-layer-l2-inbound' or "+
+            "qos-board:type='ipv6-address-rule-mask' or qos-board:type='protocol"+
+            "-mc-reserved'))";
+     }
+   }
+ }
+

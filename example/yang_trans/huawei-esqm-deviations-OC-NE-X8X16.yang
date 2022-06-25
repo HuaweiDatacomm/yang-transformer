@@ -1,0 +1,41 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-esqm-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-esqm-deviations-OC-NE-X8X16";
+   prefix "esqm-devs-OC-NE-X8X16";
+   import huawei-esqm {
+     prefix "esqm";
+   }
+   import huawei-sflow {
+     prefix "sflow";
+   }
+   import huawei-devm {
+     prefix "devm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-esqm module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/esqm:esqm/esqm:esqm-enable" {
+     deviate "add" {
+       must "not(/sflow:sflow/sflow:sflow-enable)";
+     }
+     deviate "add" {
+       must "count(/devm:devm/devm:lpu-boards/devm:lpu-board[sflow:sflow/sflow:s"+
+            "lot-sampling/sflow:enable = 'true']) = 0";
+     }
+   }
+ }
+

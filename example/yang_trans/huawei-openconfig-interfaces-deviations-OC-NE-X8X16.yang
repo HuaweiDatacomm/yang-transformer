@@ -1,0 +1,111 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-openconfig-interfaces-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-openconfig-interfaces-deviations-OC-NE-X8X1"+
+             "6";
+   prefix "of-interfaces-devs-OC-NE-X8X16";
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "OpenConfig Model for managing network interfaces and subinterfaces.";
+   revision "2019-03-01" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:config/oc-if:name" {
+     deviate "replace" {
+       type "string" {
+         length "1..63";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:config/oc-if:description" {
+     deviate "replace" {
+       type "string" {
+         length "1..242";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:state/oc-if:name" {
+     deviate "replace" {
+       type "string" {
+         length "1..63";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:state/oc-if:description" {
+     deviate "replace" {
+       type "string" {
+         length "1..242";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:state/oc-if:ifindex" {
+     deviate "replace" {
+       type "uint32" {
+         range "1..2147483647";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:config/oc-if:index" {
+     deviate "replace" {
+       type "uint32" {
+         range "0..99999999";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:config/oc-if:description" {
+     deviate "replace" {
+       type "string" {
+         length "1..242";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:state/oc-if:index" {
+     deviate "replace" {
+       type "uint32" {
+         range "0..99999999";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:state/oc-if:description" {
+     deviate "replace" {
+       type "string" {
+         length "1..242";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:state/oc-if:name" {
+     deviate "replace" {
+       type "string" {
+         length "1..63";
+       }
+     }
+   }
+   deviation "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subint"+
+             "erface/oc-if:state/oc-if:ifindex" {
+     deviate "replace" {
+       type "uint32" {
+         range "1..2147483647";
+       }
+     }
+   }
+ }
+

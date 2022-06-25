@@ -1,0 +1,40 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-arp-deviations-OC-NE-X8X16 {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-arp-deviations-OC-NE-X8X16";
+   prefix "arp-devs-OC-NE-X8X16";
+   import huawei-arp {
+     prefix "arp";
+   }
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Address Resolution Protocol (ARP) management, which includes static ARP "+
+     "configuration, dynamic ARP learning, ARP security configuration, ARP entry"+
+     " query, and packet statistics collection.";
+   revision "2020-05-11" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/arp:arp-port-security/arp:l2"+
+             "-sub-interface/arp:l2proxy-max-num" {
+     deviate "replace" {
+       type "uint32" {
+         range "0..262144";
+       }
+     }
+   }
+ }
+

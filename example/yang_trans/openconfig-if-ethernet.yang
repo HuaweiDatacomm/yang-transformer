@@ -1,0 +1,222 @@
+ module openconfig-if-ethernet {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/interfaces/ethernet";
+   prefix "oc-eth";
+   // import some basic types
+
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "Model for managing Ethernet interfaces -- augments the OpenConfig\nmodel "+
+     "for interface configuration and state.";
+   oc-ext:openconfig-version "2.8.1";
+   revision "2020-05-06" {
+     description
+       "Minor formatting fix.";
+     reference
+       "2.8.1";
+   }
+   revision "2020-05-06" {
+     description
+       "Add 200G, 400G, 600G and 800G Ethernet speeds.";
+     reference
+       "2.8.0";
+   }
+   revision "2020-05-05" {
+     description
+       "Fix when statement checks to use rw paths when\nfrom a rw context.";
+     reference
+       "2.7.3";
+   }
+   revision "2019-04-16" {
+     description
+       "Update import prefix for iana-if-type module";
+     reference
+       "2.7.2";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "2.6.2";
+   }
+   revision "2018-09-04" {
+     description
+       "Remove in-crc-align-errors as it is a duplicate of\nin-crc-errors";
+     reference
+       "2.6.1";
+   }
+   revision "2018-08-28" {
+     description
+       "Add Ethernet counter in-block-errors";
+     reference
+       "2.6.0";
+   }
+   revision "2018-07-02" {
+     description
+       "Add new ethernet counters of in-undersize-frames,\nin-crc-align-errors "+
+       "and the distribution container";
+     reference
+       "2.5.0";
+   }
+   revision "2018-04-10" {
+     description
+       "Add identities for 2.5 and 5 Gbps.";
+     reference
+       "2.4.0";
+   }
+   revision "2018-01-05" {
+     description
+       "Add logical loopback to interface.";
+     reference
+       "2.3.0";
+   }
+   revision "2017-12-21" {
+     description
+       "Added IPv6 router advertisement configuration.";
+     reference
+       "2.1.0";
+   }
+   revision "2017-07-14" {
+     description
+       "Added Ethernet/IP state data; Add dhcp-client;\nmigrate to OpenConfig "+
+       "types modules; Removed or\nrenamed opstate values";
+     reference
+       "2.0.0";
+   }
+   revision "2016-12-22" {
+     description
+       "Fixes to Ethernet interfaces model";
+     reference
+       "1.1.0";
+   }
+   // OpenConfig specific extensions for module metadata.
+
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   // identity statements
+
+   identity ETHERNET_SPEED {
+     description
+       "base type to specify available Ethernet link\nspeeds";
+   }
+   identity SPEED_10MB {
+     base "ETHERNET_SPEED";
+     description
+       "10 Mbps Ethernet";
+   }
+   identity SPEED_100MB {
+     base "ETHERNET_SPEED";
+     description
+       "100 Mbps Ethernet";
+   }
+   identity SPEED_1GB {
+     base "ETHERNET_SPEED";
+     description
+       "1 Gbps Ethernet";
+   }
+   identity SPEED_2500MB {
+     base "ETHERNET_SPEED";
+     description
+       "2.5 Gbps Ethernet";
+   }
+   identity SPEED_5GB {
+     base "ETHERNET_SPEED";
+     description
+       "5 Gbps Ethernet";
+   }
+   identity SPEED_10GB {
+     base "ETHERNET_SPEED";
+     description
+       "10 Gbps Ethernet";
+   }
+   identity SPEED_25GB {
+     base "ETHERNET_SPEED";
+     description
+       "25 Gbps Ethernet";
+   }
+   identity SPEED_40GB {
+     base "ETHERNET_SPEED";
+     description
+       "40 Gbps Ethernet";
+   }
+   identity SPEED_50GB {
+     base "ETHERNET_SPEED";
+     description
+       "50 Gbps Ethernet";
+   }
+   identity SPEED_100GB {
+     base "ETHERNET_SPEED";
+     description
+       "100 Gbps Ethernet";
+   }
+   identity SPEED_200GB {
+     base "ETHERNET_SPEED";
+     description
+       "200 Gbps Ethernet";
+   }
+   identity SPEED_400GB {
+     base "ETHERNET_SPEED";
+     description
+       "400 Gbps Ethernet";
+   }
+   identity SPEED_600GB {
+     base "ETHERNET_SPEED";
+     description
+       "600 Gbps Ethernet";
+   }
+   identity SPEED_800GB {
+     base "ETHERNET_SPEED";
+     description
+       "800 Gbps Ethernet";
+   }
+   identity SPEED_UNKNOWN {
+     base "ETHERNET_SPEED";
+     description
+       "Interface speed is unknown.  Systems may report\nspeed UNKNOWN when an "+
+       "interface is down or unpopuplated (e.g.,\npluggable not present).";
+   }
+   // typedef statements
+
+   // grouping statements
+
+   // data definition statements
+
+   // augment statements
+
+   augment "/oc-if:interfaces/oc-if:interface" {
+     description
+       "Adds addtional Ethernet-specific configuration to\ninterfaces model";
+     container ethernet {
+       description
+         "Top-level container for ethernet configuration\nand state";
+       container config {
+         description
+           "Configuration data for ethernet interfaces";
+       }
+       container state {
+         config "false";
+         description
+           "State variables for Ethernet interfaces";
+       }
+     }
+   }
+   // rpc statements
+
+   // notification statements
+
+ }
+

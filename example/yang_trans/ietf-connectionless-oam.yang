@@ -1,0 +1,134 @@
+ module ietf-connectionless-oam {
+   yang-version "1.1";
+   namespace "urn:ietf:params:xml:ns:yang:ietf-connectionless-oam";
+   prefix "cl-oam";
+   organization
+     "IETF LIME Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/lime>\nWG List:  <mailto:lmap@i"+
+     "etf.org>\n\nDeepak Kumar <dekumar@cisco.com>\nQin Wu <bill.wu@huawei.com>"+
+     "\nSrihari Raghavan <srihari@cisco.com>\nMichael Wang <wangzitao@huawei.com"+
+     ">\nReshad Rahman <rrahman@cisco.com>";
+   description
+     "This YANG module defines the generic configuration,\ndata model, and "+
+     "statistics for OAM protocols using\nconnectionless communications, "+
+     "described in a\nprotocol independent manner.  It is assumed that "+
+     "each\nprotocol maps corresponding abstracts to its native\nformat.  Each "+
+     "protocol may extend the YANG data model defined\nhere to include protocol "+
+     "specific extensions.\n\nCopyright (c) 2019 IETF Trust and the persons "+
+     "identified as\nauthors of the code.  All rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or\nwithout modification, is "+
+     "permitted pursuant to, and subject\nto the license terms contained in, the"+
+     " Simplified BSD License\nset forth in Section 4.c of the IETF Trust's "+
+     "Legal Provisions\nRelating to IETF Documents\n(http://trustee.ietf.org/lic"+
+     "ense-info).\n\nThis version of this YANG module is part of RFC 8532; "+
+     "see\nthe RFC itself for full legal notices.";
+   revision "2019-04-16" {
+     description
+       "Base model for Connectionless Operations, Administration,\nand "+
+       "Maintenance (OAM).";
+     reference
+       "RFC 8532: Generic YANG Data Model for the Management of\nOperations, "+
+       "Administration, and Maintenance (OAM) Protocols\nThat Use Connectionless"+
+       " Communications";
+   }
+   feature connectionless {
+     description
+       "This feature indicates that the OAM solution is connectionless.";
+   }
+   feature continuity-check {
+     description
+       "This feature indicates that the server supports\nexecuting a Continuity "+
+       "Check OAM command and\nreturning a response.  Servers that do not "+
+       "advertise\nthis feature will not support executing\nContinuity Check "+
+       "commands or the RPC operation model for\nContinuity Check commands.";
+   }
+   feature path-discovery {
+     description
+       "This feature indicates that the server supports\nexecuting a path "+
+       "discovery OAM command and\nreturning a response.  Servers that do not "+
+       "advertise\nthis feature will not support executing\npath discovery "+
+       "commands or the RPC operation model for\npath discovery commands.";
+   }
+   feature ptp-long-format {
+     description
+       "This feature indicates that the timestamp is PTP long format.";
+   }
+   feature ntp-short-format {
+     description
+       "This feature indicates that the timestamp is NTP short format.";
+   }
+   feature icmp-timestamp {
+     description
+       "This feature indicates that the timestamp is ICMP timestamp.";
+   }
+   identity traffic-type {
+     description
+       "This is the base identity of the traffic type,\nwhich includes IPv4, "+
+       "IPv6, etc.";
+   }
+   identity ipv4 {
+     base "traffic-type";
+     description
+       "identity for IPv4 traffic type.";
+   }
+   identity ipv6 {
+     base "traffic-type";
+     description
+       "identity for IPv6 traffic type.";
+   }
+   identity address-attribute-types {
+     description
+       "This is the base identity of the address attribute types, which\nare "+
+       "Generic IPv4/IPv6 Prefix, BGP Labeled IPv4/IPv6 Prefix,\nTunnel ID, PW "+
+       "ID, VPLS VE ID, etc. (See RFC 8029 for details.)";
+   }
+   typedef percentage {
+     type "decimal64" {
+       fraction-digits "5";
+       range "0..100";
+     }
+     description
+       "Percentage.";
+   }
+   identity tp-address-technology-type {
+     description
+       "Test point address type.";
+   }
+   identity mac-address-type {
+     base "tp-address-technology-type";
+     description
+       "MAC address type.";
+   }
+   identity ipv4-address-type {
+     base "tp-address-technology-type";
+     description
+       "IPv4 address type.";
+   }
+   identity ipv6-address-type {
+     base "tp-address-technology-type";
+     description
+       "IPv6 address type.";
+   }
+   identity tp-attribute-type {
+     base "tp-address-technology-type";
+     description
+       "Test point attribute type.";
+   }
+   identity router-id-address-type {
+     base "tp-address-technology-type";
+     description
+       "System ID address type.";
+   }
+   identity as-number-address-type {
+     base "tp-address-technology-type";
+     description
+       "AS number address type.";
+   }
+   identity route-distinguisher-address-type {
+     base "tp-address-technology-type";
+     description
+       "Route Distinguisher address type.";
+   }
+ }
+

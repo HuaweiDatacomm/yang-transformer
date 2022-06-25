@@ -1,0 +1,254 @@
+ module openconfig-if-ip {
+   yang-version "1";
+   // namespace
+
+   namespace "http://openconfig.net/yang/interfaces/ip";
+   prefix "oc-ip";
+   // import some basic types
+
+   import openconfig-inet-types {
+     prefix "oc-inet";
+   }
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   // meta
+
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "This model defines data for managing configuration and\noperational state "+
+     "on IP (IPv4 and IPv6) interfaces.\n\nThis model reuses data items defined "+
+     "in the IETF YANG model for\ninterfaces described by RFC 7277 with an "+
+     "alternate structure\n(particularly for operational state data) and "+
+     "with\nadditional configuration items.\n\nPortions of this code were "+
+     "derived from IETF RFC 7277.\nPlease reproduce this note if possible.\n\nIE"+
+     "TF code is subject to the following copyright and license:\nCopyright (c) "+
+     "IETF Trust and the persons identified as authors of\nthe code.\nAll rights"+
+     " reserved.\n\nRedistribution and use in source and binary forms, with or "+
+     "without\nmodification, is permitted pursuant to, and subject to the "+
+     "license\nterms contained in, the Simplified BSD License set forth "+
+     "in\nSection 4.c of the IETF Trust's Legal Provisions Relating\nto IETF "+
+     "Documents (http://trustee.ietf.org/license-info).";
+   oc-ext:openconfig-version "2.3.0";
+   revision "2018-01-05" {
+     description
+       "Add logical loopback to interface.";
+     reference
+       "2.3.0";
+   }
+   revision "2017-12-21" {
+     description
+       "Added IPv6 router advertisement configuration.";
+     reference
+       "2.1.0";
+   }
+   revision "2017-07-14" {
+     description
+       "Added Ethernet/IP state data; Add dhcp-client;\nmigrate to OpenConfig "+
+       "types modules; Removed or\nrenamed opstate values";
+     reference
+       "2.0.0";
+   }
+   revision "2017-04-03" {
+     description
+       "Update copyright notice.";
+     reference
+       "1.1.1";
+   }
+   revision "2016-12-22" {
+     description
+       "Fixes to Ethernet interfaces model";
+     reference
+       "1.1.0";
+   }
+   // typedef statements
+
+   typedef ip-address-origin {
+     type "enumeration" {
+       enum "OTHER" {
+         description
+           "None of the following.";
+       }
+       enum "STATIC" {
+         description
+           "Indicates that the address has been statically\nconfigured - for "+
+           "example, using NETCONF or a Command Line\nInterface.";
+       }
+       enum "DHCP" {
+         description
+           "Indicates an address that has been assigned to this\nsystem by a "+
+           "DHCP server.";
+       }
+       enum "LINK_LAYER" {
+         description
+           "Indicates an address created by IPv6 stateless\nautoconfiguration "+
+           "that embeds a link-layer address in its\ninterface identifier.";
+       }
+       enum "RANDOM" {
+         description
+           "Indicates an address chosen by the system at\nrandom, e.g., an IPv4 "+
+           "address within 169.254/16, an\nRFC 4941 temporary address, or an RFC"+
+           " 7217 semantically\nopaque address.";
+         reference
+           "RFC 4941: Privacy Extensions for Stateless Address\n       "+
+           "Autoconfiguration in IPv6\nRFC 7217: A Method for Generating "+
+           "Semantically Opaque\n          Interface Identifiers with IPv6 "+
+           "Stateless\n          Address Autoconfiguration (SLAAC)";
+       }
+     }
+     description
+       "The origin of an address.";
+   }
+   // grouping statements
+
+   // augment statements
+
+   augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinter"+
+           "face" {
+     description
+       "IPv4 address family configuration for\ninterfaces";
+     container ipv4 {
+       description
+         "Parameters for the IPv4 address family.";
+       container addresses {
+         description
+           "Enclosing container for address list";
+         list address {
+           key "ip";
+           description
+             "The list of configured IPv4 addresses on the interface.";
+           leaf ip {
+             type "leafref" {
+               path "../config/ip";
+             }
+             description
+               "References the configured IP address";
+           }
+           container config {
+             description
+               "Configuration data for each configured IPv4\naddress on the "+
+               "interface";
+             leaf ip {
+               type "oc-inet:ipv4-address";
+               description
+                 "The IPv4 address on the interface.";
+             }
+             leaf prefix-length {
+               type "uint8" {
+                 range "0..32";
+               }
+               description
+                 "The length of the subnet prefix.";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for each IPv4 address\nconfigured on the "+
+               "interface";
+             leaf ip {
+               type "oc-inet:ipv4-address";
+               description
+                 "The IPv4 address on the interface.";
+             }
+             leaf prefix-length {
+               type "uint8" {
+                 range "0..32";
+               }
+               description
+                 "The length of the subnet prefix.";
+             }
+             leaf origin {
+               type "ip-address-origin";
+               description
+                 "The origin of this address, e.g., statically configured,\nassi"+
+                 "gned by DHCP, etc..";
+             }
+           }
+         }
+       }
+       container config {
+         description
+           "Top-level IPv4 configuration data for the interface";
+         leaf enabled {
+           type "boolean";
+           default "true";
+           description
+             "Controls whether IPv4 is enabled or disabled on this\ninterface.  "+
+             "When IPv4 is enabled, this interface is\nconnected to an IPv4 "+
+             "stack, and the interface can send\nand receive IPv4 packets.";
+         }
+         leaf mtu {
+           type "uint16" {
+             range "68..max";
+           }
+           units "octets";
+           description
+             "The size, in octets, of the largest IPv4 packet that the\ninterfac"+
+             "e will send and receive.\n\nThe server may restrict the allowed "+
+             "values for this leaf,\ndepending on the interface's type.\n\nIf "+
+             "this leaf is not configured, the operationally used MTU\ndepends "+
+             "on the interface's type.";
+           reference
+             "RFC 791: Internet Protocol";
+         }
+       }
+       container state {
+         config "false";
+         description
+           "Top level IPv4 operational state data";
+         leaf enabled {
+           type "boolean";
+           default "true";
+           description
+             "Controls whether IPv4 is enabled or disabled on this\ninterface.  "+
+             "When IPv4 is enabled, this interface is\nconnected to an IPv4 "+
+             "stack, and the interface can send\nand receive IPv4 packets.";
+         }
+         leaf mtu {
+           type "uint16" {
+             range "68..max";
+           }
+           units "octets";
+           description
+             "The size, in octets, of the largest IPv4 packet that the\ninterfac"+
+             "e will send and receive.\n\nThe server may restrict the allowed "+
+             "values for this leaf,\ndepending on the interface's type.\n\nIf "+
+             "this leaf is not configured, the operationally used MTU\ndepends "+
+             "on the interface's type.";
+           reference
+             "RFC 791: Internet Protocol";
+         }
+       }
+     }
+   }
+   augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinter"+
+           "face" {
+     description
+       "IPv6 address family configuration for\ninterfaces";
+   }
+   // VRRP for IPv4 interfaces
+
+   augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinter"+
+           "face/oc-ip:ipv4/oc-ip:addresses/oc-ip:address" {
+     description
+       "Additional IP addr family configuration for\ninterfaces";
+   }
+   // VRRP for IPv6 interfaces
+
+   // Augments for for routed VLANs
+
+   // VRRP for routed VLAN interfaces
+
+   // rpc statements
+
+   // notification statements
+
+ }
+

@@ -1,0 +1,80 @@
+ module openconfig-yang-types {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/types/yang";
+   prefix "oc-yang";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module contains a set of extension types to the\nYANG builtin types "+
+     "that are used across multiple\nOpenConfig models.\n\nPortions of this code"+
+     " were derived from IETF RFC 6021.\nPlease reproduce this note if "+
+     "possible.\n\nIETF code is subject to the following copyright and "+
+     "license:\nCopyright (c) IETF Trust and the persons identified as authors "+
+     "of\nthe code.\nAll rights reserved.\n\nRedistribution and use in source "+
+     "and binary forms, with or without\nmodification, is permitted pursuant to,"+
+     " and subject to the license\nterms contained in, the Simplified BSD "+
+     "License set forth in\nSection 4.c of the IETF Trust's Legal Provisions "+
+     "Relating\nto IETF Documents (http://trustee.ietf.org/license-info).";
+   oc-ext:openconfig-version "0.2.1";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.2.1";
+   }
+   revision "2018-04-24" {
+     description
+       "Add date typedef";
+     reference
+       "0.2.0";
+   }
+   revision "2017-07-30" {
+     description
+       "Fixed unprintable character";
+     reference
+       "0.1.2";
+   }
+   revision "2017-04-03" {
+     description
+       "Update copyright notice.";
+     reference
+       "0.1.1";
+   }
+   revision "2017-01-26" {
+     description
+       "Initial module for inet types";
+     reference
+       "0.1.0";
+   }
+   // OpenConfig specific extensions for module metadata.
+
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   typedef dotted-quad {
+     type "string" {
+       pattern "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0"+
+               "-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$";
+     }
+     description
+       "An unsigned 32-bit integer expressed as a dotted quad. The\nformat is "+
+       "four octets written as decimal numbers separated\nwith a period "+
+       "character.";
+   }
+   typedef counter64 {
+     type "uint64";
+     description
+       "A 64-bit counter. A counter value is a monotonically increasing\nvalue "+
+       "which is used to express a count of a number of\noccurrences of a "+
+       "particular event or entity. When a counter64\nreaches its maximum value,"+
+       " 2^64-1, it loops to zero.\nDiscontinuities in a counter are generally "+
+       "triggered only when\nthe counter is reset to zero, through operator or "+
+       "system\nintervention.";
+   }
+ }
+

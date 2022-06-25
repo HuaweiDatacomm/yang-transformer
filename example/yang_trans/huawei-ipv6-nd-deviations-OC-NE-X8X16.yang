@@ -1,0 +1,58 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-ipv6-nd-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-ipv6-nd-deviations-OC-NE-X8X16";
+   prefix "ipv6-nd-devs-OC-NE-X8X16";
+   import huawei-ipv6-nd {
+     prefix "ipv6-nd";
+   }
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   import huawei-ethernet {
+     prefix "ethernet";
+   }
+   import huawei-ip {
+     prefix "ip";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "ND management.";
+   revision "2019-11-24" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/ipv6-nd:nd-dyn-nb-limit/ipv6"+
+             "-nd:vlan-limits/ipv6-nd:vlan-limit" {
+     deviate "add" {
+       must "../../../ethernet:ethernet/ethernet:main-interface/ethernet:l2-attr"+
+            "ibute";
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/ip:ipv6/ipv6-nd:nd-collectio"+
+             "n/ipv6-nd:if-property/ipv6-nd:max-dyn-nb-num" {
+     deviate "replace" {
+       type "uint64" {
+         range "0..65536";
+       }
+     }
+   }
+   deviation "/ifm:ifm/ifm:interfaces/ifm:interface/ipv6-nd:nd-dyn-nb-limit/ipv6"+
+             "-nd:vlan-limits/ipv6-nd:vlan-limit/ipv6-nd:max-dyn-nb-num" {
+     deviate "replace" {
+       type "uint32" {
+         range "0..65536";
+       }
+     }
+   }
+ }
+

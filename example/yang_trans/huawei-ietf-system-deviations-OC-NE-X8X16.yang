@@ -1,0 +1,88 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-ietf-system-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-ietf-system-deviations-OC-NE-X8X16";
+   prefix "system-devs-OC-NE-X8X16";
+   import ietf-system {
+     prefix "sys";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module contains a collection of YANG definitions for the\nconfigurati"+
+     "on and identification of some common system\nproperties within a device "+
+     "containing a NETCONF server. This\nincludes data node definitions for "+
+     "system identification,\ntime-of-day management, user management, DNS "+
+     "resolver\nconfiguration, and some protocol operations for system\nmanageme"+
+     "nt.";
+   revision "2020-03-23" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/sys:system/sys:hostname" {
+     deviate "replace" {
+       type "string" {
+         length "1..246";
+       }
+     }
+     deviate "add" {
+       default "HUAWEI";
+     }
+   }
+   deviation "/sys:system/sys:clock/sys:timezone/sys:timezone-utc-offset/sys:tim"+
+             "ezone-utc-offset" {
+     deviate "replace" {
+       type "int16" {
+         range "-1080..1080";
+       }
+     }
+     deviate "add" {
+       default "0";
+     }
+   }
+   deviation "/sys:system/sys:ntp/sys:server/sys:name" {
+     deviate "replace" {
+       type "string" {
+         length "1..63";
+       }
+     }
+   }
+   deviation "/sys:system/sys:ntp/sys:server/sys:association-type" {
+     deviate "replace" {
+       type "enumeration" {
+         enum "server" {
+           value "0";
+           description
+             "Use client association mode. This device\nwill not provide "+
+             "synchronization to the\nconfigured NTP server.";
+         }
+         enum "peer" {
+           value "1";
+           description
+             "Use symmetric active association mode.\nThis device may provide "+
+             "synchronization\nto the configured NTP server.";
+         }
+       }
+     }
+   }
+   deviation "/sys:system/sys:ntp/sys:server/sys:transport/sys:udp/sys:udp/sys:p"+
+             "ort" {
+     deviate "replace" {
+       type "inet:port-number" {
+         range "123|1025..65535";
+       }
+     }
+   }
+ }
+

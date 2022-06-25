@@ -1,0 +1,44 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-sshc-deviations-OC-NE-X8X16 {
+   namespace "urn:huawei:yang:huawei-sshc-deviations-OC-NE-X8X16";
+   prefix "sshc-devs-OC-NE-X8X16";
+   import huawei-sshc {
+     prefix "sshc";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "This module defines deviation statements for huawei-sshc module.";
+   revision "2021-05-07" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   deviation "/sshc:sshc/sshc:kex-alg" {
+     deviate "add" {
+       must "../kex-alg/dh-group-exchange-sha-256 = 'true' or ../kex-alg/dh-grou"+
+            "p-exchange-sha1 = 'true' or ../kex-alg/dh-group1-sha1 = 'true' or "+
+            "../kex-alg/ecdh-sha2-nistp-256 = 'true' or ../kex-alg/ecdh-sha2-nis"+
+            "tp-384 = 'true' or ../kex-alg/ecdh-sha2-nistp-521 = 'true' or "+
+            "../kex-alg/sm2-kep = 'true' or ../kex-alg/dh-group14-sha1 = 'true' "+
+            "or ../kex-alg/dh-group16-sha512 = 'true'";
+     }
+   }
+   deviation "/sshc:sshc/sshc:pubkey-alg" {
+     deviate "add" {
+       must "../pubkey-alg/dsa = 'true' or ../pubkey-alg/ecc = 'true' or "+
+            "../pubkey-alg/rsa = 'true' or ../pubkey-alg/sm2 = 'true' or "+
+            "../pubkey-alg/rsa-sha2-256 = 'true' or ../pubkey-alg/rsa-sha2-512 ="+
+            " 'true'";
+     }
+   }
+ }
+
