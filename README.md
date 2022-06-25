@@ -32,7 +32,7 @@ mvn clean install
 
 it will generate yang-transformer-1.0-SNAPSHOT.jar and libs directory under the directory target
 
-copy yang-comparator-1.0-SNAPSHOT.jar and libs to anywhere in your computer.
+copy yang-transformer-1.0-SNAPSHOT.jar and libs to anywhere in your computer.
 
 ## Usage:
 java -jar yang-transformer-1.0-SNAPSHOT.jar _{source directory} {transformed directory}_
