@@ -55,7 +55,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.yangcentral.yangkit</groupId>
+            <groupId>io.github.yang-central.yangkit</groupId>
             <artifactId>yangkit-parser</artifactId>
             <version>1.0.0</version>
         </dependency>
