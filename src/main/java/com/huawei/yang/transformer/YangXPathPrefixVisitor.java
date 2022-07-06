@@ -1,17 +1,17 @@
 package com.huawei.yang.transformer;
 
-import com.huawei.yang.base.YangContext;
-import com.huawei.yang.common.api.FName;
-import com.huawei.yang.model.api.stmt.Import;
-import com.huawei.yang.model.api.stmt.Include;
-import com.huawei.yang.model.api.stmt.Module;
-import com.huawei.yang.model.api.stmt.Prefix;
-import com.huawei.yang.model.api.stmt.XPathSupport;
-import com.huawei.yang.model.api.stmt.YangStatement;
-import com.huawei.yang.model.impl.stmt.ImportImpl;
-import com.huawei.yang.model.impl.stmt.IncludeImpl;
-import com.huawei.yang.model.impl.stmt.PrefixImpl;
-import com.huawei.yang.xpath.YangXPathVisitor;
+import org.yangcentral.yangkit.base.YangContext;
+import org.yangcentral.yangkit.common.api.FName;
+import org.yangcentral.yangkit.model.api.stmt.Import;
+import org.yangcentral.yangkit.model.api.stmt.Include;
+import org.yangcentral.yangkit.model.api.stmt.Module;
+import org.yangcentral.yangkit.model.api.stmt.Prefix;
+import org.yangcentral.yangkit.model.api.stmt.XPathSupport;
+import org.yangcentral.yangkit.model.api.stmt.YangStatement;
+import org.yangcentral.yangkit.model.impl.stmt.ImportImpl;
+import org.yangcentral.yangkit.model.impl.stmt.IncludeImpl;
+import org.yangcentral.yangkit.model.impl.stmt.PrefixImpl;
+import org.yangcentral.yangkit.xpath.YangXPathVisitor;
 
 import org.jaxen.expr.AdditiveExpr;
 import org.jaxen.expr.BinaryExpr;

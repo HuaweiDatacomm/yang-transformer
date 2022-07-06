@@ -25,9 +25,10 @@
                             <mainClass>com.huawei.yang.transformer.YangTransformer</mainClass>
                             <classpathPrefix>libs/</classpathPrefix>
                         </manifest>
+                        <!--
                         <manifestEntries>
                             <Class-path>libs/yangkit-common-1.0-SNAPSHOT.jar libs/yangkit-common-utils-1.0-SNAPSHOT.jar  libs/yangkit-data-api-1.0-SNAPSHOT.jar libs/yangkit-model-api-1.0-SNAPSHOT.jar  libs/yangkit-model-impl-1.0-SNAPSHOT.jar  libs/yangkit-parser-1.0-SNAPSHOT.jar libs/yangkit-xpath-api-1.0-SNAPSHOT.jar  libs/yangkit-xpath-impl-1.0-SNAPSHOT.jar</Class-path>
-                        </manifestEntries>
+                        </manifestEntries>-->
                     </archive>
                 </configuration>
             </plugin>
@@ -54,61 +55,11 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-common-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-common-utils</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-common-utils-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-model-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-model-api-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-model-impl</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-model-impl-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-data-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-data-api-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-xpath-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-xpath-api-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
-            <artifactId>yangkit-xpath-impl</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-xpath-impl-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.huawei.yang.yangkit</groupId>
+            <groupId>org.yangcentral.yangkit</groupId>
             <artifactId>yangkit-parser</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/yangkit-parser-1.0-SNAPSHOT.jar</systemPath>
+            <version>1.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>

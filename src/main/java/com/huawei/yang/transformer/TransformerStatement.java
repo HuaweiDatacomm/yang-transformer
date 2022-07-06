@@ -1,6 +1,6 @@
 package com.huawei.yang.transformer;
 
-import com.huawei.yang.model.api.stmt.YangStatement;
+import org.yangcentral.yangkit.model.api.stmt.YangStatement;
 
 /**
  * 功能描述

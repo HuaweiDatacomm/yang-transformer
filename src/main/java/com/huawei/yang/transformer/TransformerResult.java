@@ -1,7 +1,7 @@
 package com.huawei.yang.transformer;
 
-import com.huawei.yang.model.api.stmt.Uses;
-import com.huawei.yang.model.api.stmt.YangStatement;
+import org.yangcentral.yangkit.model.api.stmt.Uses;
+import org.yangcentral.yangkit.model.api.stmt.YangStatement;
 
 import java.util.ArrayList;
 import java.util.List;

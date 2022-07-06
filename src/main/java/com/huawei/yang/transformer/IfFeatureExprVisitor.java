@@ -1,7 +1,7 @@
 package com.huawei.yang.transformer;
 
-import com.huawei.yang.model.api.stmt.IfFeature;
-import com.huawei.yang.model.impl.stmt.IfFeatureImpl;
+import org.yangcentral.yangkit.model.api.stmt.IfFeature;
+import org.yangcentral.yangkit.model.impl.stmt.IfFeatureImpl;
 
 import java.util.ArrayList;
 import java.util.List;

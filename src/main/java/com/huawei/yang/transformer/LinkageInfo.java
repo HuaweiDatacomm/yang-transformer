@@ -1,7 +1,7 @@
 package com.huawei.yang.transformer;
 
-import com.huawei.yang.model.api.schema.ModuleId;
-import com.huawei.yang.model.api.stmt.Module;
+import org.yangcentral.yangkit.model.api.schema.ModuleId;
+import org.yangcentral.yangkit.model.api.stmt.Module;
 
 /**
  * 功能描述
