@@ -996,8 +996,37 @@ public class YangTransformer {
         }
     }
 
+    private static boolean isUnUsedModule(Module module){
+        if(module instanceof SubModule){
+            if(isUnUsedModule(module.getMainModule())){
+                return true;
+            }
+            return false;
+        }
+        //if no any modules depend on this module,check whether it has data definitions, if it has no,it's unuseful
+        if(!module.getSchemaNodeChildren().isEmpty()){
+            return false;
+        }
+        if(!module.getAugments().isEmpty()){
+            return false;
+        }
+        for(Include include:module.getIncludes()){
+            SubModule sb = include.getInclude().get();
+            if(!sb.getAugments().isEmpty()){
+                return false;
+            }
+        }
+        for(Module dependent: module.getDependentBys()){
+            if(!isUnUsedModule(dependent)){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void transformUnUsed(YangSchemaContext schemaContext){
         Iterator<Map.Entry<String, List<YangElement>>> it = schemaContext.getParseResult().entrySet().iterator();
+        List<String> unUsedModules = new ArrayList<>();
         while(it.hasNext()){
             Map.Entry<String, List<YangElement>> entry = it.next();
             List<YangElement> elements = entry.getValue();
@@ -1014,9 +1043,21 @@ public class YangTransformer {
                     //phase_unused
                     List<TransformerResult> transformerResults = transform(curModule,curModule,TransformerPhase.PHASE_UNUSED);
                     procTransformerResult(transformerResults);
+                    if(isUnUsedModule(curModule)){
+                        unUsedModules.add(entry.getKey());
+                        schemaContext.removeModule(curModule.getModuleId());
+                        for(Import im:curModule.getImports()){
+                            if(im.getImport().isPresent()){
+                                MainModule importedModule = im.getImport().get();
+                                importedModule.removeDependentBy(curModule);
+                            }
+                        }
+                    }
                 }
-
             }
+        }
+        for(String unUsedModule:unUsedModules){
+            schemaContext.getParseResult().remove(unUsedModule);
         }
     }
     private static void transformUnUsedLinkage(YangSchemaContext schemaContext){
@@ -1139,6 +1180,14 @@ public class YangTransformer {
             //transformUnUsedLinkage(transformedContext);
             //validatorResult = transformedContext.validate();
            // System.out.println(validatorResult);
+            List<String> matches = new ArrayList<>();
+            matches.add("huawei");
+            List<String> noMatches = new ArrayList<>();
+            noMatches.add("huawei-ietf");
+            noMatches.add("huawei-openconfig");
+            YangTailorRule tailorRule = new YangTailorRule(TailorType.MODULE,matches,noMatches);
+            YangTailor yangTailor = new YangTailor(transformedContext,tailorRule);
+            yangTailor.tailor();
             it = transformedContext.getParseResult().entrySet().iterator();
             while(it.hasNext()){
                 Map.Entry<String, List<YangElement>> entry = it.next();
