@@ -10,6 +10,7 @@ import org.yangcentral.yangkit.model.api.schema.ModuleId;
 import org.yangcentral.yangkit.model.api.schema.YangSchemaContext;
 import org.yangcentral.yangkit.model.api.stmt.*;
 import org.yangcentral.yangkit.model.api.stmt.Module;
+import org.yangcentral.yangkit.model.impl.stmt.DefaultYangUnknown;
 import org.yangcentral.yangkit.model.impl.stmt.ImportImpl;
 import org.yangcentral.yangkit.model.impl.stmt.IncludeImpl;
 import org.yangcentral.yangkit.model.impl.stmt.PrefixImpl;
@@ -113,6 +114,34 @@ public class YangTransformer {
         YangStatement statement = (YangStatement) xPathSupport;
         YangXPathTransformerVisitor visitor = new YangXPathTransformerVisitor(xPathSupport,curModule);
         transformerResults.addAll(visitor.visit(((XPathSupport) statement).getXPathExpression().getRootExpr(), (XPathSupport) statement));
+        for(TransformerResult transformerResult:transformerResults){
+            if(transformerResult.getType() != TransformerType.ADD){
+                continue;
+            }
+            if(transformerResult.getTarget() == curModule){
+                List<TransformerStatement> transformerStatements = transformerResult.getStatements();
+                List<Integer> deletedSeqs = new ArrayList<>();
+                for(int i = 0;i <transformerStatements.size();i++){
+                    TransformerStatement transformerStatement = transformerStatements.get(i);
+                    if(transformerStatement.getStatement() instanceof Import){
+                        Import im = (Import) transformerStatement.getStatement();
+                        Import orig = (Import) curModule.getSubStatement(YangBuiltinKeyword.IMPORT.getQName(),im.getArgStr());
+                        if(orig != null ){
+                            if(!orig.getSubStatement(YangBuiltinKeyword.PREFIX.getQName()).get(0).getArgStr().equals(
+                                    im.getSubStatement(YangBuiltinKeyword.PREFIX.getQName()).get(0).getArgStr())){
+                                String newAgr = statement.getArgStr().replaceAll(im.getSubStatement(YangBuiltinKeyword.PREFIX.getQName()).get(0).getArgStr()+":",
+                                        orig.getSubStatement(YangBuiltinKeyword.PREFIX.getQName()).get(0).getArgStr()+":");
+                                statement.setArgStr(newAgr);
+                            }
+                            deletedSeqs.add(i);
+                        }
+                    }
+                }
+                for(int seq:deletedSeqs){
+                    transformerStatements.remove(seq);
+                }
+            }
+        }
         return transformerResults;
     }
 
@@ -195,7 +224,28 @@ public class YangTransformer {
             }
         }
         if(refine.getUnknowns().size() > 0){
-            for(YangUnknown unknown: refine.getUnknowns()){
+            YangSpecification yangSpecification = target.getContext().getYangSpecification();
+            YangStatementDef yangStatementDef = yangSpecification.getStatementDef(target.getYangKeyword());
+            for(YangUnknown unknown:refine.getUnknowns()) {
+                boolean isMultiInstance = true;
+                Cardinality cardinality = yangStatementDef.getSubStatementCardinality(unknown.getYangKeyword());
+                if (cardinality != null) {
+                    if (!cardinality.isUnbounded() && cardinality.getMaxElements() <= 1) {
+                        isMultiInstance = false;
+                    }
+                }
+                if (isMultiInstance) {
+                    YangUnknown orig = (YangUnknown) target.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
+                    if (orig != null) {
+                        target.removeChild(orig);
+
+                    }
+                } else {
+                    List<YangStatement> origs = target.getSubStatement(unknown.getYangKeyword());
+                    if (!origs.isEmpty()) {
+                        target.removeChild(origs.get(0));
+                    }
+                }
                 target.addChild(unknown);
             }
         }
@@ -459,12 +509,43 @@ public class YangTransformer {
                                 Type newType = (Type) YangStatementRegister.getInstance().getYangStatementInstance(YangBuiltinKeyword.TYPE.getQName(), arg);
                                 List<YangStatement> subStatements = type.getEffectiveSubStatements();
                                 for(YangStatement subStatement:subStatements){
-                                    newType.addChild(subStatement.clone());
+                                    newType.addChild(subStatement);
                                 }
                                 newType.setContext(new YangContext(deviation.getTarget().getContext()));
-                                newType.init();
-                                newType.build();
+                                //newType.init();
+                                //newType.build();
                                 deviation.getTarget().updateChild(pos,newType);
+                                if(type.isDerivedType()){
+                                    TypedDataNode target = (TypedDataNode) deviation.getTarget();
+                                    Typedef typedef = type.getDerived();
+                                    //default
+                                    boolean hasDefault =false;
+                                    if(target instanceof Leaf){
+                                        if(((Leaf) target).getDefault()!= null){
+                                            hasDefault = true;
+                                        }
+                                    } else {
+                                        LeafList leafList = (LeafList) target;
+                                        if(!leafList.getDefaults().isEmpty()){
+                                            hasDefault = true;
+                                        }
+                                    }
+                                    if(!hasDefault){
+                                        if(typedef.getDefault() != null){
+                                            TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
+                                            addTransformerResult.addStatement(null,typedef.getDefault());
+                                            transformerResults.add(addTransformerResult);
+                                        }
+                                    }
+                                    //units
+                                    if((target.getUnits() == null) && (typedef.getUnits() != null)){
+                                        TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
+                                        addTransformerResult.addStatement(null,typedef.getUnits());
+                                        transformerResults.add(addTransformerResult);
+                                    }
+
+
+                                }
                             }
                         }
                         //config
@@ -474,6 +555,7 @@ public class YangTransformer {
                             if(targetStmts.isEmpty()){
                                 TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
                                 addTransformerResult.addStatement(null,config);
+                                transformerResults.add(addTransformerResult);
                             }
                             else {
                                 YangStatement targetStmt = targetStmts.get(0);
@@ -615,12 +697,16 @@ public class YangTransformer {
             YangContext prefixContext = new YangContext(newImportContext);
             prefixStmt.setContext(prefixContext);
             newImport.addChild(prefixStmt);
+            //newImport.init();
+            //newImport.build();
             candidate = newImport;
         }
         else {
             YangContext newIncludeContext = new YangContext(curModule.getContext());
             Include newInclude = new IncludeImpl(linkageInfo.getModuleId().getModuleName());
             newInclude.setContext(newIncludeContext);
+            //newInclude.init();
+            //newInclude.build();
             candidate = newInclude;
         }
         TransformerResult transformerResult = new TransformerResult(TransformerType.ADD,curModule,new ArrayList<>());
@@ -818,8 +904,39 @@ public class YangTransformer {
         return null;
     }
 
+    private static boolean checkChild(YangStatement statement,YangStatement subStatement){
+        if(statement.getContext() == null){
+            return true;
+        }
+        if(statement.getSubStatement(subStatement.getYangKeyword(), subStatement.getArgStr())!= null){
+            return false;
+        }
+        YangSpecification yangSpecification = statement.getContext().getYangSpecification();
+        if(yangSpecification == null){
+            return true;
+        }
+        YangStatementDef statementDef = yangSpecification.getStatementDef(statement.getYangKeyword());
+        if(statementDef == null){
+            return true;
+        }
+        if(subStatement instanceof DefaultYangUnknown){
+            return true;
+        }
+        Cardinality cardinality = statementDef.getSubStatementCardinality(subStatement.getYangKeyword());
+        if(cardinality == null){
+            return false;
+        }
+        if(cardinality.isUnbounded()){
+            return true;
+        }
+        List<YangStatement> matched = statement.getSubStatement(subStatement.getYangKeyword());
+        if((matched.size() +1) > cardinality.getMaxElements()){
+            return false;
+        }
+        return true;
+    }
     private static void insert(YangStatement target, YangStatement pre,YangStatement candidate){
-        if(!target.checkChild(candidate)){
+        if(!checkChild(target,candidate)){
             return;
         }
 

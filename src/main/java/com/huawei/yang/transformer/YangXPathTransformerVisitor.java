@@ -108,6 +108,7 @@ public class YangXPathTransformerVisitor implements YangXPathVisitor<List<Transf
             LinkageInfo linkageInfo = new LinkageInfo(LinkageType.INCLUDE, oriModuleop.get().getModuleId());
             return linkageInfo;
         }
+
         LinkageInfo linkageInfo = new LinkageInfo(LinkageType.IMPORT, oriModuleop.get().getMainModule().getModuleId());
         linkageInfo.setPrefix(prefix);
         return linkageInfo;
