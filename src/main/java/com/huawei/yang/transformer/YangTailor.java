@@ -29,41 +29,46 @@ public class YangTailor {
     }
 
     private boolean reserve(Module module){
-        if(tailorRule.getTailorType()== TailorType.MODULE){
-            if(module instanceof SubModule){
-                return reserve(module.getMainModule());
+        if(module instanceof SubModule){
+            return reserve(module.getMainModule());
+        }
+        List<MatchRule> matches = tailorRule.getMatches();
+        boolean match = false;
+        for(MatchRule matchRule:matches){
+            String matchRegex = matchRule.getMatch();
+            Pattern pattern = Pattern.compile(matchRegex);
+            String matchedStr  = null;
+            if(tailorRule.getTailorType()== TailorType.MODULE){
+                matchedStr = module.getArgStr();
+            } else {
+                matchedStr = module.getMainModule().getNamespace().getArgStr();
             }
-            List<String> matches = tailorRule.getMatches();
-            boolean match = false;
-            for(String pattern:matches){
-                Pattern pat = Pattern.compile(pattern);
-                if(pat.matcher(module.getArgStr()).lookingAt()){
-                    match = true;
-                    break;
-                }
-            }
-            if(match){
-                for(String invertPattern: getTailorRule().getNoMatches()){
-                    Pattern pat = Pattern.compile(invertPattern);
-                    if(pat.matcher(module.getArgStr()).lookingAt()){
+            if(pattern.matcher(matchedStr).lookingAt()){
+                match = true;
+                List<String> excepts = matchRule.getExcepts();
+                for(String except:excepts){
+                    Pattern exceptPattern = Pattern.compile(except);
+                    if(exceptPattern.matcher(matchedStr).lookingAt()){
                         match = false;
                         break;
                     }
                 }
-            }
-            if(match){
-                return true;
-            }
-            if(!module.getDependentBys().isEmpty()){
-                for(Module dependent: module.getDependentBys()){
-                    if(reserve(dependent)){
-                        return true;
-                    }
+                if(match){
+                    break;
                 }
             }
-            return false;
         }
-        return true;
+        if(match){
+            return true;
+        }
+        if(!module.getDependentBys().isEmpty()){
+            for(Module dependent: module.getDependentBys()){
+                if(reserve(dependent)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void tailor(){

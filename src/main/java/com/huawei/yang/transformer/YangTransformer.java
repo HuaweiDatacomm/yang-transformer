@@ -25,10 +25,7 @@ import org.dom4j.DocumentException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 功能描述
@@ -333,9 +330,9 @@ public class YangTransformer {
             return true;
         } else if (statement instanceof SchemaNode){
             SchemaNode schemaNode = (SchemaNode) statement;
-            if(!schemaNode.isActive()){
-                return true;
-            }
+//            if(!schemaNode.isActive()){
+//                return true;
+//            }
         } else if(statement instanceof Type){
             Type type = (Type) statement;
             YangStatement parent = type.getParentStatement();
@@ -998,13 +995,13 @@ public class YangTransformer {
 
     private static boolean isUnUsedModule(Module module){
         if(module instanceof SubModule){
-            if(isUnUsedModule(module.getMainModule())){
-                return true;
-            }
-            return false;
+            return isUnUsedModule(module.getMainModule());
         }
         //if no any modules depend on this module,check whether it has data definitions, if it has no,it's unuseful
         if(!module.getSchemaNodeChildren().isEmpty()){
+            return false;
+        }
+        if(!module.getContext().getIdentityCache().isEmpty()){
             return false;
         }
         if(!module.getAugments().isEmpty()){
@@ -1013,6 +1010,15 @@ public class YangTransformer {
         for(Include include:module.getIncludes()){
             SubModule sb = include.getInclude().get();
             if(!sb.getAugments().isEmpty()){
+                return false;
+            }
+        }
+        if(!module.getDeviations().isEmpty()){
+            return false;
+        }
+        for(Include include:module.getIncludes()){
+            SubModule sb = include.getInclude().get();
+            if(!sb.getDeviations().isEmpty()){
                 return false;
             }
         }
@@ -1142,9 +1148,134 @@ public class YangTransformer {
 
     }
 
+    /**
+     * usage: -src {src-dir} -out {out-dir} [-no-deviations | -reserve-deviations]
+     *             [ -reserve {--only-huawei-native
+     *             | {--module | --namespace} {--match {regex} [except {regex}*]}*} ]
+     * @param args
+     */
     public static void main(String[] args){
-        String yangDir = args[0];
-        String outDir = args[1];
+        String yangDir = null;
+        String outDir = null;
+        boolean hasTailor = false;
+        TailorType tailorType = null;
+        boolean onlyHuaweiNative = false;
+        Stack<MatchRule> matchRules = new Stack<>();
+        boolean paraError= false;
+        boolean inExcept = false;
+        boolean noDeviations = true;
+        for(int i = 0;i< args.length;i++){
+            if(args[i].equals("-src")){
+                yangDir = args[i+1];
+            } else if(args[i].equals("-out")){
+                outDir = args[i+1];
+            } else if(args[i].equals("-no-deviations")){
+                if(!noDeviations){
+                    System.out.println("duplicate deviations parameter. It must be " +
+                            "one of 'no-deviations' and 'reserve-deviations");
+                    paraError = true;
+                    break;
+                }
+                noDeviations = true;
+            }else if(args[i].equals("-reserve-deviations")){
+                noDeviations = false;
+            }
+            else if(args[i].equals("--only-huawei-native")){
+                if(!hasTailor){
+                    paraError = true;
+                    System.out.println("no reserve parameter.");
+                    break;
+                }
+                if(tailorType != null){
+                    paraError = true;
+                    System.out.println("wrong reserve parameter.");
+                    break;
+                }
+                onlyHuaweiNative = true;
+            } else if(args[i].equals("-reserve")){
+                hasTailor = true;
+            } else if(args[i].equals("--module") ){
+                if(!hasTailor){
+                    paraError = true;
+                    System.out.println("no reserve parameter.");
+                    break;
+                }
+                if(onlyHuaweiNative){
+                    paraError = true;
+                    System.out.println("wrong reserve parameter.");
+                    break;
+                }
+                if(null != tailorType){
+                    paraError = true;
+                    System.out.println("duplicate reserve type parameter.");
+                    break;
+                }
+               tailorType = TailorType.MODULE;
+            } else if(args[i].equals("--namespace")){
+                if(!hasTailor){
+                    paraError = true;
+                    System.out.println("no reserve parameter.");
+                    break;
+                }
+                if(onlyHuaweiNative){
+                    paraError = true;
+                    System.out.println("wrong reserve parameter.");
+                    break;
+                }
+                if(null != tailorType){
+                    paraError = true;
+                    System.out.println("duplicate reserve type parameter.");
+                    break;
+                }
+                tailorType = TailorType.NAMESPACE;
+            }
+            else if(args[i].equals("--match")){
+                if(!hasTailor){
+                    paraError = true;
+                    System.out.println("no reserve parameter.");
+                    break;
+                }
+                if(tailorType == null){
+                    paraError = true;
+                    System.out.println("no reserve type parameter.");
+                    break;
+                }
+                if(inExcept){
+                    inExcept = false;
+                }
+                String matchStr = args[i+1];
+                MatchRule matchRule = new MatchRule(matchStr);
+                matchRules.push(matchRule);
+            } else if(args[i].equals("except")){
+                MatchRule matchRule = matchRules.peek();
+                if(matchRule == null){
+                    paraError = true;
+                    System.out.println("no match parameter.");
+                }
+                inExcept = true;
+            } else {
+                if(inExcept){
+                    MatchRule matchRule = matchRules.peek();
+                    matchRule.addExcept(args[i]);
+                }
+            }
+        }
+
+        if(yangDir == null){
+            System.out.println("no src yang directory.");
+            paraError = true;
+        }
+        if(outDir == null){
+            System.out.println("no output yang directory.");
+            paraError = true;
+        }
+
+        if(paraError){
+            System.out.println("usage: -src {src-dir} -out {out-dir} [no-deviations | reserve-deviations] [ -reserve {--only-huawei-native " +
+                    "| {--module | --namespace} {--match {regex} [except {regex}*]}*}  ]");
+            return;
+        }
+
         File outDirFile = new File(outDir);
         if(!outDirFile.exists()){
             outDirFile.mkdirs();
@@ -1153,8 +1284,11 @@ public class YangTransformer {
             YangSchemaContext schemaContext = YangYinParser.parse(yangDir);
             ValidatorResult validatorResult = schemaContext.validate();
             //System.out.println(validatorResult);
-            transform(schemaContext);
-            validatorResult = schemaContext.validate();
+            if(noDeviations){
+                transform(schemaContext);
+                validatorResult = schemaContext.validate();
+            }
+
             //System.out.println(validatorResult);
             YangSchemaContext transformedContext = YangStatementRegister.getInstance().getSchemeContextInstance();
             Iterator<Map.Entry<String, List<YangElement>>> it = schemaContext.getParseResult().entrySet().iterator();
@@ -1180,14 +1314,23 @@ public class YangTransformer {
             //transformUnUsedLinkage(transformedContext);
             //validatorResult = transformedContext.validate();
            // System.out.println(validatorResult);
-            List<String> matches = new ArrayList<>();
-            matches.add("huawei");
-            List<String> noMatches = new ArrayList<>();
-            noMatches.add("huawei-ietf");
-            noMatches.add("huawei-openconfig");
-            YangTailorRule tailorRule = new YangTailorRule(TailorType.MODULE,matches,noMatches);
-            YangTailor yangTailor = new YangTailor(transformedContext,tailorRule);
-            yangTailor.tailor();
+            if(hasTailor){
+                if(onlyHuaweiNative){
+                    MatchRule nativeRule = new MatchRule("huawei");
+                    nativeRule.addExcept("huawei-ietf");
+                    nativeRule.addExcept("huawei-openconfig");
+                    matchRules.add(nativeRule);
+                    MatchRule telemetry = new MatchRule("openconfig-telemetry");
+                    MatchRule telemetryExt = new MatchRule("huawei-openconfig-telemetry-ext");
+                    matchRules.add(telemetryExt);
+                    matchRules.add(telemetry);
+                    tailorType = TailorType.MODULE;
+                }
+                YangTailorRule tailorRule = new YangTailorRule(tailorType,matchRules);
+                YangTailor yangTailor = new YangTailor(transformedContext,tailorRule);
+                yangTailor.tailor();
+            }
+
             it = transformedContext.getParseResult().entrySet().iterator();
             while(it.hasNext()){
                 Map.Entry<String, List<YangElement>> entry = it.next();
