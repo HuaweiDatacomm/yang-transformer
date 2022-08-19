@@ -1,0 +1,122 @@
+ module openconfig-mpls {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/mpls";
+   prefix "oc-mpls";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   include openconfig-mpls-te;
+   include openconfig-mpls-igp;
+   include openconfig-mpls-static;
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "This module provides data definitions for configuration of\nMultiprotocol "+
+     "Label Switching (MPLS) and associated protocols for\nsignaling and traffic"+
+     " engineering.\n\nRFC 3031: Multiprotocol Label Switching Architecture\n\nT"+
+     "he MPLS / TE data model consists of several modules and\nsubmodules as "+
+     "shown below.  The top-level MPLS module describes\nthe overall framework. "+
+     " Three types of LSPs are supported:\n\ni) traffic-engineered (or "+
+     "constrained-path)\n\nii) IGP-congruent (LSPs that follow the IGP "+
+     "path)\n\niii) static LSPs which are not signaled\n\nThe structure of each "+
+     "of these LSP configurations is defined in\ncorresponding submodules.  "+
+     "Companion modules define the relevant\nconfiguration and operational data "+
+     "specific to key signaling\nprotocols used in operational practice.\n\n\n  "+
+     "                        +-------+\n        +---------------->| MPLS  "+
+     "|<--------------+\n        |                 +-------+               |\n  "+
+     "      |                     ^                   |\n        |              "+
+     "       |                   |\n   +----+-----+      +--------+-------+     "+
+     "+-----+-----+\n   | TE LSPs  |      | IGP-based LSPs |     |static LSPs|\n"+
+     "   |          |      |                |     |           |\n   +----------+"+
+     "      +----------------+     +-----------+\n       ^  ^                   "+
+     " ^  ^\n       |  +----------------+   |  +--------+\n       |             "+
+     "      |   |           |\n       |   +------+      +-+---+-+      +--+--+\n"+
+     "       +---+ RSVP |      |SEGMENT|      | LDP |\n           +------+      "+
+     "|ROUTING|      +-----+\n                         +-------+\n    ";
+   oc-ext:openconfig-version "3.1.0";
+   revision "2019-03-26" {
+     description
+       "Add Pseudowire encapsulation.";
+     reference
+       "3.1.0";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "3.0.1";
+   }
+   revision "2018-07-02" {
+     description
+       "Add new RSVP-TE statistics, remove associated-rsvp-session\nleaf. Remove"+
+       " use of date-and-time.";
+     reference
+       "3.0.0";
+   }
+   revision "2018-06-16" {
+     description
+       "Included attributes for base LDP configuration.";
+     reference
+       "2.6.0";
+   }
+   revision "2018-06-13" {
+     description
+       "Add ttl-propagation to global MPLS config";
+     reference
+       "2.5.0";
+   }
+   revision "2018-06-05" {
+     description
+       "Fixed bugs in when statements on RSVP-TE attributes";
+     reference
+       "2.4.2";
+   }
+   revision "2017-08-24" {
+     description
+       "Minor formatting fixes.";
+     reference
+       "2.4.1";
+   }
+   revision "2017-06-21" {
+     description
+       "Add TC bits typedef.";
+     reference
+       "2.4.0";
+   }
+   revision "2017-03-22" {
+     description
+       "Add RSVP calculated-absolute-subscription-bw";
+     reference
+       "2.3.0";
+   }
+   revision "2017-01-26" {
+     description
+       "Add RSVP Tspec, clarify units for RSVP, remove unused LDP";
+     reference
+       "2.2.0";
+   }
+   revision "2016-12-15" {
+     description
+       "Add additional MPLS parameters";
+     reference
+       "2.1.0";
+   }
+   revision "2016-09-01" {
+     description
+       "Revisions based on implementation feedback";
+     reference
+       "2.0.0";
+   }
+   revision "2016-08-08" {
+     description
+       "Public release of MPLS models";
+     reference
+       "1.0.1";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+ }
+

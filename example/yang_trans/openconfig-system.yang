@@ -1,0 +1,207 @@
+ module openconfig-system {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/system";
+   prefix "oc-sys";
+   import openconfig-inet-types {
+     prefix "oc-inet";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "Model for managing system-wide services and functions on\nnetwork "+
+     "devices.\n\nPortions of this code were derived from IETF RFC 7317.\nPlease"+
+     " reproduce this note if possible.\n\nIETF code is subject to the following"+
+     " copyright and license:\nCopyright (c) IETF Trust and the persons "+
+     "identified as authors of\nthe code.\nAll rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or without\nmodification, is "+
+     "permitted pursuant to, and subject to the license\nterms contained in, the"+
+     " Simplified BSD License set forth in\nSection 4.c of the IETF Trust's "+
+     "Legal Provisions Relating\nto IETF Documents (http://trustee.ietf.org/lice"+
+     "nse-info).";
+   oc-ext:openconfig-version "0.5.0";
+   revision "2018-01-21" {
+     description
+       "Add cpu utilization data";
+     reference
+       "0.5.0";
+   }
+   revision "2017-12-15" {
+     description
+       "Add alarms to the system model";
+     reference
+       "0.4.0";
+   }
+   revision "2017-09-18" {
+     description
+       "Updated to use OpenConfig types modules";
+     reference
+       "0.3.0";
+   }
+   revision "2017-07-06" {
+     description
+       "Move to oc-inet types, add IETF attribution, add RADIUS\ncounters, "+
+       "changed password leaf names to indicate hashed";
+     reference
+       "0.2.0";
+   }
+   revision "2017-01-29" {
+     description
+       "Initial public release";
+     reference
+       "0.1.0";
+   }
+   identity NTP_AUTH_TYPE {
+     description
+       "Base identity for encryption schemes supported for NTP\nauthentication "+
+       "keys";
+   }
+   identity NTP_AUTH_MD5 {
+     base "NTP_AUTH_TYPE";
+     description
+       "MD5 encryption method";
+   }
+   container system {
+     description
+       "Enclosing container for system-related configuration and\noperational "+
+       "state data";
+     container dns {
+       description
+         "Enclosing container for DNS resolver data";
+       container config {
+         description
+           "Configuration data for the DNS resolver";
+         leaf-list search {
+           type "oc-inet:domain-name";
+           ordered-by "user";
+           description
+             "An ordered list of domains to search when resolving\na host name.";
+         }
+       }
+       container state {
+         config "false";
+         description
+           "Operational state data for the DNS resolver";
+         leaf-list search {
+           type "oc-inet:domain-name";
+           ordered-by "user";
+           description
+             "An ordered list of domains to search when resolving\na host name.";
+         }
+       }
+       container servers {
+         description
+           "Enclosing container for DNS resolver list";
+         list server {
+           key "address";
+           ordered-by "user";
+           description
+             "List of the DNS servers that the resolver should query.\n\nWhen "+
+             "the resolver is invoked by a calling application, it\nsends the "+
+             "query to the first name server in this list.  If\nno response has "+
+             "been received within 'timeout' seconds,\nthe resolver continues "+
+             "with the next server in the list.\nIf no response is received from"+
+             " any server, the resolver\ncontinues with the first server again. "+
+             " When the resolver\nhas traversed the list 'attempts' times "+
+             "without receiving\nany response, it gives up and returns an error "+
+             "to the\ncalling application.\n\nImplementations MAY limit the "+
+             "number of entries in this\nlist.";
+           leaf address {
+             type "leafref" {
+               path "../config/address";
+             }
+             description
+               "References the configured address of the DNS server";
+           }
+           container config {
+             description
+               "Configuration data for each DNS resolver";
+             leaf address {
+               type "oc-inet:ip-address";
+               description
+                 "The address of the DNS server, can be either IPv4\nor IPv6.";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for each DNS resolver";
+             leaf address {
+               type "oc-inet:ip-address";
+               description
+                 "The address of the DNS server, can be either IPv4\nor IPv6.";
+             }
+           }
+         }
+       }
+       container host-entries {
+         description
+           "Enclosing container for list of static host entries";
+         list host-entry {
+           key "hostname";
+           description
+             "List of static host entries";
+           leaf hostname {
+             type "leafref" {
+               path "../config/hostname";
+             }
+             description
+               "Reference to the hostname list key";
+           }
+           container config {
+             description
+               "Configuration data for static host entries";
+             leaf hostname {
+               type "string" {
+                 length "1..255";
+               }
+               description
+                 "Hostname for the static DNS entry";
+             }
+             leaf-list ipv4-address {
+               type "oc-inet:ipv4-address";
+               description
+                 "List of IPv4 addressses for the host entry";
+             }
+             leaf-list ipv6-address {
+               type "oc-inet:ipv6-address";
+               description
+                 "List of IPv6 addresses for the host entry";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for static host entries";
+             leaf hostname {
+               type "string" {
+                 length "1..255";
+               }
+               description
+                 "Hostname for the static DNS entry";
+             }
+             leaf-list ipv4-address {
+               type "oc-inet:ipv4-address";
+               description
+                 "List of IPv4 addressses for the host entry";
+             }
+             leaf-list ipv6-address {
+               type "oc-inet:ipv6-address";
+               description
+                 "List of IPv6 addresses for the host entry";
+             }
+           }
+           must "(/oc-sys:system/oc-sys:dns/oc-sys:host-entries/oc-sys:host-entr"+
+                "y/oc-sys:config/oc-sys:ipv4-address) or (/oc-sys:system/oc-sys:"+
+                "dns/oc-sys:host-entries/oc-sys:host-entry/oc-sys:config/oc-sys:"+
+                "ipv6-address)";
+         }
+       }
+     }
+   }
+ }
+

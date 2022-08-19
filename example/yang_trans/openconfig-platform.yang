@@ -1,0 +1,514 @@
+ module openconfig-platform {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/platform";
+   prefix "oc-platform";
+   import openconfig-platform-types {
+     prefix "oc-platform-types";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   import openconfig-alarm-types {
+     prefix "oc-alarm-types";
+   }
+   import openconfig-types {
+     prefix "oc-types";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines a data model for representing a system\ncomponent "+
+     "inventory, which can include hardware or software\nelements arranged in an"+
+     " arbitrary structure. The primary\nrelationship supported by the model is "+
+     "containment, e.g.,\ncomponents containing subcomponents.\n\nIt is expected"+
+     " that this model reflects every field replacable\nunit on the device at a "+
+     "minimum (i.e., additional information\nmay be supplied about non-replacabl"+
+     "e components).\n\nEvery element in the inventory is termed a 'component' "+
+     "with each\ncomponent expected to have a unique name and type, and "+
+     "optionally\na unique system-assigned identifier and FRU number.  "+
+     "The\nuniqueness is guaranteed by the system within the device.\n\nComponen"+
+     "ts may have properties defined by the system that are\nmodeled as a list "+
+     "of key-value pairs. These may or may not be\nuser-configurable.  The model"+
+     " provides a flag for the system\nto optionally indicate which properties "+
+     "are user configurable.\n\nEach component also has a list of 'subcomponents"+
+     "' which are\nreferences to other components. Appearance in a list "+
+     "of\nsubcomponents indicates a containment relationship as described\nabove"+
+     ".  For example, a linecard component may have a list of\nreferences to "+
+     "port components that reside on the linecard.\n\nThis schema is generic to "+
+     "allow devices to express their own\nplatform-specific structure.  It may "+
+     "be augmented by additional\ncomponent type-specific schemas that provide a"+
+     " common structure\nfor well-known component types.  In these cases, the "+
+     "system is\nexpected to populate the common component schema, and "+
+     "may\noptionally also represent the component and its properties in "+
+     "the\ngeneric structure.\n\nThe properties for each component may include "+
+     "dynamic values,\ne.g., in the 'state' part of the schema.  For example, a "+
+     "CPU\ncomponent may report its utilization, temperature, or other\nphysical"+
+     " properties.  The intent is to capture all platform-\nspecific physical "+
+     "data in one location, including inventory\n(presence or absence of a "+
+     "component) and state (physical\nattributes or status).";
+   oc-ext:openconfig-version "0.9.0";
+   revision "2018-01-30" {
+     description
+       "Amended approach for modelling CPU - rather than having\na local CPU "+
+       "utilisation state variable, a component with\na CPU should create a "+
+       "subcomponent of type CPU to report\nstatistics.";
+     reference
+       "0.9.0";
+   }
+   revision "2018-01-16" {
+     description
+       "Added new per-component common data; add temp alarm;\nmoved hardware-por"+
+       "t reference to port model";
+     reference
+       "0.8.0";
+   }
+   revision "2017-12-14" {
+     description
+       "Added anchor containers for component data, added new\ncomponent types";
+     reference
+       "0.7.0";
+   }
+   revision "2017-08-16" {
+     description
+       "Added power state enumerated type";
+     reference
+       "0.6.0";
+   }
+   revision "2016-12-22" {
+     description
+       "Added temperature state variable to component";
+     reference
+       "0.5.0";
+   }
+   container components {
+     description
+       "Enclosing container for the components in the system.";
+     list component {
+       key "name";
+       description
+         "List of components, keyed by component name.";
+       leaf name {
+         type "leafref" {
+           path "../config/name";
+         }
+         description
+           "References the component name";
+       }
+       container config {
+         description
+           "Configuration data for each component";
+         leaf name {
+           type "string";
+           description
+             "Device name for the component -- this will not be a\nconfigurable "+
+             "parameter on many implementations";
+         }
+       }
+       container state {
+         config "false";
+         description
+           "Operational state data for each component";
+         leaf name {
+           type "string";
+           description
+             "Device name for the component -- this will not be a\nconfigurable "+
+             "parameter on many implementations";
+         }
+         leaf type {
+           type "union" {
+             type "identityref" {
+               base "oc-platform-types:OPENCONFIG_HARDWARE_COMPONENT";
+             }
+             type "identityref" {
+               base "oc-platform-types:OPENCONFIG_SOFTWARE_COMPONENT";
+             }
+           }
+           description
+             "Type of component as identified by the system";
+         }
+         leaf id {
+           type "string";
+           description
+             "Unique identifier assigned by the system for the\ncomponent";
+         }
+         leaf description {
+           type "string";
+           description
+             "System-supplied description of the component";
+         }
+         leaf mfg-name {
+           type "string";
+           description
+             "System-supplied identifier for the manufacturer of the\ncomponent."+
+             "  This data is particularly useful when a\ncomponent manufacturer "+
+             "is different than the overall\ndevice vendor.";
+         }
+         leaf hardware-version {
+           type "string";
+           description
+             "For hardware components, this is the hardware revision of\nthe "+
+             "component.";
+         }
+         leaf firmware-version {
+           type "string";
+           description
+             "For hardware components, this is the version of associated\nfirmwa"+
+             "re that is running on the component, if applicable.";
+         }
+         leaf software-version {
+           type "string";
+           description
+             "For software components such as operating system or other\nsoftwar"+
+             "e module, this is the version of the currently\nrunning software.";
+         }
+         leaf serial-no {
+           type "string";
+           description
+             "System-assigned serial number of the component.";
+         }
+         leaf part-no {
+           type "string";
+           description
+             "System-assigned part number for the component.  This should\nbe "+
+             "present in particular if the component is also an FRU\n(field "+
+             "replacable unit)";
+         }
+         leaf oper-status {
+           type "identityref" {
+             base "oc-platform-types:COMPONENT_OPER_STATUS";
+           }
+           description
+             "If applicable, this reports the current operational status\nof the"+
+             " component.";
+         }
+         container temperature {
+           description
+             "Temperature in degrees Celsius of the component. Values include\nt"+
+             "he instantaneous, average, minimum, and maximum statistics. "+
+             "If\navg/min/max statistics are not supported, the target is "+
+             "expected\nto just supply the instant value";
+           leaf instant {
+             type "decimal64" {
+               fraction-digits "1";
+             }
+             units "celsius";
+             description
+               "The instantaneous value of the statistic.";
+           }
+           leaf avg {
+             type "decimal64" {
+               fraction-digits "1";
+             }
+             units "celsius";
+             description
+               "The arithmetic mean value of the statistic over the\nsampling "+
+               "period.";
+           }
+           leaf min {
+             type "decimal64" {
+               fraction-digits "1";
+             }
+             units "celsius";
+             description
+               "The minimum value of the statistic over the sampling\nperiod";
+           }
+           leaf max {
+             type "decimal64" {
+               fraction-digits "1";
+             }
+             units "celsius";
+             description
+               "The maximum value of the statistic over the sampling\nperiod";
+           }
+           leaf interval {
+             type "oc-types:stat-interval";
+             description
+               "The time interval over which the min/max/average statistics\nare"+
+               " computed by the system.";
+           }
+           leaf alarm-status {
+             type "boolean";
+             description
+               "A value of true indicates the alarm has been raised or\nasserted"+
+               ".  The value should be false when the alarm is\ncleared.";
+           }
+           leaf alarm-threshold {
+             type "uint32";
+             description
+               "The threshold value that was crossed for this alarm.";
+           }
+           leaf alarm-severity {
+             type "identityref" {
+               base "oc-alarm-types:OPENCONFIG_ALARM_SEVERITY";
+             }
+             description
+               "The severity of the current alarm.";
+           }
+         }
+         container memory {
+           description
+             "For components that have associated memory, these values\nreport "+
+             "information about available and utilized memory.";
+           leaf available {
+             type "uint64";
+             units "bytes";
+             description
+               "The available memory physically installed, or logically\nallocat"+
+               "ed to the component.";
+           }
+           leaf utilized {
+             type "uint64";
+             units "bytes";
+             description
+               "The memory currently in use by processes running on\nthe "+
+               "component, not considering reserved memory that is\nnot "+
+               "available for use.";
+           }
+         }
+         leaf allocated-power {
+           type "uint32";
+           units "watts";
+           description
+             "Power allocated by the system for the component.";
+         }
+         leaf used-power {
+           type "uint32";
+           units "watts";
+           description
+             "Actual power used by the component.";
+         }
+       }
+       container properties {
+         description
+           "Enclosing container ";
+         list property {
+           key "name";
+           description
+             "List of system properties for the component";
+           leaf name {
+             type "leafref" {
+               path "../config/name";
+             }
+             description
+               "Reference to the property name.";
+           }
+           container config {
+             description
+               "Configuration data for each property";
+             leaf name {
+               type "string";
+               description
+                 "System-supplied name of the property -- this is typically\nnon"+
+                 "-configurable";
+             }
+             leaf value {
+               type "union" {
+                 type "string";
+                 type "boolean";
+                 type "int64";
+                 type "uint64";
+                 type "decimal64" {
+                   fraction-digits "2";
+                 }
+               }
+               description
+                 "Property values can take on a variety of types.  Signed "+
+                 "and\nunsigned integer types may be provided in smaller "+
+                 "sizes,\ne.g., int8, uint16, etc.";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for each property";
+             leaf name {
+               type "string";
+               description
+                 "System-supplied name of the property -- this is typically\nnon"+
+                 "-configurable";
+             }
+             leaf value {
+               type "union" {
+                 type "string";
+                 type "boolean";
+                 type "int64";
+                 type "uint64";
+                 type "decimal64" {
+                   fraction-digits "2";
+                 }
+               }
+               description
+                 "Property values can take on a variety of types.  Signed "+
+                 "and\nunsigned integer types may be provided in smaller "+
+                 "sizes,\ne.g., int8, uint16, etc.";
+             }
+             leaf configurable {
+               type "boolean";
+               description
+                 "Indication whether the property is user-configurable";
+             }
+           }
+         }
+       }
+       container subcomponents {
+         description
+           "Enclosing container for subcomponent references";
+         list subcomponent {
+           key "name";
+           description
+             "List of subcomponent references";
+           leaf name {
+             type "leafref" {
+               path "../config/name";
+             }
+             description
+               "Reference to the name list key";
+           }
+           container config {
+             description
+               "Configuration data for the subcomponent";
+             leaf name {
+               type "leafref" {
+                 path "../../../../../component/config/name";
+               }
+               description
+                 "Reference to the name of the subcomponent";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state data for the subcomponent";
+             leaf name {
+               type "leafref" {
+                 path "../../../../../component/config/name";
+               }
+               description
+                 "Reference to the name of the subcomponent";
+             }
+           }
+         }
+       }
+       container chassis {
+         description
+           "Data for chassis components";
+         container config {
+           description
+             "Configuration data for chassis components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for chassis components";
+         }
+       }
+       container port {
+         description
+           "Data for physical port components";
+         container config {
+           description
+             "Configuration data for physical port components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for physical port components";
+         }
+       }
+       container power-supply {
+         description
+           "Data for power supply components";
+         container config {
+           description
+             "Configuration data for power supply components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for power supply components";
+         }
+       }
+       container fan {
+         description
+           "Data for fan components";
+         container config {
+           description
+             "Configuration data for fan components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for fan components";
+         }
+       }
+       container fabric {
+         description
+           "Data for fabric components";
+         container config {
+           description
+             "Configuration data for fabric components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for fabric components";
+         }
+       }
+       container storage {
+         description
+           "Data for storage components";
+         container config {
+           description
+             "Configuration data for storage components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for storage components";
+         }
+       }
+       container cpu {
+         description
+           "Data for cpu components";
+         container config {
+           description
+             "Configuration data for cpu components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for cpu components";
+         }
+       }
+       container integrated-circuit {
+         description
+           "Data for chip components, such as ASIC, NPUs, etc.";
+         container config {
+           description
+             "Configuration data for chip components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for chip components";
+         }
+       }
+       container backplane {
+         description
+           "Data for backplane components";
+         container config {
+           description
+             "Configuration data for backplane components";
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data for backplane components";
+         }
+       }
+     }
+   }
+ }
+

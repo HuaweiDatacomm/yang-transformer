@@ -1,0 +1,84 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-lmp {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-lmp";
+   prefix "lmp";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Link management protocol.";
+   revision "2019-09-21" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "lmp";
+   typedef neighbor-mode {
+     type "enumeration" {
+       enum "none" {
+         value "0";
+         description
+           "None mode.";
+       }
+       enum "static" {
+         value "1";
+         description
+           "Static mode.";
+       }
+     }
+     description
+       "The LMP neighbor mode.";
+   }
+   container lmp {
+     description
+       "Configure link management protocol.";
+     container global {
+       description
+         "Configure LMP global attributes.";
+       leaf enable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable LMP.";
+       }
+     }
+     container neighbors {
+       when "../global/enable='true'";
+       description
+         "List of LMP peers.";
+       list neighbor {
+         key "name";
+         max-elements "255";
+         description
+           "Configure LMP operations on devices. It lists a series of LMP "+
+           "operation entries.";
+         leaf name {
+           type "string" {
+             length "1..32";
+             pattern "[a-zA-Z][^?'\"|<>]{0,}";
+           }
+           description
+             "LMP peer name.";
+         }
+         leaf mode {
+           type "neighbor-mode";
+           default "none";
+           description
+             "LMP peer type.";
+         }
+       }
+     }
+   }
+ }
+

@@ -1,0 +1,78 @@
+ module ietf-network-instance {
+   yang-version "1.1";
+   namespace "urn:ietf:params:xml:ns:yang:ietf-network-instance";
+   prefix "ni";
+   import ietf-interfaces {
+     prefix "if";
+     reference
+       "RFC 8343: A YANG Data Model for Interface Management";
+   }
+   import ietf-ip {
+     prefix "ip";
+     reference
+       "RFC 8344: A YANG Data Model for IP Management";
+   }
+   organization
+     "IETF Routing Area (rtgwg) Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/rtgwg>\nWG List:  <mailto:rtgwg"+
+     "@ietf.org>\n\nAuthor:   Lou Berger\n          <mailto:lberger@labn.net>\nA"+
+     "uthor:   Christian Hopps\n          <mailto:chopps@chopps.org>\nAuthor:   "+
+     "Acee Lindem\n          <mailto:acee@cisco.com>\nAuthor:   Dean Bogdanovic"+
+     "\n          <mailto:ivandean@gmail.com>";
+   description
+     "This module is used to support multiple network instances\nwithin a single"+
+     " physical or virtual device.  Network\ninstances are commonly known as "+
+     "VRFs (VPN Routing and\nForwarding) and VSIs (Virtual Switching Instances)."+
+     "\n\nThe key words 'MUST', 'MUST NOT', 'REQUIRED', 'SHALL',\n'SHALL NOT', "+
+     "'SHOULD', 'SHOULD NOT', 'RECOMMENDED',\n'NOT RECOMMENDED', 'MAY', and "+
+     "'OPTIONAL' in this document\nare to be interpreted as described in BCP 14 "+
+     "(RFC 2119)\n(RFC 8174) when, and only when, they appear in all capitals,\n"+
+     " as shown here.\n\nCopyright (c) 2019 IETF Trust and the persons "+
+     "identified as\nauthors of the code.  All rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or\nwithout modification, is "+
+     "permitted pursuant to, and subject\nto the license terms contained in, the"+
+     " Simplified BSD\nLicense set forth in Section 4.c of the IETF Trust's "+
+     "Legal\nProvisions Relating to IETF Documents\n(https://trustee.ietf.org/li"+
+     "cense-info).\n\nThis version of this YANG module is part of RFC 8529; "+
+     "see\nthe RFC itself for full legal notices.";
+   revision "2019-01-21" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 8529";
+   }
+   augment "/if:interfaces/if:interface" {
+     description
+       "Add a node for the identification of the network\ninstance associated "+
+       "with the information configured\non a interface.\n\nNote that a standard"+
+       " error will be returned if the\nidentified leafref isn't present.  If an"+
+       " interface cannot\nbe assigned for any other reason, the operation SHALL"+
+       " fail\nwith an error-tag of 'operation-failed' and an\nerror-app-tag of "+
+       "'ni-assignment-failed'.  A meaningful\nerror-info that indicates the "+
+       "source of the assignment\nfailure SHOULD also be provided.";
+   }
+   augment "/if:interfaces/if:interface/ip:ipv4" {
+     description
+       "Add a node for the identification of the network\ninstance associated "+
+       "with the information configured\non an IPv4 interface.\n\nNote that a "+
+       "standard error will be returned if the\nidentified leafref isn't "+
+       "present.  If an interface cannot\nbe assigned for any other reason, the "+
+       "operation SHALL fail\nwith an error-tag of 'operation-failed' and "+
+       "an\nerror-app-tag of 'ni-assignment-failed'.  A meaningful\nerror-info "+
+       "that indicates the source of the assignment\nfailure SHOULD also be "+
+       "provided.";
+   }
+   augment "/if:interfaces/if:interface/ip:ipv6" {
+     description
+       "Add a node for the identification of the network\ninstance associated "+
+       "with the information configured\non an IPv6 interface.\n\nNote that a "+
+       "standard error will be returned if the\nidentified leafref isn't "+
+       "present.  If an interface cannot\nbe assigned for any other reason, the "+
+       "operation SHALL fail\nwith an error-tag of 'operation-failed' and "+
+       "an\nerror-app-tag of 'ni-assignment-failed'.  A meaningful\nerror-info "+
+       "that indicates the source of the assignment\nfailure SHOULD also be "+
+       "provided.";
+   }
+ }
+

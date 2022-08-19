@@ -1,0 +1,53 @@
+ /*
+Copyright (C) 2019-2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-dsvpn-nhrp {
+   namespace "urn:huawei:yang:huawei-dsvpn-nhrp";
+   prefix "dsvpn-nhrp";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Dynamic Smart Virtual Private Network (DSVPN) refers to a technology for "+
+     "dynamically\nestablishing VPN between a branch and a headquarters, a "+
+     "branch, and a branch in the\nHub-Spoke network model.\nThe Next Hop "+
+     "Resolution Protocol (NHRP) is an extension of the ATM ARP routing "+
+     "mechanism\nthat is sometimes used to improve the efficiency of routing "+
+     "computer network traffic over\nNon-Broadcast, Multiple Access (NBMA) "+
+     "Networks.";
+   revision "2020-03-26" {
+     description
+       "White-box errors are resolved.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "nhrp";
+   container dsvpn-nhrp {
+     description
+       "Dynamic Smart Virtual Private Network, Next Hop Resolution Protocol.";
+     container global {
+       description
+         "Configure NHRP on DSVPN.";
+       leaf enabled {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable global NHRP on DSVPN.";
+       }
+     }
+   }
+ }
+

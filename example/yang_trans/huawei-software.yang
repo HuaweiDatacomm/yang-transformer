@@ -1,0 +1,480 @@
+ /*
+Copyright (C) 2019-2021 Huawei Technologies Co., Ltd. All rights reserved.
+module: huawei-software
+   +--rw software
+      +--rw global
+      |  +--rw auto-save
+      |     +--rw enable?   boolean
+      x--ro versions
+      |  +--ro version* [base]
+      |     +--ro base     string
+      |     +--ro patch?   string
+      +--ro startup-packages
+      |  +--ro startup-package* [slot-id]
+      |     +--ro slot-id            string
+      |     +--ro current-package?   string
+      |     +--ro next-package?      string
+      +--ro packages
+      |  +--ro package* [name]
+      |     +--ro name            string
+      |     +--ro package-type?   package-type
+      +--ro upgrade-rollback-timer
+      |  +--ro timer-enable?   boolean
+      |  +--ro time?           uint32
+      +--ro checkpoint-infos
+      |  +--ro checkpoint-info* [name]
+      |     +--ro name               string
+      |     +--ro create-time?       yang:date-and-time
+      |     +--ro create-mode?       checkpoint-create-type
+      |     +--ro base-package?      string
+      |     +--ro feature-package?   string
+      |     +--ro patch-package?     string
+      |     +--ro module-package?    string
+      +--ro operation-schedules
+         +--ro operation-schedule* [operation-type file-name]
+            +--ro operation-type      operation-type
+            +--ro file-name           string
+            +--ro status?             operation-status
+            +--ro fail-reason?        uint32
+rpcs:
+   +---x startup-by-mode
+   |  +---w input
+   |     +---w name    string
+   |     +---w mode?   startup-mode
+   +---x startup-by-slot-id
+   |  +---w input
+   |     +---w name       string
+   |     +---w slot-id?   string
+   +---x enable-upgrade-rollback
+   |  +---w input
+   |     +---w rollback-time    uint32
+   +---x undo-upgrade-rollback
+   +---x install-feature-software
+   |  +---w input
+   |     +---w name    string
+   +---x uninstall-feature-software
+   |  +---w input
+   |     +---w name    string
+   +---x upgrade-feature-software
+   |  +---w input
+   |     +---w name    string
+   +---x startup-feature-software
+   |  +---w input
+   |     +---w feature-package-name    string
+   +---x reset-feature-software-next-startup
+   |  +---w input
+   |     +---w feature-package-name    string
+   +---x create-startup-checkpoint
+   |  +---w input
+   |     +---w name    -> /software/checkpoint-infos/checkpoint-info/name
+   +---x delete-startup-checkpoint
+   |  +---w input
+   |     +---w name    -> /software/checkpoint-infos/checkpoint-info/name
+   +---x check-startup-checkpoint
+   |  +---w input
+   |     +---w name    -> /software/checkpoint-infos/checkpoint-info/name
+   +---x restore-startup-checkpoint
+   |  +---w input
+   |     +---w name    -> /software/checkpoint-infos/checkpoint-info/name
+   +---x refresh-startup-secure-version-configuration
+      +---w input
+         +---w slot?   string
+*/
+
+ module huawei-software {
+   namespace "urn:huawei:yang:huawei-software";
+   prefix "software";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Specify software package upgrade management.";
+   revision "2021-09-24" {
+     description
+       "Add noderef to rpc enable-upgrade-rollback.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-07-10" {
+     description
+       "Add rpc rollback-feature-software.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-04-30" {
+     description
+       "Add rpc in-service-upgrade-feature-software. Modify length and "+
+       "description of leaf name in rpc install-feature-software, uninstall-feat"+
+       "ure-software, upgrade-feature-software, startup-feature-software and "+
+       "reset-feature-software-next-startup.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-04-28" {
+     description
+       "Modify software-integrated-infos to integrated-infos.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-04-27" {
+     description
+       "Add startup-features.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-04-07" {
+     description
+       "Add software-integrated-infos.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-03-24" {
+     description
+       "Modify operation-schedules fail-reason type.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-03-11" {
+     description
+       "Add leaf software-name to packages.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-03-10" {
+     description
+       "Add integrate-software-package,restore-software-package,leaf-list "+
+       "current-feature-packages of startup-packages,leaf-list next-feature-pack"+
+       "ages of startup-packages.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-02-23" {
+     description
+       "Delete trust-startup-softwares.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-02-20" {
+     description
+       "Add trust-startup-softwares.";
+     reference
+       "Huawei private.";
+   }
+   revision "2021-02-04" {
+     description
+       "Add operation-schedules.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-12-31" {
+     description
+       "Add rpc reset-feature-software-next-startup.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-06-30" {
+     description
+       "Revert modification of software node's config attribute.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-06-29" {
+     description
+       "Modify node description.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-05-27" {
+     description
+       "Add rpc refresh-startup-secure-version-configuration.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-03-02" {
+     description
+       "Add install-feature-software, uninstall-feature-software, upgrade-featur"+
+       "e-software.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-12-02" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "upgrade";
+   typedef startup-mode {
+     type "enumeration" {
+       enum "primary" {
+         value "1";
+         description
+           "Upgrade the software package on the master MPU.";
+       }
+       enum "slave" {
+         value "2";
+         description
+           "Upgrade the software package on the slave MPU.";
+       }
+       enum "all" {
+         value "3";
+         description
+           "Upgrade the software package on all MPUs.";
+       }
+     }
+     description
+       "Startup mode.";
+   }
+   container software {
+     description
+       "Specify software package upgrade management.";
+     container versions {
+       config "false";
+       status "deprecated";
+       description
+         "List of operational state of software package versions. The node "+
+         "versions is deprecated. You are advised to use the node /system/system"+
+         "-info.";
+       list version {
+         key "base";
+         status "deprecated";
+         description
+           "Operational state of a software package version. The node version is"+
+           " deprecated. You are advised to use the node /system/system-info.";
+         leaf base {
+           type "string" {
+             length "1..63";
+           }
+           status "deprecated";
+           description
+             "Current software package version. The node base is deprecated. You"+
+             " are advised to use the node /system/system-info/product-version.";
+         }
+         leaf patch {
+           type "string" {
+             length "1..63";
+           }
+           status "deprecated";
+           description
+             "Current patch package version. The node patch is deprecated. You "+
+             "are advised to use the node /system/system-info/patch-version.";
+         }
+       }
+     }
+     container startup-packages {
+       config "false";
+       description
+         "List of operational state of startup software packages.";
+       list startup-package {
+         key "slot-id";
+         description
+           "Operational state of startup software package.";
+         leaf slot-id {
+           type "string" {
+             length "1..31";
+           }
+           description
+             "Slot ID.";
+         }
+         leaf current-package {
+           type "string" {
+             length "4..255";
+           }
+           description
+             "The name of a software package used at the current startup.";
+         }
+         leaf next-package {
+           type "string" {
+             length "4..255";
+           }
+           description
+             "The name of a software package used at the next startup.";
+         }
+       }
+     }
+     container packages {
+       config "false";
+       description
+         "List of operational state of software packages on the device.";
+       list package {
+         key "name";
+         description
+           "Operational state of a software package on the device.";
+         leaf name {
+           type "string" {
+             length "4..255";
+           }
+           description
+             "The file name of a software package on the device, which can be "+
+             "modified by users.";
+         }
+       }
+     }
+     container upgrade-rollback-timer {
+       config "false";
+       description
+         "Operational data of upgrade rollback timer.";
+       leaf timer-enable {
+         type "boolean";
+         description
+           "When the rollback timer is closed, the time leaf will not be shown.";
+       }
+       leaf time {
+         when "../timer-enable = 'true'";
+         type "uint32" {
+           range "10..360";
+         }
+         units "min";
+         description
+           "Rollback time.";
+       }
+     }
+     container integrated-infos {
+       config "false";
+       description
+         "List of software packages on the device.";
+       list integrated-info {
+         key "name";
+         description
+           "Operational data of a software package on the device.";
+         leaf name {
+           type "string" {
+             length "4..127";
+           }
+           description
+             "Specify the name of a software package on the device.";
+         }
+         leaf package-integrated-version {
+           type "string" {
+             length "1..63";
+           }
+           description
+             "Specify the integrated version of a software package on the "+
+             "device.";
+         }
+         leaf component-status {
+           type "string" {
+             length "1..63";
+           }
+           description
+             "Specify the component status of a software package on the device.";
+         }
+         leaf component-version {
+           type "string" {
+             length "1..63";
+           }
+           description
+             "Specify the component version of a software package on the "+
+             "device.";
+         }
+       }
+     }
+   }
+   rpc startup-by-mode {
+     description
+       "Specify the mode-based upgrade for software packages.";
+     ext:node-ref "/software/packages/package";
+     input {
+       leaf name {
+         type "string" {
+           length "4..127";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a software package that needs to be upgraded.";
+       }
+       leaf mode {
+         type "startup-mode";
+         description
+           "Specify a software package upgrade mode.";
+       }
+     }
+   }
+   rpc startup-by-slot-id {
+     description
+       "Specify the slot ID-based upgrade for software packages.";
+     ext:node-ref "/software/packages/package";
+     input {
+       leaf name {
+         type "string" {
+           length "4..127";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a software package that needs to be upgraded.";
+       }
+       leaf slot-id {
+         type "string" {
+           length "1..31";
+         }
+         description
+           "Specify the slot ID of a board on which a software package needs to "+
+           "be upgraded.";
+       }
+     }
+   }
+   rpc enable-upgrade-rollback {
+     ext:node-ref "/software/upgrade-rollback-timer";
+     description
+       "Specify the rollback time when upgrade software package.";
+     input {
+       leaf rollback-time {
+         type "uint32" {
+           range "10..360";
+         }
+         units "min";
+         mandatory "true";
+         description
+           "Specify the rollback time.";
+       }
+     }
+   }
+   rpc undo-upgrade-rollback {
+     ext:node-ref "/software/upgrade-rollback-timer";
+     description
+       "Delete the rollback time when upgrade software package.";
+   }
+   rpc integrate-software-package {
+     description
+       "Integrate software package.";
+     input {
+       leaf original-package {
+         type "string" {
+           length "4..127";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a original software package.";
+       }
+       leaf integrated-package {
+         type "string" {
+           length "4..127";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a integrated software package.";
+       }
+     }
+   }
+   rpc restore-software-package {
+     description
+       "Restore software package.";
+     input {
+       leaf integrated-package {
+         type "string" {
+           length "4..127";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a integrated software package.";
+       }
+     }
+   }
+ }
+

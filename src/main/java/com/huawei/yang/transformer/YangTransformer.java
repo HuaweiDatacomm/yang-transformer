@@ -1151,7 +1151,7 @@ public class YangTransformer {
     /**
      * usage: -src {src-dir} -out {out-dir} [-no-deviations | -reserve-deviations]
      *             [ -reserve {--only-huawei-native
-     *             | {--module | --namespace} {--match {regex} [except {regex}*]}*} ]
+     *             | {--module | --namespace} {match {regex} [except {regex}...]}...} ]
      * @param args
      */
     public static void main(String[] args){
@@ -1229,7 +1229,7 @@ public class YangTransformer {
                 }
                 tailorType = TailorType.NAMESPACE;
             }
-            else if(args[i].equals("--match")){
+            else if(args[i].equals("match")){
                 if(!hasTailor){
                     paraError = true;
                     System.out.println("no reserve parameter.");
@@ -1272,7 +1272,7 @@ public class YangTransformer {
 
         if(paraError){
             System.out.println("usage: -src {src-dir} -out {out-dir} [no-deviations | reserve-deviations] [ -reserve {--only-huawei-native " +
-                    "| {--module | --namespace} {--match {regex} [except {regex}*]}*}  ]");
+                    "| {--module | --namespace} {match <regex> [except <regex>...] }...}  ]");
             return;
         }
 

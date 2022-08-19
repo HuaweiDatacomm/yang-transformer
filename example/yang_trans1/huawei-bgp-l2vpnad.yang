@@ -1,0 +1,1096 @@
+ /*
+Copyright (C) 2019-2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-bgp-l2vpnad {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-bgp-l2vpnad";
+   prefix "bgp-l2vpnad";
+   import huawei-extension {
+     prefix "ext";
+   }
+   import huawei-network-instance {
+     prefix "ni";
+   }
+   import huawei-bgp {
+     prefix "bgp";
+   }
+   import huawei-routing-policy {
+     prefix "rtp";
+   }
+   import huawei-xpl {
+     prefix "xpl";
+   }
+   import huawei-bgp-routing-table {
+     prefix "bgp-rt";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   import huawei-pub-type {
+     prefix "pub-type";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Inter-AS routing protocol that exchanges Network Layer Reachability "+
+     "Information (NLRI) with other BGP systems.";
+   revision "2020-08-30" {
+     description
+       "The YANG descriptions are modified according to new standards.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-03-22" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "bgp";
+   augment "/ni:network-instance/ni:instances/ni:instance/bgp:bgp/bgp:base-proce"+
+           "ss/bgp:afs/bgp:af" {
+     description
+       "BGP l2vpnad address family configuration.";
+     container l2vpnad {
+       when "../bgp:type='l2vpnad'";
+       description
+         "Configure l2vpn-ad-family options.";
+       container common {
+         description
+           "Configure l2vpn-ad-family common options.";
+         leaf policy-vpntarget {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable VPN target-based filtering for the received VPN "+
+             "routes. Only the VPN route whose Export RT attribute matches the "+
+             "local Import RT attribute can be added to the routing table. This "+
+             "option can be used in the inter-AS VPN Option B solution and the "+
+             "ASBR MP-EBGP inter-AS L2VPN solution in Kompella mode.";
+         }
+         leaf vpls-ad-disable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable virtual private LAN service auto-discovery.not "+
+             "receive BGP-AD route.";
+         }
+         leaf vpws-enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable virtual private wire services.";
+         }
+         leaf vpls-enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable virtual private LAN services.";
+         }
+         leaf multi-homing-nonstand {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable capability of multi-homing for virtual private LAN "+
+             "services.";
+         }
+         leaf vpn-orf-enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable vpn-orf capability.";
+         }
+         leaf route-select-delay {
+           type "uint16" {
+             range "0..3600";
+           }
+           units "s";
+           default "0";
+           description
+             "Route selection delay.";
+         }
+         leaf reflect-change-path {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable an RR to use an export policy to change route "+
+             "AS_Path.";
+         }
+         leaf reflect-between-client {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable route reflection between clients. If clients of a "+
+             "route reflector (RR) are fully meshed, you can disable route "+
+             "reflection among clients to reduce the cost.";
+         }
+         choice reflector-type {
+           description
+             "Set IPv4 address or id.";
+           case address {
+             description
+               "IPv4 address.";
+             leaf reflector-cluster-ipv4 {
+               type "inet:ipv4-address-no-zone";
+               description
+                 "Set a cluster ID. The value is expressed in the format of an "+
+                 "IPv4 address. Configuring multiple RRs in a cluster can "+
+                 "enhance the stability of the network. If a cluster has more "+
+                 "than one RR, select this option to set the same cluster ID for"+
+                 " all the RRs to avoid routing loops. To allow clients to "+
+                 "receive routes from RRs, ensure that the cluster ID of the RRs"+
+                 " is different from the router ID of any client. If the cluster"+
+                 " ID of the RRs is the same as the router ID of a client, the "+
+                 "client will discard received routes.";
+             }
+           }
+           case id {
+             description
+               "Set value.";
+             leaf reflector-cluster-id {
+               type "uint32" {
+                 range "1..4294967295";
+               }
+               description
+                 "Set a cluster ID. Configuring multiple RRs in a cluster can "+
+                 "enhance the stability of the network. If a cluster has more "+
+                 "than one RR, select this option to set the same cluster ID for"+
+                 " all the RRs to avoid routing loops. To allow clients to "+
+                 "receive routes from RRs, ensure that the cluster ID of the RRs"+
+                 " is different from the router ID of any client. If the cluster"+
+                 " ID of the RRs is the same as the router ID of a client, the "+
+                 "client will discard received routes.";
+             }
+           }
+         }
+         leaf default-local-preference {
+           type "uint32" {
+             range "0..4294967295";
+           }
+           default "100";
+           description
+             "The local preference of BGP routes.";
+         }
+         leaf bestroute-router-id-prior-clusterlist {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable BGP to compare originator before clusterlist in "+
+             "route selection.";
+         }
+         leaf tunnel-selector-name {
+           type "leafref" {
+             path "/rtp:routing-policy/rtp:tunnel-selectors/rtp:tunnel-selector/"+
+                  "rtp:name";
+           }
+           description
+             "Configure a tunnel selector. Applying it to the BGP IPv4 unicast, "+
+             "BGP VPNv4 address families, BGP VPNv6 address families and BGP "+
+             "L2VPN AD address family so that IPv4,VPNv4,VPNv6 and L2VPN AD "+
+             "labeled routes can be iterated to tunnels based on the tunnel "+
+             "selector. By default, no tunnel selector is configured.";
+         }
+         leaf route-reflector-ext-community-filter {
+           type "leafref" {
+             path "/rtp:routing-policy/rtp:ext-community-filters/rtp:ext-communi"+
+                  "ty-filter/rtp:name";
+           }
+           description
+             "Set the name of the extended community filter supported by an RR "+
+             "group. For the purpose of load balancing, only the IBGP route "+
+             "whose route-target extended community attribute meets the matching"+
+             " rules can be reflected.";
+         }
+         leaf nexthop-select-depend-type {
+           type "bgp:select-depend-type";
+           default "depend-ip";
+           description
+             "Specify the route iteration mode: IP or tunnel. In tunnel mode, "+
+             "the labeled BGP IPv4 route can participate in route selection only"+
+             " after its next hop is iterated to an LSP. In IP \nmode, the "+
+             "labeled BGP IPv4 route can participate in route selection only "+
+             "after its next hop is iterated to an IP address. By default, the "+
+             "labeled BGP IPv4 route can participate in route selection \nif its"+
+             " next hop can be iterated to an IP address, regardless of whether "+
+             "the LSP of the next hop exists. This allows the RR that is not "+
+             "enabled with MPLS to forward labeled routes. In non-RR \nnetworkin"+
+             "g or RR networking where the BGP next hop is changed, BGP needs to"+
+             " check whether there is an LSP destined for the next hop. If such "+
+             "an LSP is not found, BGP needs to establish an LSP in \nadvance. "+
+             "If the default setting is adopted, a labeled BGP IPv4 unicast "+
+             "route may be selected prior to LSP establishment. As a result, "+
+             "services are incorrectly switched before LSP establishment and "+
+             "\nservice stability is affected. Therefore, allow route selection "+
+             "only after the labeled BGP IPv4 route is iterated to an LSP.";
+         }
+       }
+       container slow-peer {
+         description
+           "Configure peer advertising routes slowly.";
+         leaf detection {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable detect slow peers.";
+         }
+         leaf detection-threshold {
+           type "uint16" {
+             range "120..3600";
+           }
+           units "s";
+           default "300";
+           description
+             "Specify the time in seconds lagging behind average when a peer is "+
+             "determined to be a slow peer.";
+         }
+         leaf absolute-detection {
+           type "boolean";
+           default "true";
+           description
+             "Enable/disable absolute-detect slow peers.";
+         }
+         leaf absolute-detection-threshold {
+           type "uint16" {
+             range "3..3600";
+           }
+           units "s";
+           default "9";
+           description
+             "Specify the packet send delay time in second when a peer is "+
+             "determined to be a slow peer.";
+         }
+       }
+     }
+   }
+   augment "/ni:network-instance/ni:instances/ni:instance/bgp:bgp/bgp:base-proce"+
+           "ss/bgp:peer-groups/bgp:peer-group/bgp:afs/bgp:af" {
+     description
+       "BGP l2vpnad address family configuration.";
+     container l2vpnad {
+       when "../bgp:type='l2vpnad'";
+       description
+         "Configure l2vpn-ad-family options.";
+       leaf advertise-community {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable advertise the community attribute to a peer or a peer"+
+           " group.";
+       }
+       leaf reflect-client {
+         when "../../../../bgp:type='ibgp'";
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable the local device as a route reflector (RR) and a peer"+
+           " or peer group as its client. This configuration is applicable "+
+           "between IBGP peers only. The configurations of RRs and its clients "+
+           "in an address family are valid only in this address family. "+
+           "Therefore, it is recommended to configure RRs and its clients in the"+
+           " specified address family that is required.";
+       }
+       leaf allow-as-loop {
+         type "uint32" {
+           range "1..10";
+         }
+         description
+           "Allow repetitive local AS numbers. By default, repetitive local AS "+
+           "numbers are not allowed.";
+       }
+       leaf vpls-ad-disable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private LAN service auto-discovery.not "+
+           "receive BGP-AD route.";
+       }
+       leaf vpws-enable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private wire services.";
+       }
+       leaf vpls-enable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private LAN services.";
+       }
+       leaf nexthop-configure {
+         type "bgp:nexthop-configuration-type";
+         description
+           "Both the next-hop-local mode and next-hop-invariable mode are "+
+           "available when the peer address family is the VPNv4/VPNv6/L2VPN AD "+
+           "address family. Only the next-hop-local mode is available when the "+
+           "peer address family is not VPNv4/VPNV6/L2VPN AD address family. In "+
+           "next-hop-local mode, you can configure a BGP speaker to set its IP "+
+           "address of as the next hop of the routes to be advertised to IBGP "+
+           "peers or IBGP peer groups. In next-hop-invariable mode, you can "+
+           "configure PEs in different ASs not to change the next hop of routes "+
+           "when the PEs advertise the routes to their EBGP peers and use the "+
+           "next hop addresses of IGP routes to advertise imported IGP routes to"+
+           " IBGP peers. By default, when a BGP speaker advertises routes to "+
+           "EBGP peers and imported IGP routes to IBGP peers, the BGP speaker "+
+           "changes the next hop to its interface address.";
+       }
+       leaf advertise-large-community {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable large-community attribute advertisement. The "+
+           "Link-state address family and the RPD address family do not support "+
+           "this element.";
+       }
+       choice import-policy-type {
+         description
+           "Set route policy or filter.";
+         case rtp-ref {
+           description
+             "Route policy.";
+           leaf import-policy {
+             type "leafref" {
+               path "/rtp:routing-policy/rtp:policy-definitions/rtp:policy-defin"+
+                    "ition/rtp:name";
+             }
+             description
+               "Specify the filtering policy applied to the routes learned from "+
+               "a peer. By default, no such policy is specified.";
+           }
+         }
+         case xpl-ref {
+           description
+             "Route filter.";
+           container import-filter {
+             description
+               "Configure an import route-filter to filter the routes received "+
+               "from peers. By default, no route-filter is specified to filter "+
+               "the routes imported from peers.";
+             leaf name {
+               type "leafref" {
+                 path "/xpl:xpl/xpl:route-filters/xpl:route-filter/xpl:name";
+               }
+               description
+                 "Specify an import route-filter name.";
+             }
+             leaf parameter {
+               when "../name";
+               type "xpl:filter-parameter-type";
+               description
+                 "Specify an import route-filter parameter.";
+             }
+           }
+         }
+       }
+       choice export-policy-type {
+         description
+           "Set route policy or filter.";
+         case rtp-ref {
+           description
+             "Route policy.";
+           leaf export-policy {
+             type "leafref" {
+               path "/rtp:routing-policy/rtp:policy-definitions/rtp:policy-defin"+
+                    "ition/rtp:name";
+             }
+             description
+               "Specify the filtering policy applied to the routes to be "+
+               "advertised to a peer. By default, no such policy is specified.";
+           }
+         }
+         case xpl-ref {
+           description
+             "Route filter.";
+           container export-filter {
+             description
+               "Configure an export route-filter to filter the routes to be "+
+               "advertised to peers. By default, no route-filter is specified to"+
+               " filter the routes to be advertised to peers.";
+             leaf name {
+               type "leafref" {
+                 path "/xpl:xpl/xpl:route-filters/xpl:route-filter/xpl:name";
+               }
+               description
+                 "Specify an export route-filter name.";
+             }
+             leaf parameter {
+               when "../name";
+               type "xpl:filter-parameter-type";
+               description
+                 "Specify an export route-filter parameter.";
+             }
+           }
+         }
+       }
+       leaf route-update-interval {
+         type "uint16" {
+           range "0..600";
+         }
+         units "s";
+         description
+           "Specify the minimum interval at which Update packets are sent. By "+
+           "default, the interval at which Update packets are sent to IBGP peers"+
+           " is 15s, \nand the interval at which Update packets are sent to EBGP"+
+           " peers is 30s. When routes change, a router will send Update packets"+
+           " to notify its peers. \nIf a route changes frequently, you can set "+
+           "an interval at which Update packets are sent to prevent the router "+
+           "from sending Update packets each time the route changes. \nThis "+
+           "configuration is valid only to the routes learned from peers.";
+         ext:dynamic-default;
+       }
+       leaf preferred-value {
+         type "uint32" {
+           range "0..65535";
+         }
+         default "0";
+         description
+           "Assign a preferred value for the routes learned from a specified "+
+           "peer. After a preferred value is configured for the routes learned "+
+           "from a specified peer,\nall the routes that learnt from this peer "+
+           "will use this preferred value. When multiple routes reach the same "+
+           "address prefix, the route with the largest preferred value will be "+
+           "selected.";
+       }
+       leaf update-group-independent {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable the peer which can reside in an independent peer "+
+           "group.";
+       }
+       container route-limit {
+         description
+           "Configure parameters of routes limited from this peer.";
+         leaf number {
+           type "uint32" {
+             range "1..4294967295";
+           }
+           description
+             "Configure the maximum number of routes that can be accepted from a"+
+             " peer.";
+         }
+         leaf percent {
+           when "../number";
+           type "uint8" {
+             range "1..100";
+           }
+           default "75";
+           description
+             "Specify the percentage of routes when a router starts to generate "+
+             "an alarm.";
+         }
+         leaf type {
+           when "../number";
+           type "bgp:route-limit-type";
+           must "(../type='idle-timeout' and ../idle-timeout) or (../type!='idle"+
+                "-timeout')";
+           default "noparameter";
+           description
+             "Set the processing method as alert-only, idle-forever, or "+
+             "idle-timeout when the number of routes exceeds the set threshold. "+
+             "When alert-only is used, only an alarm is generated when the "+
+             "number of routes exceeds the threshold. In this case, new routes "+
+             "are no longer accepted. When idle-forever is used, connections are"+
+             " not automatically reestablished after being cut off until BGP "+
+             "connections are reset if the number of routes exceeds the set "+
+             "threshold. When idle-timeout is used and the idle-timeout timer is"+
+             " specified, the connections are automatically reestablished after "+
+             "being cut off if the number of routes exceeds the set threshold. "+
+             "You can reset BGP connections to reestablish the connections "+
+             "before the idle-timeout times expires.";
+         }
+         leaf idle-timeout {
+           when "../type='idle-timeout'";
+           type "uint16" {
+             range "1..1200";
+           }
+           units "min";
+           description
+             "Specify the value of the idle-timeout timer to automatically "+
+             "reestablish the connections after they are cut off when the number"+
+             " of routes exceeds the set threshold.";
+         }
+       }
+       container public-as-only {
+         description
+           "Configure BGP Remove private AS number from outbound updates "+
+           "parameters.";
+         leaf enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable BGP to send Update packets carrying only public AS "+
+             "numbers.";
+         }
+         choice remove-private-as {
+           description
+             "Remove AS numbers except peer AS number from outbound updates.";
+           case all {
+             description
+               "Remove all private AS numbers.";
+             leaf force {
+               when "../enable='true'";
+               type "empty";
+               description
+                 "Configures BGP to carry only the public AS number instead of "+
+                 "the private AS number when BGP sends Update packets. By "+
+                 "default, BGP can carry the private AS number when BGP sends "+
+                 "Update packets.";
+             }
+           }
+           case left-most {
+             description
+               "Remove the left-most private AS numbers.";
+             leaf limited {
+               when "../enable='true'";
+               type "empty";
+               description
+                 "When the BGP sends update packets, the left ends of both the "+
+                 "local AS and public AS do not carry the private AS. By "+
+                 "default, BGP can carry the private AS number when BGP sends "+
+                 "Update packets.";
+             }
+           }
+         }
+         leaf replace {
+           when "../force or ../limited";
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the function to the private AS is replaced by the "+
+             "local AS when the BGP sends update packets.";
+         }
+         leaf no-skip-as {
+           when "../force or ../limited";
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the function to the neighbour AS is not processed "+
+             "when the BGP sends update packets.";
+         }
+       }
+       container public-as-only-import {
+         description
+           "Configure BGP remove private AS number in received BGP update "+
+           "messages parameters.";
+         leaf enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable BGP to receive update packets carrying only public "+
+             "AS numbers.";
+         }
+         choice remove-private-as {
+           description
+             "Remove private AS numbers in received BGP update messages.";
+           case all {
+             description
+               "Forcibly delete all the private AS numbers in the AS_Path list.";
+             leaf force {
+               when "../enable = 'true'";
+               type "empty";
+               description
+                 "Enable a device to forcibly remove all the private AS numbers "+
+                 "in received BGP update messages in which the AS_Path list "+
+                 "contains private AS numbers. By default, a device does not "+
+                 "remove private AS numbers from the AS_Path list when receiving"+
+                 " BGP update messages.";
+             }
+           }
+         }
+       }
+     }
+   }
+   augment "/ni:network-instance/ni:instances/ni:instance/bgp:bgp/bgp:base-proce"+
+           "ss/bgp:peers/bgp:peer/bgp:afs/bgp:af" {
+     description
+       "BGP l2vpnad address family configuration.";
+     container l2vpnad {
+       when "../bgp:type='l2vpnad'";
+       description
+         "Configure l2vpn-ad-family options.";
+       leaf group-name {
+         type "leafref" {
+           path "../../../../../../bgp:peer-groups/bgp:peer-group/bgp:name";
+         }
+         must "../../../../../../bgp:peer-groups/bgp:peer-group[bgp:name = "+
+              "current()]/bgp:afs/bgp:af[bgp:type='l2vpnad']";
+         must "../../../../../../bgp:peer-groups/bgp:peer-group[bgp:name = "+
+              "current()]/bgp:peer-establish-mode = 'static'";
+         description
+           "Configure a name for a peer group. After a peer is deleted from the "+
+           "peer group, the peer is disabled from the address family. The object"+
+           " cannot be modified.";
+         ext:operation-exclude "update" {
+           description
+             "The node cannot be modified, when the peer already belongs to a "+
+             "peer-group.";
+         }
+       }
+       leaf advertise-community {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable advertise the community attribute to a peer or a peer"+
+           " group.";
+       }
+       leaf reflect-client {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable the local device as a route reflector (RR) and a peer"+
+           " or peer group as its client. This configuration is applicable "+
+           "between IBGP peers only. The configurations of RRs and its clients "+
+           "in an address family are valid only in this address family. "+
+           "Therefore, it is recommended to configure RRs and its clients in the"+
+           " specified address family that is required.";
+       }
+       leaf allow-as-loop {
+         type "uint32" {
+           range "1..10";
+         }
+         description
+           "Allow repetitive local AS numbers. By default, repetitive local AS "+
+           "numbers are not allowed.";
+       }
+       leaf vpls-ad-disable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private LAN service auto-discovery.not "+
+           "receive BGP-AD route.";
+       }
+       leaf vpws-enable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private wire services.";
+       }
+       leaf vpls-enable {
+         type "boolean";
+         default "false";
+         description
+           "Enable/disable virtual private LAN services.";
+       }
+       leaf nexthop-configure {
+         type "bgp:nexthop-configuration-type";
+         description
+           "Both the next-hop-local mode and next-hop-invariable mode are "+
+           "available when the peer address family is the VPNv4/VPNV6/L2VPN AD "+
+           "address family. Only the next-hop-local mode is available when the "+
+           "peer address family is not VPNv4/VPNV6/L2VPN AD address family. In "+
+           "next-hop-local mode, you can configure a BGP speaker to set its IP "+
+           "address of as the next hop of the routes to be advertised to IBGP "+
+           "peers or IBGP peer groups. In next-hop-invariable mode, you can "+
+           "configure PEs in different ASs not to change the next hop of routes "+
+           "when the PEs advertise the routes to their EBGP peers and use the "+
+           "next hop addresses of IGP routes to advertise imported IGP routes to"+
+           " IBGP peers. By default, when a BGP speaker advertises routes to "+
+           "EBGP peers and imported IGP routes to IBGP peers, the BGP speaker "+
+           "changes the next hop to its interface address.";
+       }
+       leaf advertise-large-community {
+         type "bgp:peer-comm-config-type";
+         default "default";
+         description
+           "Enable large-community attribute advertisement. The Link-state "+
+           "address family and the RPD address family do not support this "+
+           "element.";
+       }
+       leaf advertise-large-community-state {
+         type "boolean";
+         default "false";
+         config "false";
+         description
+           "Whether large-community attribute advertisement is enabled on a "+
+           "peer. The Link-state address family and the RPD address family do "+
+           "not support this element.";
+       }
+       choice import-policy-type {
+         description
+           "Set route policy or filter.";
+         case rtp-ref {
+           description
+             "Route policy.";
+           leaf import-policy {
+             type "leafref" {
+               path "/rtp:routing-policy/rtp:policy-definitions/rtp:policy-defin"+
+                    "ition/rtp:name";
+             }
+             description
+               "Specify the filtering policy applied to the routes learned from "+
+               "a peer. By default, no such policy is specified.";
+           }
+         }
+         case xpl-ref {
+           description
+             "Route filter.";
+           container import-filter {
+             description
+               "Configure an import route-filter to filter the routes received "+
+               "from peers. By default, no route-filter is specified to filter "+
+               "the routes imported from peers.";
+             leaf name {
+               type "leafref" {
+                 path "/xpl:xpl/xpl:route-filters/xpl:route-filter/xpl:name";
+               }
+               description
+                 "Specify an import route-filter name.";
+             }
+             leaf parameter {
+               when "../name";
+               type "xpl:filter-parameter-type";
+               description
+                 "Specify an import route-filter parameter.";
+             }
+           }
+         }
+       }
+       choice export-policy-type {
+         description
+           "Set route policy or filter.";
+         case rtp-ref {
+           description
+             "Route policy.";
+           leaf export-policy {
+             type "leafref" {
+               path "/rtp:routing-policy/rtp:policy-definitions/rtp:policy-defin"+
+                    "ition/rtp:name";
+             }
+             description
+               "Specify the filtering policy applied to the routes to be "+
+               "advertised to a peer. By default, no such policy is specified.";
+           }
+         }
+         case xpl-ref {
+           description
+             "Route filter.";
+           container export-filter {
+             description
+               "Configure an export route-filter to filter the routes to be "+
+               "advertised to peers. By default, no route-filter is specified to"+
+               " filter the routes to be advertised to peers.";
+             leaf name {
+               type "leafref" {
+                 path "/xpl:xpl/xpl:route-filters/xpl:route-filter/xpl:name";
+               }
+               description
+                 "Specify an export route-filter name.";
+             }
+             leaf parameter {
+               when "../name";
+               type "xpl:filter-parameter-type";
+               description
+                 "Specify an export route-filter parameter.";
+             }
+           }
+         }
+       }
+       leaf route-update-interval {
+         type "uint16" {
+           range "0..600";
+         }
+         units "s";
+         description
+           "Specify the minimum interval at which Update packets are sent. By "+
+           "default, the interval at which Update packets are sent to IBGP peers"+
+           " is 15s, \nand the interval at which Update packets are sent to EBGP"+
+           " peers is 30s. When routes change, a router will send Update packets"+
+           " to notify its peers. \nIf a route changes frequently, you can set "+
+           "an interval at which Update packets are sent to prevent the router "+
+           "from sending Update packets each time the route changes. \nThis "+
+           "configuration is valid only to the routes learned from peers.";
+         ext:dynamic-default;
+       }
+       leaf preferred-value {
+         type "uint32" {
+           range "0..65535";
+         }
+         default "0";
+         description
+           "Assign a preferred value for the routes learned from a specified "+
+           "peer. After a preferred value is configured for the routes learned "+
+           "from a specified peer,\nall the routes that learnt from this peer "+
+           "will use this preferred value. When multiple routes reach the same "+
+           "address prefix, the route with the largest preferred value will be "+
+           "selected.";
+       }
+       leaf update-group-independent {
+         type "bgp:peer-comm-config-type";
+         default "default";
+         description
+           "Enable/disable the peer which can reside in an independent peer "+
+           "group.";
+       }
+       leaf update-group-independent-state {
+         type "boolean";
+         config "false";
+         description
+           "Whether the peer can reside in an independent peer group.";
+       }
+       container route-limit {
+         description
+           "Configure parameters of routes limited from this peer.";
+         leaf number {
+           type "uint32" {
+             range "1..4294967295";
+           }
+           description
+             "Configure the maximum number of routes that can be accepted from a"+
+             " peer.";
+         }
+         leaf percent {
+           when "../number";
+           type "uint8" {
+             range "1..100";
+           }
+           default "75";
+           description
+             "Specify the percentage of routes when a router starts to generate "+
+             "an alarm.";
+         }
+         leaf type {
+           when "../number";
+           type "bgp:route-limit-type";
+           must "(../type='idle-timeout' and ../idle-timeout) or (../type!='idle"+
+                "-timeout')";
+           default "noparameter";
+           description
+             "Set the processing method as alert-only, idle-forever, or "+
+             "idle-timeout when the number of routes exceeds the set threshold. "+
+             "When alert-only is used, only an alarm is generated when the "+
+             "number of routes exceeds the threshold. In this case, new routes "+
+             "are no longer accepted. When idle-forever is used, connections are"+
+             " not automatically reestablished after being cut off until BGP "+
+             "connections are reset if the number of routes exceeds the set "+
+             "threshold. When idle-timeout is used and the idle-timeout timer is"+
+             " specified, the connections are automatically reestablished after "+
+             "being cut off if the number of routes exceeds the set threshold. "+
+             "You can reset BGP connections to reestablish the connections "+
+             "before the idle-timeout times expires.";
+         }
+         leaf idle-timeout {
+           when "../type='idle-timeout'";
+           type "uint16" {
+             range "1..1200";
+           }
+           units "min";
+           description
+             "Specify the value of the idle-timeout timer to automatically "+
+             "reestablish the connections after they are cut off when the number"+
+             " of routes exceeds the set threshold.";
+         }
+       }
+       container public-as-only {
+         description
+           "Configure BGP Remove private AS number from outbound updates "+
+           "parameters.";
+         leaf enable {
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable BGP to send Update packets carrying only public AS "+
+             "numbers.";
+         }
+         choice remove-private-as {
+           description
+             "Remove AS numbers except peer AS number from outbound updates.";
+           case all {
+             description
+               "Remove all private AS numbers.";
+             leaf force {
+               when "../enable='true'";
+               type "empty";
+               description
+                 "Configures BGP to carry only the public AS number instead of "+
+                 "the private AS number when BGP sends Update packets. By "+
+                 "default, BGP can carry the private AS number when BGP sends "+
+                 "Update packets.";
+             }
+           }
+           case left-most {
+             description
+               "Remove the left-most private AS numbers.";
+             leaf limited {
+               when "../enable='true'";
+               type "empty";
+               description
+                 "When the BGP sends update packets, the left ends of both the "+
+                 "local AS and public AS do not carry the private AS. By "+
+                 "default, BGP can carry the private AS number when BGP sends "+
+                 "Update packets.";
+             }
+           }
+         }
+         leaf replace {
+           when "../force or ../limited";
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the function to the private AS is replaced by the "+
+             "local AS when the BGP sends update packets.";
+         }
+         leaf no-skip-as {
+           when "../force or ../limited";
+           type "boolean";
+           default "false";
+           description
+             "Enable/disable the function to the neighbour AS is not processed "+
+             "when the BGP sends update packets.";
+         }
+       }
+       container public-as-only-import {
+         description
+           "Configure BGP remove private AS number in received BGP update "+
+           "messages parameters.";
+         leaf enable {
+           type "bgp:peer-comm-config-type";
+           default "default";
+           description
+             "Enable/disable BGP to receive update packets carrying only public "+
+             "AS numbers.";
+         }
+         choice remove-private-as {
+           description
+             "Remove private AS numbers in received BGP update messages.";
+           case all {
+             description
+               "Forcibly delete all the private AS numbers in the AS_Path list.";
+             leaf force {
+               when "../enable = 'enable'";
+               type "empty";
+               description
+                 "Enable a device to forcibly remove all the private AS numbers "+
+                 "in received BGP update messages in which the AS_Path list "+
+                 "contains private AS numbers. By default, a device does not "+
+                 "remove private AS numbers from the AS_Path list when receiving"+
+                 " BGP update messages.";
+             }
+           }
+         }
+         leaf effect-enable {
+           type "boolean";
+           config "false";
+           description
+             "Flag indicating that the device is enabled to remove private AS "+
+             "numbers from the AS_Path list in received BGP update messages.";
+         }
+         leaf effect-force {
+           type "boolean";
+           config "false";
+           description
+             "Flag indicating that the device is enabled to forcibly remove all "+
+             "the private AS numbers from the AS_Path list in received BGP "+
+             "update messages.";
+         }
+       }
+       container path-attribute-treats {
+         description
+           "List of modes in which specified path attributes are processed.";
+         list path-attribute-treat {
+           must "discard-id-map or withdraw-id-map or unknown-id-map";
+           key "treat-type";
+           description
+             "Configure mode in which specified path attributes are processed.";
+           leaf treat-type {
+             type "bgp:path-attr-treat-type";
+             description
+               "Mode in which specified path attributes are processed.";
+           }
+           leaf discard-id-map {
+             type "pub-type:id-range" {
+               pattern "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])?(-(2"+
+                       "5[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?(,((25"+
+                       "[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(-(25[0-5"+
+                       "]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?))*)|(((["+
+                       "\\+|\\-](25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|"+
+                       "[0-9]))|([\\+|\\-]\\((25[0-5]|2[0-4][0-9]|1[0-9][0"+
+                       "-9]|[1-9][0-9]|[0-9])-(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|["+
+                       "1-9][0-9]|[0-9])\\)))?(,(([\\+|\\-](25[0-5]|2[0-4]"+
+                       "[0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))|([\\+|\\-]\\("+
+                       "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])-(25[0"+
+                       "-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\))))*)";
+               ext:value-range "0..255";
+             }
+             description
+               "Specify a discard attribute ID list. The attribute IDs which are"+
+               " not supported as follows: 1 (ORIGIN), 2 (AS_PATH), 3 (NEXT_HOP)"+
+               ", 4 (MED), 5 (LOCAL_PREF), 6 (ATOMICAGGREGATE), 7 (AGGREGATOR), "+
+               "8 (COMMUNITY), 9 (ORIGINATOR_ID), 10 (CLUSTER_LIST), 14 "+
+               "(MP_REACH_NLRI), 15 (MP_UNREACH_NLRI), 17 (AS4PATH), 18 "+
+               "(AS4AGGREGATOR).";
+           }
+           leaf withdraw-id-map {
+             type "pub-type:id-range" {
+               pattern "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])?(-(2"+
+                       "5[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?(,((25"+
+                       "[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(-(25[0-5"+
+                       "]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?))*)|(((["+
+                       "\\+|\\-](25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|"+
+                       "[0-9]))|([\\+|\\-]\\((25[0-5]|2[0-4][0-9]|1[0-9][0"+
+                       "-9]|[1-9][0-9]|[0-9])-(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|["+
+                       "1-9][0-9]|[0-9])\\)))?(,(([\\+|\\-](25[0-5]|2[0-4]"+
+                       "[0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))|([\\+|\\-]\\("+
+                       "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])-(25[0"+
+                       "-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\))))*)";
+               ext:value-range "0..255";
+             }
+             description
+               "Specify a withdraw attribute ID list. The attribute IDs which "+
+               "are not supported as follows: 1 (ORIGIN), 2 (AS_PATH), 3 "+
+               "(NEXT_HOP), 4 (MED), 5 (LOCAL_PREF), 6 (ATOMICAGGREGATE), 7 "+
+               "(AGGREGATOR), 8 (COMMUNITY), 9 (ORIGINATOR_ID), 10 (CLUSTER_LIST"+
+               "), 14 (MP_REACH_NLRI), 15 (MP_UNREACH_NLRI), 17 (AS4PATH), 18 "+
+               "(AS4AGGREGATOR).";
+           }
+           leaf unknown-id-map {
+             type "pub-type:id-range" {
+               pattern "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])?(-(2"+
+                       "5[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?(,((25"+
+                       "[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(-(25[0-5"+
+                       "]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))?))*)|(((["+
+                       "\\+|\\-](25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|"+
+                       "[0-9]))|([\\+|\\-]\\((25[0-5]|2[0-4][0-9]|1[0-9][0"+
+                       "-9]|[1-9][0-9]|[0-9])-(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|["+
+                       "1-9][0-9]|[0-9])\\)))?(,(([\\+|\\-](25[0-5]|2[0-4]"+
+                       "[0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]))|([\\+|\\-]\\("+
+                       "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])-(25[0"+
+                       "-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\))))*)";
+               ext:value-range "0..255";
+             }
+             description
+               "Specify an unknown attribute ID list. The attribute IDs which "+
+               "are not supported as follows: 1 (ORIGIN), 2 (AS_PATH), 3 "+
+               "(NEXT_HOP), 4 (MED), 5 (LOCAL_PREF), 6 (ATOMICAGGREGATE), 7 "+
+               "(AGGREGATOR), 8 (COMMUNITY), 9 (ORIGINATOR_ID), 10 (CLUSTER_LIST"+
+               "), 14 (MP_REACH_NLRI), 15 (MP_UNREACH_NLRI), 17 (AS4PATH), 18 "+
+               "(AS4AGGREGATOR).";
+           }
+         }
+       }
+     }
+   }
+   augment "/bgp:bgp/bgp:base-process/bgp-rt:bgp-route" {
+     description
+       "BGP l2vpnad address family routes information.";
+     container l2vpnad {
+       config "false";
+       description
+         "Statistics of L2VPN AD routes.";
+       container statistic {
+         description
+           "Statistics of BGP routes information of L2VPN AD address family.";
+         leaf total-number {
+           type "uint32";
+           description
+             "Total number of routes.";
+         }
+       }
+     }
+   }
+ }
+

@@ -1,0 +1,47 @@
+ /*
+Copyright (C) 2020 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-mpls-forward-l2vpn {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-mpls-forward-l2vpn";
+   prefix "mpls-forward-l2vpn";
+   import huawei-l2vpn {
+     prefix "l2vpn";
+   }
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "MPLS forward for L2VPN.";
+   revision "2020-07-29" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   augment "/l2vpn:l2vpn/l2vpn:instances/l2vpn:instance/l2vpn:vpls/l2vpn:ipmsi/l"+
+           "2vpn:leaf" {
+     description
+       "Configure a MPLS P2MP loopback board.";
+     container mpls-p2mp-slot {
+       description
+         "Configure a MPLS P2MP loopback board.";
+       leaf slotid {
+         type "string" {
+           length "1..32";
+         }
+         description
+           "Slot ID.";
+       }
+     }
+   }
+   ext:task-name "forwarding";
+ }
+

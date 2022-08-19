@@ -1,0 +1,67 @@
+ module openconfig-alarms {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/alarms";
+   prefix "oc-alarms";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   import openconfig-platform {
+     prefix "oc-platform";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines operational state data related to alarms\nthat the "+
+     "device is reporting.\n\nThis model reuses some data items defined in the "+
+     "draft IETF\nYANG Alarm Module:\nhttps://tools.ietf.org/html/draft-vallin-n"+
+     "etmod-alarm-module-02\n\nPortions of this code were derived from the draft"+
+     " IETF YANG Alarm\nModule. Please reproduce this note if possible.\n\nIETF "+
+     "code is subject to the following copyright and license:\nCopyright (c) "+
+     "IETF Trust and the persons identified as authors of\nthe code.\nAll rights"+
+     " reserved.\n\nRedistribution and use in source and binary forms, with or "+
+     "without\nmodification, is permitted pursuant to, and subject to the "+
+     "license\nterms contained in, the Simplified BSD License set forth "+
+     "in\nSection 4.c of the IETF Trust's Legal Provisions Relating\nto IETF "+
+     "Documents (http://trustee.ietf.org/license-info).";
+   oc-ext:openconfig-version "0.3.0";
+   revision "2018-01-16" {
+     description
+       "Moved alarm identities into separate types module";
+     reference
+       "0.3.0";
+   }
+   revision "2018-01-10" {
+     description
+       "Make alarms list read only";
+     reference
+       "0.2.0";
+   }
+   revision "2017-08-24" {
+     description
+       "Initial public release";
+     reference
+       "0.1.0";
+   }
+   augment "/oc-platform:components/oc-platform:component/oc-platform:state" {
+     description
+       "Adds specific alarms related to a component.";
+     leaf equipment-failure {
+       type "boolean";
+       default "false";
+       description
+         "If true, the hardware indicates that the component's physical "+
+         "equipment\nhas failed";
+     }
+     leaf equipment-mismatch {
+       type "boolean";
+       default "false";
+       description
+         "If true, the hardware indicates that the component inserted into "+
+         "the\naffected component's physical location is of a different type "+
+         "than what\nis configured";
+     }
+   }
+ }
+

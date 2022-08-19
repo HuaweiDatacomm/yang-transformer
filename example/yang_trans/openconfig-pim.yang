@@ -1,0 +1,38 @@
+ module openconfig-pim {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/pim";
+   prefix "oc-pim";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "An OpenConfig model for Protocol Independent Multicast (PIM).";
+   oc-ext:openconfig-version "0.2.0";
+   revision "2019-07-09" {
+     description
+       "Reindent to two spaces.\nEnsure that timeticks64 is consistently "+
+       "expressed in nanoseconds.";
+     reference
+       "0.2.0";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.1.1";
+   }
+   revision "2018-02-09" {
+     description
+       "Initial revision.";
+     reference
+       "0.1.0";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+ }
+

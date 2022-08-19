@@ -1,0 +1,320 @@
+ module ietf-netconf-notifications {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications";
+   prefix "ncn";
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   import ietf-netconf {
+     prefix "nc";
+   }
+   organization
+     "IETF NETCONF (Network Configuration Protocol) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netconf/>\nWG List:  <mailto:netconf@i"+
+     "etf.org>\nWG Chair: Bert Wijnen\n          <mailto:bertietf@bwijnen.net>\n"+
+     "WG Chair: Mehmet Ersue\n          <mailto:mehmet.ersue@nsn.com>\nEditor:  "+
+     " Andy Bierman\n          <mailto:andy@netconfcentral.org>";
+   description
+     "This module defines a YANG data model for use with the\nNETCONF protocol "+
+     "that allows the NETCONF client to\nreceive common NETCONF base event "+
+     "notifications.\nCopyright (c) 2012 IETF Trust and the persons identified "+
+     "as\nthe document authors.  All rights reserved.\nRedistribution and use in"+
+     " source and binary forms, with or\nwithout modification, is permitted "+
+     "pursuant to, and subject\nto the license terms contained in, the "+
+     "Simplified BSD License\nset forth in Section 4.c of the IETF Trust's Legal"+
+     " Provisions\nRelating to IETF Documents\n(http://trustee.ietf.org/license-"+
+     "info).\nThis version of this YANG module is part of RFC 6470; see\nthe RFC"+
+     " itself for full legal notices.";
+   revision "2012-02-06" {
+     description
+       "Initial version.";
+     reference
+       "RFC 6470: NETCONF Base Notifications";
+   }
+   notification netconf-config-change {
+     description
+       "Generated when the NETCONF server detects that the\n<running> or "+
+       "<startup> configuration datastore\nhas been changed by a management "+
+       "session.\nThe notification summarizes the edits that\nhave been "+
+       "detected.\nThe server MAY choose to also generate this\nnotification "+
+       "while loading a datastore during the\nboot process for the device.";
+     container changed-by {
+       description
+         "Indicates the source of the change.\nIf caused by internal action, "+
+         "then the\nempty leaf 'server' will be present.\nIf caused by a "+
+         "management session, then\nthe name, remote host address, and session "+
+         "ID\nof the session that made the change will be reported.";
+       choice server-or-user {
+         mandatory "true";
+         leaf server {
+           type "empty";
+           description
+             "If present, the change was caused\nby the server.";
+         }
+         case by-user {
+           leaf username {
+             type "string";
+             mandatory "true";
+             description
+               "Name of the user for the session.";
+           }
+           leaf session-id {
+             type "nc:session-id-or-zero-type";
+             mandatory "true";
+             description
+               "Identifier of the session.\nA NETCONF session MUST be identified"+
+               " by a non-zero value.\nA non-NETCONF session MAY be identified "+
+               "by the value zero.";
+           }
+           leaf source-host {
+             type "inet:ip-address";
+             description
+               "Address of the remote host for the session.";
+           }
+         }
+       }
+     }
+     leaf datastore {
+       type "enumeration" {
+         enum "running" {
+           description
+             "The <running> datastore has changed.";
+         }
+         enum "startup" {
+           description
+             "The <startup> datastore has changed";
+         }
+       }
+       default "running";
+       description
+         "Indicates which configuration datastore has changed.";
+     }
+   }
+   notification netconf-capability-change {
+     description
+       "Generated when the NETCONF server detects that\nthe server capabilities "+
+       "have changed.\nIndicates which capabilities have been added, deleted,\na"+
+       "nd/or modified.  The manner in which a server\ncapability is changed is "+
+       "outside the scope of this\ndocument.";
+     container changed-by {
+       description
+         "Indicates the source of the change.\nIf caused by internal action, "+
+         "then the\nempty leaf 'server' will be present.\nIf caused by a "+
+         "management session, then\nthe name, remote host address, and session "+
+         "ID\nof the session that made the change will be reported.";
+       choice server-or-user {
+         mandatory "true";
+         leaf server {
+           type "empty";
+           description
+             "If present, the change was caused\nby the server.";
+         }
+         case by-user {
+           leaf username {
+             type "string";
+             mandatory "true";
+             description
+               "Name of the user for the session.";
+           }
+           leaf session-id {
+             type "nc:session-id-or-zero-type";
+             mandatory "true";
+             description
+               "Identifier of the session.\nA NETCONF session MUST be identified"+
+               " by a non-zero value.\nA non-NETCONF session MAY be identified "+
+               "by the value zero.";
+           }
+           leaf source-host {
+             type "inet:ip-address";
+             description
+               "Address of the remote host for the session.";
+           }
+         }
+       }
+     }
+     leaf-list added-capability {
+       type "inet:uri";
+       description
+         "List of capabilities that have just been added.";
+     }
+     leaf-list deleted-capability {
+       type "inet:uri";
+       description
+         "List of capabilities that have just been deleted.";
+     }
+     leaf-list modified-capability {
+       type "inet:uri";
+       description
+         "List of capabilities that have just been modified.\nA capability is "+
+         "considered to be modified if the\nbase URI for the capability has not "+
+         "changed, but\none or more of the parameters encoded at the end of\nthe"+
+         " capability URI have changed.\nThe new modified value of the complete "+
+         "URI is returned.";
+     }
+   }
+   notification netconf-session-start {
+     description
+       "Generated when a NETCONF server detects that a\nNETCONF session has "+
+       "started.  A server MAY generate\nthis event for non-NETCONF management "+
+       "sessions.\nIndicates the identity of the user that started\nthe "+
+       "session.";
+     leaf username {
+       type "string";
+       mandatory "true";
+       description
+         "Name of the user for the session.";
+     }
+     leaf session-id {
+       type "nc:session-id-or-zero-type";
+       mandatory "true";
+       description
+         "Identifier of the session.\nA NETCONF session MUST be identified by a "+
+         "non-zero value.\nA non-NETCONF session MAY be identified by the value "+
+         "zero.";
+     }
+     leaf source-host {
+       type "inet:ip-address";
+       description
+         "Address of the remote host for the session.";
+     }
+   }
+   notification netconf-session-end {
+     description
+       "Generated when a NETCONF server detects that a\nNETCONF session has "+
+       "terminated.\nA server MAY optionally generate this event for\nnon-NETCON"+
+       "F management sessions.  Indicates the\nidentity of the user that owned "+
+       "the session,\nand why the session was terminated.";
+     leaf username {
+       type "string";
+       mandatory "true";
+       description
+         "Name of the user for the session.";
+     }
+     leaf session-id {
+       type "nc:session-id-or-zero-type";
+       mandatory "true";
+       description
+         "Identifier of the session.\nA NETCONF session MUST be identified by a "+
+         "non-zero value.\nA non-NETCONF session MAY be identified by the value "+
+         "zero.";
+     }
+     leaf source-host {
+       type "inet:ip-address";
+       description
+         "Address of the remote host for the session.";
+     }
+     leaf killed-by {
+       when "../termination-reason = 'killed'";
+       type "nc:session-id-type";
+       description
+         "The ID of the session that directly caused this session\nto be "+
+         "abnormally terminated.  If this session was abnormally\nterminated by "+
+         "a non-NETCONF session unknown to the server,\nthen this leaf will not "+
+         "be present.";
+     }
+     leaf termination-reason {
+       type "enumeration" {
+         enum "closed" {
+           description
+             "The session was terminated by the client in normal\nfashion, e.g.,"+
+             " by the NETCONF <close-session>\nprotocol operation.";
+         }
+         enum "killed" {
+           description
+             "The session was terminated in abnormal\nfashion, e.g., by the "+
+             "NETCONF <kill-session>\nprotocol operation.";
+         }
+         enum "dropped" {
+           description
+             "The session was terminated because the transport layer\nconnection"+
+             " was unexpectedly closed.";
+         }
+         enum "timeout" {
+           description
+             "The session was terminated because of inactivity,\ne.g., waiting "+
+             "for the <hello> message or <rpc>\nmessages.";
+         }
+         enum "bad-hello" {
+           description
+             "The client's <hello> message was invalid.";
+         }
+         enum "other" {
+           description
+             "The session was terminated for some other reason.";
+         }
+       }
+       mandatory "true";
+       description
+         "Reason the session was terminated.";
+     }
+   }
+   notification netconf-confirmed-commit {
+     description
+       "Generated when a NETCONF server detects that a\nconfirmed-commit event "+
+       "has occurred.  Indicates the event\nand the current state of the "+
+       "confirmed-commit procedure\nin progress.";
+     reference
+       "RFC 6241, Section 8.4";
+     leaf username {
+       type "string";
+       mandatory "true";
+       description
+         "Name of the user for the session.";
+     }
+     leaf session-id {
+       type "nc:session-id-or-zero-type";
+       mandatory "true";
+       description
+         "Identifier of the session.\nA NETCONF session MUST be identified by a "+
+         "non-zero value.\nA non-NETCONF session MAY be identified by the value "+
+         "zero.";
+     }
+     leaf source-host {
+       type "inet:ip-address";
+       description
+         "Address of the remote host for the session.";
+     }
+     leaf confirm-event {
+       type "enumeration" {
+         enum "start" {
+           description
+             "The confirmed-commit procedure has started.";
+         }
+         enum "cancel" {
+           description
+             "The confirmed-commit procedure has been canceled,\ne.g., due to "+
+             "the session being terminated, or an\nexplicit <cancel-commit> "+
+             "operation.";
+         }
+         enum "timeout" {
+           description
+             "The confirmed-commit procedure has been canceled\ndue to the "+
+             "confirm-timeout interval expiring.\nThe common session parameters "+
+             "will not be present\nin this sub-mode.";
+         }
+         enum "extend" {
+           description
+             "The confirmed-commit timeout has been extended,\ne.g., by a new "+
+             "<confirmed-commit> operation.";
+         }
+         enum "complete" {
+           description
+             "The confirmed-commit procedure has been completed.";
+         }
+       }
+       mandatory "true";
+       description
+         "Indicates the event that caused the notification.";
+     }
+     leaf timeout {
+       when "../confirm-event = 'start' or ../confirm-event = 'extend'";
+       type "uint32";
+       units "seconds";
+       description
+         "The configured timeout value if the event type\nis 'start' or "+
+         "'extend'.  This value represents\nthe approximate number of seconds "+
+         "from the event\ntime when the 'timeout' event might occur.";
+     }
+   }
+ }
+

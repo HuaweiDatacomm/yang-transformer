@@ -1,0 +1,453 @@
+ module openconfig-lldp {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/lldp";
+   prefix "oc-lldp";
+   import openconfig-lldp-types {
+     prefix "oc-lldp-types";
+   }
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines configuration and operational state data\nfor the LLDP"+
+     " protocol.";
+   oc-ext:openconfig-version "0.2.1";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.2.1";
+   }
+   revision "2018-07-17" {
+     description
+       "Adds ttl to lldp-neighbor-state";
+     reference
+       "0.2.0";
+   }
+   revision "2016-05-16" {
+     description
+       "Initial public revision";
+     reference
+       "0.1.0";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   container lldp {
+     description
+       "Top-level container for LLDP configuration and state data";
+     container config {
+       description
+         "Configuration data ";
+       leaf enabled {
+         type "boolean";
+         default "false";
+         description
+           "System level state of the LLDP protocol.";
+       }
+       leaf hello-timer {
+         type "uint64" {
+           range "5..32768";
+         }
+         units "seconds";
+         description
+           "System level hello timer for the LLDP protocol.";
+         default "30";
+       }
+     }
+     container state {
+       config "false";
+       description
+         "Operational state data ";
+       leaf enabled {
+         type "boolean";
+         default "false";
+         description
+           "System level state of the LLDP protocol.";
+       }
+       leaf hello-timer {
+         type "uint64" {
+           range "5..32768";
+         }
+         units "seconds";
+         description
+           "System level hello timer for the LLDP protocol.";
+       }
+       leaf system-name {
+         type "string" {
+           length "1..246";
+         }
+         description
+           "The system name field shall contain an alpha-numeric string\nthat "+
+           "indicates the system's administratively assigned name.\nThe system "+
+           "name should be the system's fully qualified domain\nname. If "+
+           "implementations support IETF RFC 3418, the sysName\nobject should be"+
+           " used for this field.";
+       }
+       leaf system-description {
+         type "string" {
+           length "0..255";
+         }
+         description
+           "The system description field shall contain an alpha-numeric\nstring "+
+           "that is the textual description of the network entity.\nThe system "+
+           "description should include the full name and\nversion identification"+
+           " of the system's hardware type,\nsoftware operating system, and "+
+           "networking software. If\nimplementations support IETF RFC 3418, the "+
+           "sysDescr object\nshould be used for this field.";
+       }
+       leaf chassis-id {
+         type "string";
+         description
+           "The Chassis ID is a mandatory TLV which identifies the\nchassis "+
+           "component of the endpoint identifier associated with\nthe transmitti"+
+           "ng LLDP agent";
+       }
+       leaf chassis-id-type {
+         type "oc-lldp-types:chassis-id-type";
+         description
+           "This field identifies the format and source of the chassis\nidentifi"+
+           "er string. It is an enumerator defined by the\nLldpChassisIdSubtype "+
+           "object from IEEE 802.1AB MIB.";
+       }
+     }
+     container interfaces {
+       description
+         "Enclosing container ";
+       list interface {
+         key "name";
+         description
+           "List of interfaces on which LLDP is enabled / available";
+         leaf name {
+           type "leafref" {
+             path "../config/name";
+           }
+           description
+             "Reference to the list key";
+         }
+         container config {
+           description
+             "Configuration data for LLDP on each interface";
+           leaf name {
+             type "oc-if:base-interface-ref";
+             description
+               "Reference to the LLDP Ethernet interface";
+           }
+           leaf enabled {
+             type "boolean";
+             default "true";
+             description
+               "Enable or disable the LLDP protocol on the interface.";
+           }
+         }
+         container state {
+           config "false";
+           description
+             "Operational state data ";
+           leaf name {
+             type "oc-if:base-interface-ref";
+             description
+               "Reference to the LLDP Ethernet interface";
+           }
+           leaf enabled {
+             type "boolean";
+             default "true";
+             description
+               "Enable or disable the LLDP protocol on the interface.";
+           }
+           container counters {
+             description
+               "LLDP counters on each interface";
+             leaf frame-in {
+               type "yang:counter64";
+               description
+                 "The number of lldp frames received.";
+             }
+             leaf frame-out {
+               type "yang:counter64";
+               description
+                 "The number of frames transmitted out.";
+             }
+             leaf frame-error-in {
+               type "yang:counter64";
+               description
+                 "The number of LLDP frames received with errors.";
+             }
+             leaf frame-discard {
+               type "yang:counter64";
+               description
+                 "The number of LLDP frames received and discarded.";
+             }
+             leaf tlv-discard {
+               type "yang:counter64";
+               description
+                 "The number of TLV frames received and discarded.";
+             }
+             leaf tlv-unknown {
+               type "yang:counter64";
+               description
+                 "The number of frames received with unknown TLV.";
+             }
+             leaf last-clear {
+               type "yang:date-and-time";
+               description
+                 "Indicates the last time the counters were\ncleared.";
+             }
+           }
+         }
+         container neighbors {
+           config "false";
+           description
+             "Enclosing container for list of LLDP neighbors on an\ninterface";
+           list neighbor {
+             key "id";
+             description
+               "List of LLDP neighbors";
+             leaf id {
+               type "leafref" {
+                 path "../state/id";
+               }
+               description
+                 " ";
+             }
+             container state {
+               config "false";
+               description
+                 "Operational state data ";
+               leaf system-name {
+                 type "string" {
+                   length "0..255";
+                 }
+                 description
+                   "The system name field shall contain an alpha-numeric "+
+                   "string\nthat indicates the system's administratively "+
+                   "assigned name.\nThe system name should be the system's fully"+
+                   " qualified domain\nname. If implementations support IETF RFC"+
+                   " 3418, the sysName\nobject should be used for this field.";
+               }
+               leaf system-description {
+                 type "string" {
+                   length "0..255";
+                 }
+                 description
+                   "The system description field shall contain an alpha-numeric"+
+                   "\nstring that is the textual description of the network "+
+                   "entity.\nThe system description should include the full name"+
+                   " and\nversion identification of the system's hardware "+
+                   "type,\nsoftware operating system, and networking software. "+
+                   "If\nimplementations support IETF RFC 3418, the sysDescr "+
+                   "object\nshould be used for this field.";
+               }
+               leaf chassis-id {
+                 type "string";
+                 description
+                   "The Chassis ID is a mandatory TLV which identifies "+
+                   "the\nchassis component of the endpoint identifier associated"+
+                   " with\nthe transmitting LLDP agent";
+               }
+               leaf chassis-id-type {
+                 type "oc-lldp-types:chassis-id-type";
+                 description
+                   "This field identifies the format and source of the "+
+                   "chassis\nidentifier string. It is an enumerator defined by "+
+                   "the\nLldpChassisIdSubtype object from IEEE 802.1AB MIB.";
+               }
+               leaf id {
+                 type "string";
+                 description
+                   "System generated identifier for the neighbor on the\ninterfa"+
+                   "ce.";
+               }
+               leaf age {
+                 type "uint64";
+                 units "seconds";
+                 description
+                   "Age since discovery";
+               }
+               leaf last-update {
+                 type "int64";
+                 description
+                   "Seconds since last update received.";
+               }
+               leaf ttl {
+                 type "uint16";
+                 units "seconds";
+                 description
+                   "The time-to-live (TTL) is a mandatory TLV which indicates\nh"+
+                   "ow long information from the neighbor should be considered\n"+
+                   "valid.";
+               }
+               leaf port-id {
+                 type "string";
+                 description
+                   "The Port ID is a mandatory TLV which identifies the "+
+                   "port\ncomponent of the endpoint identifier associated with "+
+                   "the\ntransmitting LLDP agent. If the specified port is an "+
+                   "IEEE\n802.3 Repeater port, then this TLV is optional.";
+               }
+               leaf port-id-type {
+                 type "oc-lldp-types:port-id-type";
+                 description
+                   "This field identifies the format and source of the "+
+                   "port\nidentifier string. It is an enumerator defined by "+
+                   "the\nPtopoPortIdType object from RFC2922.";
+               }
+               leaf port-description {
+                 type "string";
+                 description
+                   "The binary string containing the actual port identifier "+
+                   "for\nthe port which this LLDP PDU was transmitted. The "+
+                   "source and\nformat of this field is defined by PtopoPortId "+
+                   "from\nRFC2922.";
+               }
+               leaf management-address {
+                 type "string";
+                 description
+                   "The Management Address is a mandatory TLV which identifies "+
+                   "a\nnetwork address associated with the local LLDP agent, "+
+                   "which\ncan be used to reach the agent on the port identified"+
+                   " in the\nPort ID TLV.";
+               }
+               leaf management-address-type {
+                 type "string";
+                 description
+                   "The enumerated value for the network address type\nidentifie"+
+                   "d in this TLV. This enumeration is defined in the\n'Assigned"+
+                   " Numbers' RFC [RFC3232] and the\nianaAddressFamilyNumbers "+
+                   "object.";
+               }
+             }
+             container custom-tlvs {
+               config "false";
+               description
+                 "Enclosing container for list of custom TLVs from a\nneighbor";
+               list tlv {
+                 key "type oui oui-subtype";
+                 description
+                   "List of custom LLDP TLVs from a neighbor";
+                 leaf type {
+                   type "leafref" {
+                     path "../state/type";
+                   }
+                   description
+                     "Reference to type list key";
+                 }
+                 leaf oui {
+                   type "leafref" {
+                     path "../state/oui";
+                   }
+                   description
+                     "Reference to oui list key";
+                 }
+                 leaf oui-subtype {
+                   type "leafref" {
+                     path "../state/oui-subtype";
+                   }
+                   description
+                     "Reference to oui-subtype list key";
+                 }
+                 container config {
+                   description
+                     "Configuration data ";
+                 }
+                 container state {
+                   config "false";
+                   description
+                     "Operational state data ";
+                   leaf type {
+                     type "int32";
+                     description
+                       "The integer value identifying the type of information\nc"+
+                       "ontained in the value field.";
+                   }
+                   leaf oui {
+                     type "string";
+                     description
+                       "The organizationally unique identifier field shall "+
+                       "contain\nthe organization's OUI as defined in Clause 9 "+
+                       "of IEEE Std\n802. The high-order octet is 0 and the "+
+                       "low-order 3 octets\nare the SMI Network Management "+
+                       "Private Enterprise Code of\nthe Vendor in network byte "+
+                       "order, as defined in the\n'Assigned Numbers' RFC "+
+                       "[RFC3232].";
+                   }
+                   leaf oui-subtype {
+                     type "string";
+                     description
+                       "The organizationally defined subtype field shall contain"+
+                       " a\nunique subtype value assigned by the defining "+
+                       "organization.";
+                   }
+                   leaf value {
+                     type "string" {
+                       length "1..4094";
+                     }
+                     description
+                       "A variable-length octet-string containing the\ninstance-"+
+                       "specific information for this TLV.";
+                   }
+                 }
+               }
+             }
+             container capabilities {
+               config "false";
+               description
+                 "Enclosing container for list of LLDP capabilities";
+               list capability {
+                 key "name";
+                 description
+                   "List of LLDP system capabilities advertised by the\nneighbor"+
+                   "";
+                 leaf name {
+                   type "leafref" {
+                     path "../state/name";
+                   }
+                   description
+                     "Reference to capabilities list key";
+                 }
+                 container config {
+                   description
+                     "Configuration data for LLDP capabilities";
+                 }
+                 container state {
+                   config "false";
+                   description
+                     "Operational state data for LLDP capabilities";
+                   leaf name {
+                     type "identityref" {
+                       base "oc-lldp-types:LLDP_SYSTEM_CAPABILITY";
+                     }
+                     description
+                       "Name of the system capability advertised by the "+
+                       "neighbor.\nCapabilities are represented in a bitmap that"+
+                       " defines the\nprimary functions of the system. The "+
+                       "capabilities are\ndefined in IEEE 802.1AB.";
+                   }
+                   leaf enabled {
+                     type "boolean";
+                     description
+                       "Indicates whether the corresponding system capability "+
+                       "is\nenabled on the neighbor.";
+                     reference
+                       "Sec 8.5.8.2 of IEEE 802.1AB-2009";
+                   }
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+

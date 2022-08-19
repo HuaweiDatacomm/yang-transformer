@@ -1,0 +1,304 @@
+ submodule ietf-snmp-usm {
+   belongs-to ietf-snmp {
+     prefix "snmp";
+   }
+   import ietf-netconf-acm {
+     prefix "nacm";
+   }
+   include ietf-snmp-common;
+   include ietf-snmp-target;
+   include ietf-snmp-proxy;
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\nWG Chair: Thomas Nadeau\n          <mailto:tnadeau@lucidvision.com"+
+     ">\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@jaco"+
+     "bs-university.de>\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-"+
+     "f.com>\nEditor:   Juergen Schoenwaelder\n          <mailto:j.schoenwaelder"+
+     "@jacobs-university.de>";
+   description
+     "This submodule contains a collection of YANG definitions for\nconfiguring "+
+     "the User-based Security Model (USM) of SNMP.\nCopyright (c) 2014 IETF "+
+     "Trust and the persons identified as\nauthors of the code.  All rights "+
+     "reserved.\nRedistribution and use in source and binary forms, with "+
+     "or\nwithout modification, is permitted pursuant to, and subject\nto the "+
+     "license terms contained in, the Simplified BSD License\nset forth in "+
+     "Section 4.c of the IETF Trust's Legal Provisions\nRelating to IETF "+
+     "Documents\n(http://trustee.ietf.org/license-info).\nThis version of this "+
+     "YANG module is part of RFC 7407; see\nthe RFC itself for full legal "+
+     "notices.";
+   reference
+     "RFC 3414: User-based Security Model (USM) for version 3 of the\nSimple "+
+     "Network Management Protocol (SNMPv3)";
+   revision "2014-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7407: A YANG Data Model for SNMP Configuration";
+   }
+   augment "/snmp:snmp" {
+     container usm {
+       description
+         "Configuration of the User-based Security Model.";
+       container local {
+         list user {
+           key "name";
+           reference
+             "RFC 3414: User-based Security Model (USM) for version 3\nof the "+
+             "Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BASED-SM-M"+
+             "IB.usmUserTable";
+           leaf name {
+             type "snmp:identifier";
+             reference
+               "RFC 3414: User-based Security Model (USM) for version 3\nof the "+
+               "Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BASED-SM"+
+               "-MIB.usmUserName";
+           }
+           container auth {
+             presence "enables authentication";
+             description
+               "Enables authentication of the user.";
+             choice protocol {
+               mandatory "false";
+               reference
+                 "RFC 3414: User-based Security Model (USM) for version 3\nof "+
+                 "the Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BA"+
+                 "SED-SM-MIB.usmUserAuthProtocol";
+               container md5 {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmHMACMD5AuthProtocol";
+               }
+               container sha {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmHMACSHAAuthProtocol";
+               }
+             }
+           }
+           container priv {
+             must "../auth" {
+               error-message
+                 "when privacy (confidentiality) is used, authentication must "+
+                 "also be used";
+             }
+             presence "enables encryption";
+             description
+               "Enables encryption of SNMP messages.";
+             choice protocol {
+               mandatory "false";
+               reference
+                 "RFC 3414: User-based Security Model (USM) for version 3\nof "+
+                 "the Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BA"+
+                 "SED-SM-MIB.usmUserPrivProtocol";
+               container des {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmDESPrivProtocol";
+               }
+               container aes {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3826: The Advanced Encryption Standard (AES)\nCipher "+
+                   "Algorithm in the SNMP User-based Security\nModel.\nSNMP-USM-"+
+                   "AES-MIB.usmAesCfb128Protocol";
+               }
+             }
+           }
+         }
+       }
+       list remote {
+         key "engine-id";
+         leaf engine-id {
+           type "snmp:engine-id";
+           reference
+             "RFC 3414: User-based Security Model (USM) for version 3\nof the "+
+             "Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BASED-SM-M"+
+             "IB.usmUserEngineID";
+         }
+         list user {
+           key "name";
+           reference
+             "RFC 3414: User-based Security Model (USM) for version 3\nof the "+
+             "Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BASED-SM-M"+
+             "IB.usmUserTable";
+           leaf name {
+             type "snmp:identifier";
+             reference
+               "RFC 3414: User-based Security Model (USM) for version 3\nof the "+
+               "Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BASED-SM"+
+               "-MIB.usmUserName";
+           }
+           container auth {
+             presence "enables authentication";
+             description
+               "Enables authentication of the user.";
+             choice protocol {
+               mandatory "false";
+               reference
+                 "RFC 3414: User-based Security Model (USM) for version 3\nof "+
+                 "the Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BA"+
+                 "SED-SM-MIB.usmUserAuthProtocol";
+               container md5 {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmHMACMD5AuthProtocol";
+               }
+               container sha {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmHMACSHAAuthProtocol";
+               }
+             }
+           }
+           container priv {
+             must "../auth" {
+               error-message
+                 "when privacy (confidentiality) is used, authentication must "+
+                 "also be used";
+             }
+             presence "enables encryption";
+             description
+               "Enables encryption of SNMP messages.";
+             choice protocol {
+               mandatory "false";
+               reference
+                 "RFC 3414: User-based Security Model (USM) for version 3\nof "+
+                 "the Simple Network Management Protocol (SNMPv3).\nSNMP-USER-BA"+
+                 "SED-SM-MIB.usmUserPrivProtocol";
+               container des {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3414: User-based Security Model (USM) for\nversion 3 of "+
+                   "the Simple Network Management Protocol\n(SNMPv3).\nSNMP-USER"+
+                   "-BASED-SM-MIB.usmDESPrivProtocol";
+               }
+               container aes {
+                 leaf key {
+                   type "string" {
+                     length "2..max";
+                     pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+                   }
+                   mandatory "true";
+                   nacm:default-deny-all;
+                   description
+                     "Localized key specified as a list of colon-specified\nhexa"+
+                     "decimal octets.";
+                 }
+                 reference
+                   "RFC 3826: The Advanced Encryption Standard (AES)\nCipher "+
+                   "Algorithm in the SNMP User-based Security\nModel.\nSNMP-USM-"+
+                   "AES-MIB.usmAesCfb128Protocol";
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+   augment "/snmp:snmp/snmp:target-params/snmp:params" {
+     case usm {
+       container usm {
+         description
+           "User-based SNMPv3 parameters type.\nRepresents snmpTargetParamsMPMod"+
+           "el '3' and\nsnmpTargetParamsSecurityModel '3'.";
+         leaf user-name {
+           type "snmp:security-name";
+           mandatory "true";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetParamsSecurityName";
+         }
+         leaf security-level {
+           type "snmp:security-level";
+           mandatory "true";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetParamsSecurityLevel";
+         }
+       }
+     }
+   }
+ }
+

@@ -1,0 +1,31 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ submodule huawei-diagnostic-tools-vxlan {
+   yang-version "1";
+   belongs-to huawei-diagnostic-tools {
+     prefix "diagnostic-tools";
+   }
+   include huawei-diagnostic-tools-type;
+   include huawei-diagnostic-tools-common;
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Vxlan diagnosis tool.";
+   revision "2021-01-04" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   augment "/diagnostic-tools:diagnostic-tools" {
+     description
+       "List of VXLAN tests.";
+   }
+ }
+

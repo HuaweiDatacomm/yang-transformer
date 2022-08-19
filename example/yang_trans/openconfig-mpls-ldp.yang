@@ -1,0 +1,125 @@
+ module openconfig-mpls-ldp {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/ldp";
+   prefix "oc-ldp";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nnetopenconfig@googlegroups.com";
+   description
+     "Configuration of Label Distribution Protocol global and LSP-\nspecific "+
+     "parameters for IGP-congruent LSPs.\n\nThis model reuses data items defined"+
+     " in the IETF YANG model for\nLDP described by draft-ietf-mpls-ldp-yang-04,"+
+     " YANG Data Model for\nMPLS LDP, following an alternate structure.\n\nPorti"+
+     "ons of this code were derived from draft-ietf-mpls-ldp-yang-04.\nPlease "+
+     "reproduce this note if possible.\n\nIETF code is subject to the following "+
+     "copyright and license:\nCopyright (c) IETF Trust and the persons "+
+     "identified as authors of\nthe code.\nAll rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or without\nmodification, is "+
+     "permitted pursuant to, and subject to the license\nterms contained in, the"+
+     " Simplified BSD License set forth in\nSection 4.c of the IETF Trust's "+
+     "Legal Provisions Relating\nto IETF Documents (http://trustee.ietf.org/lice"+
+     "nse-info).";
+   oc-ext:openconfig-version "3.0.2";
+   revision "2019-07-09" {
+     description
+       "Remove units for timeticks64 leaves, since the type\nspecifies the "+
+       "units.";
+     reference
+       "3.0.2";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "3.0.1";
+   }
+   revision "2018-07-02" {
+     description
+       "Add new RSVP-TE statistics, remove associated-rsvp-session\nleaf. Remove"+
+       " use of date-and-time.";
+     reference
+       "3.0.0";
+   }
+   revision "2018-06-16" {
+     description
+       "Included attributes for base LDP configuration.";
+     reference
+       "2.6.0";
+   }
+   revision "2018-06-13" {
+     description
+       "Add ttl-propagation to global MPLS config";
+     reference
+       "2.5.0";
+   }
+   revision "2018-06-05" {
+     description
+       "Fixed bugs in when statements on RSVP-TE attributes";
+     reference
+       "2.4.2";
+   }
+   revision "2017-08-24" {
+     description
+       "Minor formatting fixes.";
+     reference
+       "2.4.1";
+   }
+   revision "2017-06-21" {
+     description
+       "Add TC bits typedef.";
+     reference
+       "2.4.0";
+   }
+   revision "2017-03-22" {
+     description
+       "Add RSVP calculated-absolute-subscription-bw";
+     reference
+       "2.3.0";
+   }
+   revision "2017-01-26" {
+     description
+       "Add RSVP Tspec, clarify units for RSVP, remove unused LDP";
+     reference
+       "2.2.0";
+   }
+   revision "2016-12-15" {
+     description
+       "Add additional MPLS parameters";
+     reference
+       "2.1.0";
+   }
+   revision "2016-09-01" {
+     description
+       "Revisions based on implementation feedback";
+     reference
+       "2.0.0";
+   }
+   revision "2016-08-08" {
+     description
+       "Public release of MPLS models";
+     reference
+       "1.0.1";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   typedef mpls-ldp-afi {
+     type "enumeration" {
+       enum "IPV4" {
+         description
+           "IPv4 AFI for LDP adjancencies";
+       }
+       enum "IPV6" {
+         description
+           "IPv6 AFI for LDP adjancencies";
+       }
+     }
+     description
+       "enumerated type for specifying LDP AFIs";
+   }
+ }
+

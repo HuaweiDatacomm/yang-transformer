@@ -1,0 +1,36 @@
+ module openconfig-system-terminal {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/system/terminal";
+   prefix "oc-sys-term";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines configuration and operational state data\nrelated to "+
+     "remote terminal services such as ssh and telnet.";
+   oc-ext:openconfig-version "0.3.0";
+   revision "2017-09-18" {
+     description
+       "Updated to use OpenConfig types modules";
+     reference
+       "0.3.0";
+   }
+   revision "2017-07-06" {
+     description
+       "Move to oc-inet types, add IETF attribution, add RADIUS\ncounters, "+
+       "changed password leaf names to indicate hashed";
+     reference
+       "0.2.0";
+   }
+   revision "2017-01-29" {
+     description
+       "Initial public release";
+     reference
+       "0.1.0";
+   }
+ }
+

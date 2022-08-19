@@ -1,0 +1,340 @@
+ module ietf-netconf-acm {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-netconf-acm";
+   prefix "nacm";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   organization
+     "IETF NETCONF (Network Configuration) Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/netconf/>\nWG List:  <mailto:ne"+
+     "tconf@ietf.org>\n\nAuthor:   Andy Bierman\n          <mailto:andy@yumawork"+
+     "s.com>\n\nAuthor:   Martin Bjorklund\n          <mailto:mbj@tail-f.com>";
+   description
+     "Network Configuration Access Control Model.\n\nCopyright (c) 2012 - 2018 "+
+     "IETF Trust and the persons\nidentified as authors of the code.  All rights"+
+     " reserved.\n\nRedistribution and use in source and binary forms, with "+
+     "or\nwithout modification, is permitted pursuant to, and subject\nto the "+
+     "license terms contained in, the Simplified BSD\nLicense set forth in "+
+     "Section 4.c of the IETF Trust's\nLegal Provisions Relating to IETF "+
+     "Documents\n(https://trustee.ietf.org/license-info).\n\nThis version of "+
+     "this YANG module is part of RFC 8341; see\nthe RFC itself for full legal "+
+     "notices.";
+   revision "2018-02-14" {
+     description
+       "Added support for YANG 1.1 actions and notifications tied to\ndata "+
+       "nodes.  Clarified how NACM extensions can be used by\nother data "+
+       "models.";
+     reference
+       "RFC 8341: Network Configuration Access Control Model";
+   }
+   revision "2012-02-22" {
+     description
+       "Initial version.";
+     reference
+       "RFC 6536: Network Configuration Protocol (NETCONF)\n        Access "+
+       "Control Model";
+   }
+   extension default-deny-write {
+     description
+       "Used to indicate that the data model node\nrepresents a sensitive "+
+       "security system parameter.\nIf present, and the NACM module is enabled "+
+       "(i.e.,\n/nacm/enable-nacm object equals 'true'), the NETCONF server\nwil"+
+       "l only allow the designated 'recovery session' to have\nwrite access to "+
+       "the node.  An explicit access control rule is\nrequired for all other "+
+       "users.\nThe 'default-deny-write' extension MAY appear within a "+
+       "data\ndefinition statement.  It is ignored otherwise.";
+   }
+   extension default-deny-all {
+     description
+       "Used to indicate that the data model node\ncontrols a very sensitive "+
+       "security system parameter.\nIf present, and the NACM module is enabled "+
+       "(i.e.,\n/nacm/enable-nacm object equals 'true'), the NETCONF server\nwil"+
+       "l only allow the designated 'recovery session' to have\nread, write, or "+
+       "execute access to the node.  An explicit\naccess control rule is "+
+       "required for all other users.\nThe 'default-deny-all' extension MAY "+
+       "appear within a data\ndefinition statement, 'rpc' statement, or "+
+       "'notification'\nstatement.  It is ignored otherwise.";
+   }
+   typedef matchall-string-type {
+     type "string" {
+       pattern "\\*";
+     }
+     description
+       "The string containing a single asterisk '*' is used\nto conceptually "+
+       "represent all possible values\nfor the particular leaf using this data "+
+       "type.";
+   }
+   typedef access-operations-type {
+     type "bits" {
+       bit create {
+         description
+           "Any protocol operation that creates a\nnew data node.";
+       }
+       bit read {
+         description
+           "Any protocol operation or notification that\nreturns the value of a "+
+           "data node.";
+       }
+       bit update {
+         description
+           "Any protocol operation that alters an existing\ndata node.";
+       }
+       bit delete {
+         description
+           "Any protocol operation that removes a data node.";
+       }
+       bit exec {
+         description
+           "Execution access to the specified protocol operation.";
+       }
+     }
+     description
+       "NETCONF Access Operation.";
+   }
+   typedef action-type {
+     type "enumeration" {
+       enum "permit" {
+         description
+           "Requested action is permitted.";
+       }
+       enum "deny" {
+         description
+           "Requested action is denied.";
+       }
+     }
+     description
+       "Action taken by the server when a particular\nrule matches.";
+   }
+   container nacm {
+     nacm:default-deny-all;
+     description
+       "Parameters for NETCONF Access Control Model.";
+     leaf enable-nacm {
+       type "boolean";
+       default "false";
+       description
+         "Enables or disables all NETCONF access control\nenforcement.  If "+
+         "'true', then enforcement\nis enabled.  If 'false', then enforcement\ni"+
+         "s disabled.";
+     }
+     leaf read-default {
+       type "action-type";
+       default "deny";
+       description
+         "Controls whether read access is granted if\nno appropriate rule is "+
+         "found for a\nparticular read request.";
+     }
+     leaf write-default {
+       type "action-type";
+       default "deny";
+       description
+         "Controls whether create, update, or delete access\nis granted if no "+
+         "appropriate rule is found for a\nparticular write request.";
+     }
+     leaf exec-default {
+       type "action-type";
+       default "deny";
+       description
+         "Controls whether exec access is granted if no appropriate\nrule is "+
+         "found for a particular protocol operation request.";
+     }
+     leaf denied-operations {
+       type "yang:zero-based-counter32";
+       config "false";
+       mandatory "true";
+       description
+         "Number of times since the server last restarted that a\nprotocol "+
+         "operation request was denied.";
+     }
+     leaf denied-data-writes {
+       type "yang:zero-based-counter32";
+       config "false";
+       mandatory "true";
+       description
+         "Number of times since the server last restarted that a\nprotocol "+
+         "operation request to alter\na configuration datastore was denied.";
+     }
+     leaf denied-notifications {
+       type "yang:zero-based-counter32";
+       config "false";
+       mandatory "true";
+       description
+         "Number of times since the server last restarted that\na notification "+
+         "was dropped for a subscription because\naccess to the event type was "+
+         "denied.";
+     }
+     container groups {
+       description
+         "NETCONF Access Control Groups.";
+       list group {
+         key "name";
+         description
+           "One NACM Group Entry.  This list will only contain\nconfigured "+
+           "entries, not any entries learned from\nany transport protocols.";
+         leaf name {
+           type "string" {
+             length "1..32";
+             pattern "[^\\*].*";
+           }
+           description
+             "Group name associated with this entry.";
+         }
+         leaf-list user-name {
+           type "string" {
+             length "1..255";
+           }
+           description
+             "Each entry identifies the username of\na member of the group "+
+             "associated with\nthis entry.";
+         }
+         max-elements "16";
+       }
+     }
+     list rule-list {
+       key "name";
+       ordered-by "user";
+       description
+         "An ordered collection of access control rules.";
+       leaf name {
+         type "string" {
+           length "1..15";
+         }
+         description
+           "Arbitrary name assigned to the rule-list.";
+       }
+       leaf-list group {
+         type "union" {
+           type "string" {
+             length "0..18446744073709551615";
+             pattern "\\*";
+           }
+           type "string" {
+             length "1..32";
+             pattern "[^\\*].*";
+           }
+         }
+         description
+           "List of administrative groups that will be\nassigned the associated "+
+           "access rights\ndefined by the 'rule' list.\nThe string '*' indicates"+
+           " that all groups apply to the\nentry.";
+         max-elements "16";
+       }
+       list rule {
+         key "name";
+         ordered-by "user";
+         description
+           "One access control rule.\nRules are processed in user-defined order "+
+           "until a match is\nfound.  A rule matches if 'module-name', "+
+           "'rule-type', and\n'access-operations' match the request.  If a "+
+           "rule\nmatches, the 'action' leaf determines whether or not\naccess "+
+           "is granted.";
+         leaf name {
+           type "string" {
+             length "1..15";
+           }
+           description
+             "Arbitrary name assigned to the rule.";
+         }
+         leaf module-name {
+           type "union" {
+             type "string" {
+               length "0..18446744073709551615";
+               pattern "\\*";
+             }
+             type "string" {
+               length "1..63";
+             }
+           }
+           default "*";
+           description
+             "Name of the module associated with this rule.\nThis leaf matches "+
+             "if it has the value '*' or if the\nobject being accessed is "+
+             "defined in the module with the\nspecified module name.";
+         }
+         choice rule-type {
+           description
+             "This choice matches if all leafs present in the rule\nmatch the "+
+             "request.  If no leafs are present, the\nchoice matches all "+
+             "requests.";
+           case protocol-operation {
+             leaf rpc-name {
+               type "union" {
+                 type "string" {
+                   length "0..18446744073709551615";
+                   pattern "\\*";
+                 }
+                 type "string" {
+                   length "1..63";
+                 }
+               }
+               description
+                 "This leaf matches if it has the value '*' or if\nits value "+
+                 "equals the requested protocol operation\nname.";
+             }
+           }
+           case notification {
+             leaf notification-name {
+               type "union" {
+                 type "string" {
+                   length "0..18446744073709551615";
+                   pattern "\\*";
+                 }
+                 type "string" {
+                   length "1..63";
+                 }
+               }
+               description
+                 "This leaf matches if it has the value '*' or if its\nvalue "+
+                 "equals the requested notification name.";
+             }
+           }
+           case data-node {
+             leaf path {
+               type "string" {
+                 length "1..1023";
+               }
+               mandatory "true";
+               description
+                 "Data node instance-identifier associated with the\ndata node, "+
+                 "action, or notification controlled by\nthis rule.\n\nConfigura"+
+                 "tion data or state data\ninstance-identifiers start with a "+
+                 "top-level\ndata node.  A complete instance-identifier "+
+                 "is\nrequired for this type of path value.\n\nThe special value"+
+                 " '/' refers to all possible\ndatastore contents.";
+             }
+           }
+         }
+         leaf access-operations {
+           type "union" {
+             type "matchall-string-type";
+             type "access-operations-type";
+           }
+           default "*";
+           description
+             "Access operations associated with this rule.\nThis leaf matches if"+
+             " it has the value '*' or if the\nbit corresponding to the "+
+             "requested operation is set.";
+         }
+         leaf action {
+           type "action-type";
+           mandatory "true";
+           description
+             "The access control action associated with the\nrule.  If a rule is"+
+             " determined to match a\nparticular request, then this object is "+
+             "used\nto determine whether to permit or deny the\nrequest.";
+         }
+         leaf comment {
+           type "string" {
+             length "1..63";
+           }
+           description
+             "A textual description of the access rule.";
+         }
+         max-elements "256";
+       }
+       max-elements "64";
+     }
+   }
+ }
+

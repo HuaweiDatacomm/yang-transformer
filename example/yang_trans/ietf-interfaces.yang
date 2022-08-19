@@ -1,0 +1,871 @@
+ module ietf-interfaces {
+   yang-version "1.1";
+   namespace "urn:ietf:params:xml:ns:yang:ietf-interfaces";
+   prefix "if";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   organization
+     "IETF NETMOD (Network Modeling) Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/netmod/>\nWG List:  <mailto:net"+
+     "mod@ietf.org>\n\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-f."+
+     "com>";
+   description
+     "This module contains a collection of YANG definitions for\nmanaging "+
+     "network interfaces.\n\nCopyright (c) 2018 IETF Trust and the persons "+
+     "identified as\nauthors of the code.  All rights reserved.\n\nRedistributio"+
+     "n and use in source and binary forms, with or\nwithout modification, is "+
+     "permitted pursuant to, and subject\nto the license terms contained in, the"+
+     " Simplified BSD License\nset forth in Section 4.c of the IETF Trust's "+
+     "Legal Provisions\nRelating to IETF Documents\n(https://trustee.ietf.org/li"+
+     "cense-info).\n\nThis version of this YANG module is part of RFC 8343; "+
+     "see\nthe RFC itself for full legal notices.";
+   revision "2018-02-20" {
+     description
+       "Updated to support NMDA.";
+     reference
+       "RFC 8343: A YANG Data Model for Interface Management";
+   }
+   revision "2014-05-08" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7223: A YANG Data Model for Interface Management";
+   }
+   typedef interface-ref {
+     type "leafref" {
+       path "/if:interfaces/if:interface/if:name";
+     }
+     description
+       "This type is used by data models that need to reference\ninterfaces.";
+   }
+   identity interface-type {
+     description
+       "Base identity from which specific interface types are\nderived.";
+   }
+   feature arbitrary-names {
+     description
+       "This feature indicates that the device allows user-controlled\ninterface"+
+       "s to be named arbitrarily.";
+   }
+   feature pre-provisioning {
+     description
+       "This feature indicates that the device supports\npre-provisioning of "+
+       "interface configuration, i.e., it is\npossible to configure an interface"+
+       " whose physical interface\nhardware is not present on the device.";
+   }
+   feature if-mib {
+     description
+       "This feature indicates that the device implements\nthe IF-MIB.";
+     reference
+       "RFC 2863: The Interfaces Group MIB";
+   }
+   container interfaces {
+     description
+       "Interface parameters.";
+     list interface {
+       key "name";
+       description
+         "The list of interfaces on the device.\n\nThe status of an interface is"+
+         " available in this list in the\noperational state.  If the configurati"+
+         "on of a\nsystem-controlled interface cannot be used by the system\n(e."+
+         "g., the interface hardware present does not match the\ninterface "+
+         "type), then the configuration is not applied to\nthe system-controlled"+
+         " interface shown in the operational\nstate.  If the configuration of a"+
+         " user-controlled interface\ncannot be used by the system, the "+
+         "configured interface is\nnot instantiated in the operational "+
+         "state.\n\nSystem-controlled interfaces created by the system "+
+         "are\nalways present in this list in the operational state,\nwhether or"+
+         " not they are configured.";
+       leaf name {
+         type "string" {
+           length "1..63";
+         }
+         description
+           "The name of the interface.\n\nA device MAY restrict the allowed "+
+           "values for this leaf,\npossibly depending on the type of the "+
+           "interface.\nFor system-controlled interfaces, this leaf is "+
+           "the\ndevice-specific name of the interface.\n\nIf a client tries to "+
+           "create configuration for a\nsystem-controlled interface that is not "+
+           "present in the\noperational state, the server MAY reject the request"+
+           " if\nthe implementation does not support pre-provisioning of\ninterf"+
+           "aces or if the name refers to an interface that can\nnever exist in "+
+           "the system.  A Network Configuration\nProtocol (NETCONF) server MUST"+
+           " reply with an rpc-error\nwith the error-tag 'invalid-value' in this"+
+           " case.\n\nIf the device supports pre-provisioning of interface\nconf"+
+           "iguration, the 'pre-provisioning' feature is\nadvertised.\n\nIf the "+
+           "device allows arbitrarily named user-controlled\ninterfaces, the "+
+           "'arbitrary-names' feature is advertised.\nWhen a configured "+
+           "user-controlled interface is created by\nthe system, it is "+
+           "instantiated with the same name in the\noperational state.\n\nA "+
+           "server implementation MAY map this leaf to the ifName\nMIB object.  "+
+           "Such an implementation needs to use some\nmechanism to handle the "+
+           "differences in size and characters\nallowed between this leaf and "+
+           "ifName.  The definition of\nsuch a mechanism is outside the scope of"+
+           " this document.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifName";
+       }
+       leaf description {
+         type "string" {
+           length "1..242";
+         }
+         description
+           "A textual description of the interface.\n\nA server implementation "+
+           "MAY map this leaf to the ifAlias\nMIB object.  Such an implementatio"+
+           "n needs to use some\nmechanism to handle the differences in size and"+
+           " characters\nallowed between this leaf and ifAlias.  The definition "+
+           "of\nsuch a mechanism is outside the scope of this document.\n\nSince"+
+           " ifAlias is defined to be stored in non-volatile\nstorage, the MIB "+
+           "implementation MUST map ifAlias to the\nvalue of 'description' in "+
+           "the persistently stored\nconfiguration.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifAlias";
+       }
+       leaf type {
+         type "identityref" {
+           base "interface-type";
+         }
+         mandatory "true";
+         description
+           "The type of the interface.\n\nWhen an interface entry is created, a "+
+           "server MAY\ninitialize the type leaf with a valid value, e.g., if "+
+           "it\nis possible to derive the type from the name of the\ninterface."+
+           "\n\nIf a client tries to set the type of an interface to a\nvalue "+
+           "that can never be used by the system, e.g., if the\ntype is not "+
+           "supported or if the type does not match the\nname of the interface, "+
+           "the server MUST reject the request.\nA NETCONF server MUST reply "+
+           "with an rpc-error with the\nerror-tag 'invalid-value' in this case.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifType";
+       }
+       leaf enabled {
+         type "boolean";
+         default "true";
+         description
+           "This leaf contains the configured, desired state of the\ninterface."+
+           "\n\nSystems that implement the IF-MIB use the value of this\nleaf in"+
+           " the intended configuration to set\nIF-MIB.ifAdminStatus to 'up' or "+
+           "'down' after an ifEntry\nhas been initialized, as described in RFC "+
+           "2863.\n\nChanges in this leaf in the intended configuration "+
+           "are\nreflected in ifAdminStatus.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+       }
+       leaf link-up-down-trap-enable {
+         if-feature "if-mib";
+         type "enumeration" {
+           enum "enabled" {
+             value "1";
+             description
+               "The device will generate linkUp/linkDown SNMP\nnotifications for"+
+               " this interface.";
+           }
+           enum "disabled" {
+             value "2";
+             description
+               "The device will not generate linkUp/linkDown SNMP\nnotifications"+
+               " for this interface.";
+           }
+         }
+         description
+           "Controls whether linkUp/linkDown SNMP notifications\nshould be "+
+           "generated for this interface.\nIf this node is not configured, the "+
+           "value 'enabled' is\noperationally used by the server for interfaces "+
+           "that do\nnot operate on top of any other interface (i.e., there "+
+           "are\nno 'lower-layer-if' entries), and 'disabled' otherwise.";
+         reference
+           "RFC 2863: The Interfaces Group MIB -\n        ifLinkUpDownTrapEnable"+
+           "";
+         default "enabled";
+       }
+       leaf admin-status {
+         if-feature "if-mib";
+         type "enumeration" {
+           enum "up" {
+             value "1";
+             description
+               "Ready to pass packets.";
+           }
+           enum "down" {
+             value "2";
+             description
+               "Not ready to pass packets and not in some test mode.";
+           }
+           enum "testing" {
+             value "3";
+             description
+               "In some test mode.";
+           }
+         }
+         config "false";
+         mandatory "true";
+         description
+           "The desired state of the interface.\n\nThis leaf has the same read "+
+           "semantics as ifAdminStatus.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+       }
+       leaf oper-status {
+         type "enumeration" {
+           enum "up" {
+             value "1";
+             description
+               "Ready to pass packets.";
+           }
+           enum "down" {
+             value "2";
+             description
+               "The interface does not pass any packets.";
+           }
+           enum "testing" {
+             value "3";
+             description
+               "In some test mode.  No operational packets can\nbe passed.";
+           }
+           enum "unknown" {
+             value "4";
+             description
+               "Status cannot be determined for some reason.";
+           }
+           enum "dormant" {
+             value "5";
+             description
+               "Waiting for some external event.";
+           }
+           enum "not-present" {
+             value "6";
+             description
+               "Some component (typically hardware) is missing.";
+           }
+           enum "lower-layer-down" {
+             value "7";
+             description
+               "Down due to state of lower-layer interface(s).";
+           }
+         }
+         config "false";
+         mandatory "true";
+         description
+           "The current operational state of the interface.\n\nThis leaf has the"+
+           " same semantics as ifOperStatus.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifOperStatus";
+       }
+       leaf last-change {
+         type "yang:date-and-time";
+         config "false";
+         description
+           "The time the interface entered its current operational\nstate.  If "+
+           "the current state was entered prior to the\nlast re-initialization "+
+           "of the local network management\nsubsystem, then this node is not "+
+           "present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifLastChange";
+       }
+       leaf if-index {
+         if-feature "if-mib";
+         type "int32" {
+           range "1..2147483647";
+         }
+         config "false";
+         mandatory "true";
+         description
+           "The ifIndex value for the ifEntry represented by this\ninterface.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifIndex";
+       }
+       leaf phys-address {
+         type "yang:phys-address";
+         config "false";
+         description
+           "The interface's address at its protocol sub-layer.  For\nexample, "+
+           "for an 802.x interface, this object normally\ncontains a Media "+
+           "Access Control (MAC) address.  The\ninterface's media-specific "+
+           "modules must define the bit\nand byte ordering and the format of the"+
+           " value of this\nobject.  For interfaces that do not have such an "+
+           "address\n(e.g., a serial line), this node is not present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifPhysAddress";
+       }
+       leaf-list higher-layer-if {
+         type "interface-ref";
+         config "false";
+         description
+           "A list of references to interfaces layered on top of this\ninterface"+
+           ".";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifStackTable";
+       }
+       leaf-list lower-layer-if {
+         type "interface-ref";
+         config "false";
+         description
+           "A list of references to interfaces layered underneath this\ninterfac"+
+           "e.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifStackTable";
+       }
+       leaf speed {
+         type "yang:gauge64";
+         units "bits/second";
+         config "false";
+         description
+           "An estimate of the interface's current bandwidth in bits\nper "+
+           "second.  For interfaces that do not vary in\nbandwidth or for those "+
+           "where no accurate estimation can\nbe made, this node should contain "+
+           "the nominal bandwidth.\nFor interfaces that have no concept of "+
+           "bandwidth, this\nnode is not present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB -\n        ifSpeed, ifHighSpeed";
+       }
+       container statistics {
+         config "false";
+         description
+           "A collection of interface-related statistics objects.";
+         leaf discontinuity-time {
+           type "yang:date-and-time";
+           mandatory "true";
+           description
+             "The time on the most recent occasion at which any one or\nmore of "+
+             "this interface's counters suffered a\ndiscontinuity.  If no such "+
+             "discontinuities have occurred\nsince the last re-initialization of"+
+             " the local management\nsubsystem, then this node contains the time"+
+             " the local\nmanagement subsystem re-initialized itself.";
+         }
+         leaf in-octets {
+           type "yang:counter64";
+           description
+             "The total number of octets received on the interface,\nincluding "+
+             "framing characters.\nDiscontinuities in the value of this counter "+
+             "can occur\nat re-initialization of the management system and "+
+             "at\nother times as indicated by the value of\n'discontinuity-time'"+
+             ".";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCInOctets";
+         }
+         leaf in-unicast-pkts {
+           type "yang:counter64";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were not addressed to a\nmulticast or broadcast "+
+             "address at this sub-layer.\n\nDiscontinuities in the value of this"+
+             " counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCInUcastPkts";
+         }
+         leaf in-broadcast-pkts {
+           type "yang:counter64";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were addressed to a broadcast\naddress at this "+
+             "sub-layer.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCInBroadcastPkts";
+         }
+         leaf in-multicast-pkts {
+           type "yang:counter64";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were addressed to a multicast\naddress at this "+
+             "sub-layer.  For a MAC-layer protocol,\nthis includes both Group "+
+             "and Functional addresses.\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCInMulticastPkts";
+         }
+         leaf in-discards {
+           type "yang:counter32";
+           description
+             "The number of inbound packets that were chosen to be\ndiscarded "+
+             "even though no errors had been detected to\nprevent their being "+
+             "deliverable to a higher-layer\nprotocol.  One possible reason for "+
+             "discarding such a\npacket could be to free up buffer space.\n\nDis"+
+             "continuities in the value of this counter can occur\nat re-initial"+
+             "ization of the management system and at\nother times as indicated "+
+             "by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInDiscards";
+         }
+         leaf in-errors {
+           type "yang:counter32";
+           description
+             "For packet-oriented interfaces, the number of inbound\npackets "+
+             "that contained errors preventing them from being\ndeliverable to a"+
+             " higher-layer protocol.  For character-\noriented or fixed-length "+
+             "interfaces, the number of\ninbound transmission units that "+
+             "contained errors\npreventing them from being deliverable to a "+
+             "higher-layer\nprotocol.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInErrors";
+         }
+         leaf in-unknown-protos {
+           type "yang:counter32";
+           description
+             "For packet-oriented interfaces, the number of packets\nreceived "+
+             "via the interface that were discarded because\nof an unknown or "+
+             "unsupported protocol.  For\ncharacter-oriented or fixed-length "+
+             "interfaces that\nsupport protocol multiplexing, the number "+
+             "of\ntransmission units received via the interface that were\ndisca"+
+             "rded because of an unknown or unsupported protocol.\nFor any "+
+             "interface that does not support protocol\nmultiplexing, this "+
+             "counter is not present.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInUnknownProtos";
+         }
+         leaf out-octets {
+           type "yang:counter64";
+           description
+             "The total number of octets transmitted out of the\ninterface, "+
+             "including framing characters.\n\nDiscontinuities in the value of "+
+             "this counter can occur\nat re-initialization of the management "+
+             "system and at\nother times as indicated by the value of\n'disconti"+
+             "nuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCOutOctets";
+         }
+         leaf out-unicast-pkts {
+           type "yang:counter64";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were not addressed\nto a multicast or "+
+             "broadcast address at this sub-layer,\nincluding those that were "+
+             "discarded or not sent.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCOutUcastPkts";
+         }
+         leaf out-broadcast-pkts {
+           type "yang:counter64";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were addressed to a\nbroadcast address at"+
+             " this sub-layer, including those\nthat were discarded or not "+
+             "sent.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCOutBroadcastPkts"+
+             "";
+         }
+         leaf out-multicast-pkts {
+           type "yang:counter64";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were addressed to a\nmulticast address at"+
+             " this sub-layer, including those\nthat were discarded or not sent."+
+             "  For a MAC-layer\nprotocol, this includes both Group and "+
+             "Functional\naddresses.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCOutMulticastPkts"+
+             "";
+         }
+         leaf out-discards {
+           type "yang:counter32";
+           description
+             "The number of outbound packets that were chosen to be\ndiscarded "+
+             "even though no errors had been detected to\nprevent their being "+
+             "transmitted.  One possible reason\nfor discarding such a packet "+
+             "could be to free up buffer\nspace.\n\nDiscontinuities in the value"+
+             " of this counter can occur\nat re-initialization of the management"+
+             " system and at\nother times as indicated by the value of\n'discont"+
+             "inuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifOutDiscards";
+         }
+         leaf out-errors {
+           type "yang:counter32";
+           description
+             "For packet-oriented interfaces, the number of outbound\npackets "+
+             "that could not be transmitted because of errors.\nFor character-or"+
+             "iented or fixed-length interfaces, the\nnumber of outbound "+
+             "transmission units that could not be\ntransmitted because of "+
+             "errors.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifOutErrors";
+         }
+       }
+     }
+   }
+   container interfaces-state {
+     config "false";
+     status "deprecated";
+     description
+       "Data nodes for the operational state of interfaces.";
+     list interface {
+       key "name";
+       status "deprecated";
+       description
+         "The list of interfaces on the device.\n\nSystem-controlled interfaces "+
+         "created by the system are\nalways present in this list, whether or not"+
+         " they are\nconfigured.";
+       leaf name {
+         type "string" {
+           length "1..63";
+         }
+         status "deprecated";
+         description
+           "The name of the interface.\n\nA server implementation MAY map this "+
+           "leaf to the ifName\nMIB object.  Such an implementation needs to use"+
+           " some\nmechanism to handle the differences in size and characters\na"+
+           "llowed between this leaf and ifName.  The definition of\nsuch a "+
+           "mechanism is outside the scope of this document.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifName";
+       }
+       leaf type {
+         type "identityref" {
+           base "interface-type";
+         }
+         mandatory "true";
+         status "deprecated";
+         description
+           "The type of the interface.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifType";
+       }
+       leaf admin-status {
+         if-feature "if-mib";
+         type "enumeration" {
+           enum "up" {
+             value "1";
+             description
+               "Ready to pass packets.";
+           }
+           enum "down" {
+             value "2";
+             description
+               "Not ready to pass packets and not in some test mode.";
+           }
+           enum "testing" {
+             value "3";
+             description
+               "In some test mode.";
+           }
+         }
+         mandatory "true";
+         status "deprecated";
+         description
+           "The desired state of the interface.\n\nThis leaf has the same read "+
+           "semantics as ifAdminStatus.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+       }
+       leaf oper-status {
+         type "enumeration" {
+           enum "up" {
+             value "1";
+             description
+               "Ready to pass packets.";
+           }
+           enum "down" {
+             value "2";
+             description
+               "The interface does not pass any packets.";
+           }
+           enum "testing" {
+             value "3";
+             description
+               "In some test mode.  No operational packets can\nbe passed.";
+           }
+           enum "unknown" {
+             value "4";
+             description
+               "Status cannot be determined for some reason.";
+           }
+           enum "dormant" {
+             value "5";
+             description
+               "Waiting for some external event.";
+           }
+           enum "not-present" {
+             value "6";
+             description
+               "Some component (typically hardware) is missing.";
+           }
+           enum "lower-layer-down" {
+             value "7";
+             description
+               "Down due to state of lower-layer interface(s).";
+           }
+         }
+         mandatory "true";
+         status "deprecated";
+         description
+           "The current operational state of the interface.\n\nThis leaf has the"+
+           " same semantics as ifOperStatus.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifOperStatus";
+       }
+       leaf last-change {
+         type "yang:date-and-time";
+         status "deprecated";
+         description
+           "The time the interface entered its current operational\nstate.  If "+
+           "the current state was entered prior to the\nlast re-initialization "+
+           "of the local network management\nsubsystem, then this node is not "+
+           "present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifLastChange";
+       }
+       leaf if-index {
+         if-feature "if-mib";
+         type "int32" {
+           range "1..2147483647";
+         }
+         mandatory "true";
+         status "deprecated";
+         description
+           "The ifIndex value for the ifEntry represented by this\ninterface.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifIndex";
+       }
+       leaf phys-address {
+         type "yang:phys-address";
+         status "deprecated";
+         description
+           "The interface's address at its protocol sub-layer.  For\nexample, "+
+           "for an 802.x interface, this object normally\ncontains a Media "+
+           "Access Control (MAC) address.  The\ninterface's media-specific "+
+           "modules must define the bit\nand byte ordering and the format of the"+
+           " value of this\nobject.  For interfaces that do not have such an "+
+           "address\n(e.g., a serial line), this node is not present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB - ifPhysAddress";
+       }
+       leaf speed {
+         type "yang:gauge64";
+         units "bits/second";
+         status "deprecated";
+         description
+           "An estimate of the interface's current bandwidth in bits\nper "+
+           "second.  For interfaces that do not vary in\nbandwidth or for those "+
+           "where no accurate estimation can\nbe made, this node should contain "+
+           "the nominal bandwidth.\nFor interfaces that have no concept of "+
+           "bandwidth, this\nnode is not present.";
+         reference
+           "RFC 2863: The Interfaces Group MIB -\n        ifSpeed, ifHighSpeed";
+       }
+       container statistics {
+         status "deprecated";
+         description
+           "A collection of interface-related statistics objects.";
+         leaf discontinuity-time {
+           type "yang:date-and-time";
+           mandatory "true";
+           status "deprecated";
+           description
+             "The time on the most recent occasion at which any one or\nmore of "+
+             "this interface's counters suffered a\ndiscontinuity.  If no such "+
+             "discontinuities have occurred\nsince the last re-initialization of"+
+             " the local management\nsubsystem, then this node contains the time"+
+             " the local\nmanagement subsystem re-initialized itself.";
+         }
+         leaf in-octets {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The total number of octets received on the interface,\nincluding "+
+             "framing characters.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCInOctets";
+         }
+         leaf in-unicast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were not addressed to a\nmulticast or broadcast "+
+             "address at this sub-layer.\n\nDiscontinuities in the value of this"+
+             " counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCInUcastPkts";
+         }
+         leaf in-broadcast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were addressed to a broadcast\naddress at this "+
+             "sub-layer.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCInBroadcastPkts";
+         }
+         leaf in-multicast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The number of packets, delivered by this sub-layer to a\nhigher "+
+             "(sub-)layer, that were addressed to a multicast\naddress at this "+
+             "sub-layer.  For a MAC-layer protocol,\nthis includes both Group "+
+             "and Functional addresses.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCInMulticastPkts";
+         }
+         leaf in-discards {
+           type "yang:counter32";
+           status "deprecated";
+           description
+             "The number of inbound packets that were chosen to be\ndiscarded "+
+             "even though no errors had been detected to\nprevent their being "+
+             "deliverable to a higher-layer\nprotocol.  One possible reason for "+
+             "discarding such a\npacket could be to free up buffer space.\n\nDis"+
+             "continuities in the value of this counter can occur\nat re-initial"+
+             "ization of the management system and at\nother times as indicated "+
+             "by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInDiscards";
+         }
+         leaf in-errors {
+           type "yang:counter32";
+           status "deprecated";
+           description
+             "For packet-oriented interfaces, the number of inbound\npackets "+
+             "that contained errors preventing them from being\ndeliverable to a"+
+             " higher-layer protocol.  For character-\noriented or fixed-length "+
+             "interfaces, the number of\ninbound transmission units that "+
+             "contained errors\npreventing them from being deliverable to a "+
+             "higher-layer\nprotocol.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInErrors";
+         }
+         leaf in-unknown-protos {
+           type "yang:counter32";
+           status "deprecated";
+           description
+             "For packet-oriented interfaces, the number of packets\nreceived "+
+             "via the interface that were discarded because\nof an unknown or "+
+             "unsupported protocol.  For\ncharacter-oriented or fixed-length "+
+             "interfaces that\nsupport protocol multiplexing, the number "+
+             "of\ntransmission units received via the interface that were\ndisca"+
+             "rded because of an unknown or unsupported protocol.\nFor any "+
+             "interface that does not support protocol\nmultiplexing, this "+
+             "counter is not present.\n				\nDiscontinuities in the value of "+
+             "this counter can occur\nat re-initialization of the management "+
+             "system and at\nother times as indicated by the value of\n'disconti"+
+             "nuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifInUnknownProtos";
+         }
+         leaf out-octets {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The total number of octets transmitted out of the\ninterface, "+
+             "including framing characters.\n\nDiscontinuities in the value of "+
+             "this counter can occur\nat re-initialization of the management "+
+             "system and at\nother times as indicated by the value of\n'disconti"+
+             "nuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCOutOctets";
+         }
+         leaf out-unicast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were not addressed\nto a multicast or "+
+             "broadcast address at this sub-layer,\nincluding those that were "+
+             "discarded or not sent.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifHCOutUcastPkts";
+         }
+         leaf out-broadcast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were addressed to a\nbroadcast address at"+
+             " this sub-layer, including those\nthat were discarded or not "+
+             "sent.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCOutBroadcastPkts"+
+             "";
+         }
+         leaf out-multicast-pkts {
+           type "yang:counter64";
+           status "deprecated";
+           description
+             "The total number of packets that higher-level protocols\nrequested"+
+             " be transmitted and that were addressed to a\nmulticast address at"+
+             " this sub-layer, including those\nthat were discarded or not sent."+
+             "  For a MAC-layer\nprotocol, this includes both Group and "+
+             "Functional\naddresses.\n\nDiscontinuities in the value of this "+
+             "counter can occur\nat re-initialization of the management system "+
+             "and at\nother times as indicated by the value of\n'discontinuity-t"+
+             "ime'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB -\n        ifHCOutMulticastPkts"+
+             "";
+         }
+         leaf out-discards {
+           type "yang:counter32";
+           status "deprecated";
+           description
+             "The number of outbound packets that were chosen to be\ndiscarded "+
+             "even though no errors had been detected to\nprevent their being "+
+             "transmitted.  One possible reason\nfor discarding such a packet "+
+             "could be to free up buffer\nspace.\n\nDiscontinuities in the value"+
+             " of this counter can occur\nat re-initialization of the management"+
+             " system and at\nother times as indicated by the value of\n'discont"+
+             "inuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifOutDiscards";
+         }
+         leaf out-errors {
+           type "yang:counter32";
+           status "deprecated";
+           description
+             "For packet-oriented interfaces, the number of outbound\npackets "+
+             "that could not be transmitted because of errors.\nFor character-or"+
+             "iented or fixed-length interfaces, the\nnumber of outbound "+
+             "transmission units that could not be\ntransmitted because of "+
+             "errors.\n\nDiscontinuities in the value of this counter can "+
+             "occur\nat re-initialization of the management system and at\nother"+
+             " times as indicated by the value of\n'discontinuity-time'.";
+           reference
+             "RFC 2863: The Interfaces Group MIB - ifOutErrors";
+         }
+       }
+     }
+   }
+ }
+

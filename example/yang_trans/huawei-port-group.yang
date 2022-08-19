@@ -1,0 +1,126 @@
+ /*
+Copyright (C) 2019 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-port-group {
+   namespace "urn:huawei:yang:huawei-port-group";
+   prefix "port-group";
+   import huawei-ifm {
+     prefix "ifm";
+   }
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Display permanent port group information.";
+   revision "2019-04-17" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "interface-mgr";
+   container port-group {
+     description
+       "Display permanent port group information.";
+     container groups {
+       description
+         "List of permanent port groups.";
+       list group {
+         key "name";
+         description
+           "Configure a permanent port group.";
+         leaf name {
+           type "string" {
+             length "1..32";
+           }
+           ext:case-sensitivity "lower-or-upper";
+           description
+             "Specify the name of a permanent port group.";
+         }
+         container members {
+           description
+             "List of permanent port group member interfaces.";
+           list member {
+             key "if-name";
+             description
+               "Configure permanent port group member interfaces.";
+             leaf if-name {
+               type "leafref" {
+                 path "/ifm:ifm/ifm:interfaces/ifm:interface/ifm:name";
+               }
+               description
+                 "Configure the name of a permanent port group member interface."+
+                 "";
+               must "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='Ethernet' or /ifm:ifm/ifm:interfaces/ifm:interface"+
+                    "[ifm:name=current()]/ifm:type='GigabitEthernet' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='100GE' or /ifm:ifm/ifm:interfaces/ifm:interface[if"+
+                    "m:name=current()]/ifm:type='200GE' or /ifm:ifm/ifm:interfac"+
+                    "es/ifm:interface[ifm:name=current()]/ifm:type='40GE' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='10GE' or /ifm:ifm/ifm:interfaces/ifm:interface[ifm"+
+                    ":name=current()]/ifm:type='4x10GE' or /ifm:ifm/ifm:interfac"+
+                    "es/ifm:interface[ifm:name=current()]/ifm:type='10x10GE' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='3x40GE' or /ifm:ifm/ifm:interfaces/ifm:interface[i"+
+                    "fm:name=current()]/ifm:type='4x25GE' or /ifm:ifm/ifm:interf"+
+                    "aces/ifm:interface[ifm:name=current()]/ifm:type='25GE' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='XGigabitEthernet' or /ifm:ifm/ifm:interfaces/ifm:i"+
+                    "nterface[ifm:name=current()]/ifm:type='GEBrief' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='FlexE' or /ifm:ifm/ifm:interfaces/ifm:interface[if"+
+                    "m:name=current()]/ifm:type='400GE' or /ifm:ifm/ifm:interfac"+
+                    "es/ifm:interface[ifm:name=current()]/ifm:type='50GE' or "+
+                    "/ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()]/i"+
+                    "fm:type='50|100GE' or /ifm:ifm/ifm:interfaces/ifm:interface"+
+                    "[ifm:name=current()]/ifm:type='FlexE-200GE' or /ifm:ifm/ifm"+
+                    ":interfaces/ifm:interface[ifm:name=current()]/ifm:type='Fle"+
+                    "xE-50G' or /ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=c"+
+                    "urrent()]/ifm:type='FlexE-100G' or /ifm:ifm/ifm:interfaces/"+
+                    "ifm:interface[ifm:name=current()]/ifm:type='FlexE-50|100G' "+
+                    "or /ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current()"+
+                    "]/ifm:type='HP-GE' or /ifm:ifm/ifm:interfaces/ifm:interface"+
+                    "[ifm:name=current()]/ifm:type='Pos' or /ifm:ifm/ifm:interfa"+
+                    "ces/ifm:interface[ifm:name=current()]/ifm:type='FlexE-400G'"+
+                    " or /ifm:ifm/ifm:interfaces/ifm:interface[ifm:name=current("+
+                    ")]/ifm:type='FlexE-10G'";
+             }
+           }
+         }
+       }
+     }
+   }
+   rpc port-group-shutdown {
+     description
+       "Configure the administrative status of permanent port group member "+
+       "interfaces.";
+     ext:node-ref "/ifm:ifm/ifm:interfaces/ifm:interface/ifm:admin-status";
+     input {
+       leaf name {
+         type "leafref" {
+           path "/port-group:port-group/port-group:groups/port-group:group/port-"+
+                "group:name";
+         }
+         mandatory "true";
+         description
+           "Specify the name of a permanent port group.";
+       }
+       leaf shutdown {
+         type "boolean";
+         default "false";
+         description
+           "Shutdown member interfaces of the permanent port group.";
+       }
+     }
+   }
+ }
+

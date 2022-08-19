@@ -1,0 +1,33 @@
+ /*
+Copyright (C) 2019-2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ submodule huawei-bgp-common {
+   yang-version "1";
+   belongs-to huawei-bgp {
+     prefix "bgp";
+   }
+   include huawei-bgp-type;
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Inter-AS routing protocol that exchanges Network Layer Reachability "+
+     "Information (NLRI) with other BGP systems.";
+   revision "2021-08-11" {
+     description
+       "The YANG descriptions are modified according to new standards.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-03-22" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+ }
+

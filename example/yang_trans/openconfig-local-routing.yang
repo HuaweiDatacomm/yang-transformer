@@ -1,0 +1,77 @@
+ module openconfig-local-routing {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/local-routing";
+   prefix "oc-loc-rt";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module describes configuration and operational state data\nfor routes"+
+     " that are locally generated, i.e., not created by\ndynamic routing "+
+     "protocols.  These include static routes, locally\ncreated aggregate routes"+
+     " for reducing the number of constituent\nroutes that must be advertised, "+
+     "summary routes for IGPs, etc.\n\nThis model expresses locally generated "+
+     "routes as generically as\npossible, avoiding configuration of protocol-spe"+
+     "cific attributes\nat the time of route creation.  This is primarily to "+
+     "avoid\nassumptions about how underlying router implementations handle\nrou"+
+     "te attributes in various routing table data structures they\nmaintain.  "+
+     "Hence, the definition of locally generated routes\nessentially creates "+
+     "'bare' routes that do not have any protocol-\nspecific attributes.\n\nWhen"+
+     " protocol-specific attributes must be attached to a route\n(e.g., "+
+     "communities on a locally defined route meant to be\nadvertised via BGP), "+
+     "the attributes should be attached via a\nprotocol-specific policy after "+
+     "importing the route into the\nprotocol for distribution (again via routing"+
+     " policy).";
+   oc-ext:openconfig-version "1.0.2";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "1.0.2";
+   }
+   revision "2017-05-15" {
+     description
+       "Update to resolve style guide non-compliance.";
+     reference
+       "1.0.1";
+   }
+   revision "2016-05-11" {
+     description
+       "OpenConfig public release";
+     reference
+       "1.0.0";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   identity LOCAL_DEFINED_NEXT_HOP {
+     description
+       "A base identity type of local defined next-hops";
+   }
+   identity DROP {
+     base "LOCAL_DEFINED_NEXT_HOP";
+     description
+       "Discard traffic for the corresponding destination";
+   }
+   identity LOCAL_LINK {
+     base "LOCAL_DEFINED_NEXT_HOP";
+     description
+       "Treat traffic towards addresses within the specified\nnext-hop prefix as"+
+       " though they are connected to a local\nlink. When the LOCAL_LINK "+
+       "next-hop type is specified,\nan interface must also be specified such "+
+       "that\nthe local system can determine which link to trigger\nlink-layer "+
+       "address discovery against";
+   }
+   typedef local-defined-next-hop {
+     type "identityref" {
+       base "LOCAL_DEFINED_NEXT_HOP";
+     }
+     description
+       "Pre-defined next-hop designation for locally generated\nroutes";
+   }
+ }
+

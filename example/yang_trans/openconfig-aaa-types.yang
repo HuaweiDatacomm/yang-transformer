@@ -1,0 +1,99 @@
+ module openconfig-aaa-types {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/aaa/types";
+   prefix "oc-aaa-types";
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module defines shared types for data related to AAA\n(authentication,"+
+     " authorization, accounting).";
+   oc-ext:openconfig-version "0.3.0";
+   revision "2017-09-18" {
+     description
+       "Updated to use OpenConfig types modules";
+     reference
+       "0.3.0";
+   }
+   revision "2017-07-06" {
+     description
+       "Move to oc-inet types, add IETF attribution, add RADIUS\ncounters, "+
+       "changed password leaf names to indicate hashed";
+     reference
+       "0.2.0";
+   }
+   revision "2017-01-29" {
+     description
+       "Initial public release";
+     reference
+       "0.1.0";
+   }
+   identity AAA_SERVER_TYPE {
+     description
+       "Base identity for types of AAA servers";
+   }
+   identity SYSTEM_DEFINED_ROLES {
+     description
+       "Base identity for system_defined roles that can be assigned\nto users.";
+   }
+   identity SYSTEM_ROLE_ADMIN {
+     base "SYSTEM_DEFINED_ROLES";
+     description
+       "Built-in role that allows the equivalent of superuser\npermission for "+
+       "all configuration and operational commands\non the device.";
+   }
+   identity AAA_ACCOUNTING_EVENT_TYPE {
+     description
+       "Base identity for specifying events types that should be\nsent to AAA "+
+       "server for accounting";
+   }
+   identity AAA_ACCOUNTING_EVENT_COMMAND {
+     base "AAA_ACCOUNTING_EVENT_TYPE";
+     description
+       "Specifies interactive command events for AAA accounting";
+   }
+   identity AAA_ACCOUNTING_EVENT_LOGIN {
+     base "AAA_ACCOUNTING_EVENT_TYPE";
+     description
+       "Specifies login events for AAA accounting";
+   }
+   identity AAA_AUTHORIZATION_EVENT_TYPE {
+     description
+       "Base identity for specifying activities that should be\nsent to AAA "+
+       "server for authorization";
+   }
+   identity AAA_AUTHORIZATION_EVENT_COMMAND {
+     base "AAA_ACCOUNTING_EVENT_TYPE";
+     description
+       "Specifies interactive command events for AAA authorization";
+   }
+   identity AAA_AUTHORIZATION_EVENT_CONFIG {
+     base "AAA_ACCOUNTING_EVENT_TYPE";
+     description
+       "Specifies configuration (e.g., EXEC) events for AAA\nauthorization";
+   }
+   identity AAA_METHOD_TYPE {
+     description
+       "Base identity to define well-known methods for AAA\noperations";
+   }
+   identity TACACS_ALL {
+     base "AAA_METHOD_TYPE";
+     description
+       "The group of all TACACS+ servers.";
+   }
+   identity RADIUS_ALL {
+     base "AAA_METHOD_TYPE";
+     description
+       "The group of all RADIUS servers.";
+   }
+   identity LOCAL {
+     base "AAA_METHOD_TYPE";
+     description
+       "Locally configured method for AAA operations.";
+   }
+ }
+

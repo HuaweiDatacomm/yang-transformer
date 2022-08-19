@@ -1,0 +1,1869 @@
+ module openconfig-network-instance {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/network-instance";
+   prefix "oc-netinst";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   import openconfig-network-instance-types {
+     prefix "oc-ni-types";
+   }
+   import openconfig-policy-types {
+     prefix "oc-pol-types";
+   }
+   import openconfig-routing-policy {
+     prefix "oc-rpol";
+   }
+   import openconfig-local-routing {
+     prefix "oc-loc-rt";
+   }
+   import openconfig-interfaces {
+     prefix "oc-if";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   import openconfig-types {
+     prefix "oc-types";
+   }
+   import openconfig-mpls {
+     prefix "oc-mpls";
+   }
+   import openconfig-mpls-ldp {
+     prefix "oc-ldp";
+   }
+   import openconfig-mpls-types {
+     prefix "oc-mplst";
+   }
+   import openconfig-inet-types {
+     prefix "oc-inet";
+   }
+   import openconfig-yang-types {
+     prefix "oc-yang";
+   }
+   import openconfig-bgp-types {
+     prefix "oc-bgp-types";
+   }
+   import openconfig-ospf-types {
+     prefix "oc-ospf-types";
+   }
+   include openconfig-network-instance-l2;
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "An OpenConfig description of a network-instance. This may be\na Layer 3 "+
+     "forwarding construct such as a virtual routing and\nforwarding (VRF) "+
+     "instance, or a Layer 2 instance such as a\nvirtual switch instance (VSI). "+
+     "Mixed Layer 2 and Layer 3\ninstances are also supported.";
+   oc-ext:openconfig-version "0.13.1";
+   revision "2019-06-11" {
+     description
+       "Fixed paths in when statements";
+     reference
+       "0.13.1";
+   }
+   revision "2019-05-14" {
+     description
+       "Added support for BGP signalled VPWS and VPLS.";
+     reference
+       "0.13.0";
+   }
+   revision "2019-04-16" {
+     description
+       "Move BGP RIB into the protocol/bgp container.";
+     reference
+       "0.12.0";
+   }
+   revision "2019-02-03" {
+     description
+       "Extend netinst type description to link it to, for example, MPLS\nservic"+
+       "e types.";
+     reference
+       "0.11.2";
+   }
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.11.1";
+   }
+   revision "2018-08-11" {
+     description
+       "Add vlan id as additional key in MAC table";
+     reference
+       "0.11.0";
+   }
+   revision "2018-06-22" {
+     description
+       "Fix typo in OSPF when statement";
+     reference
+       "0.10.2";
+   }
+   revision "2018-06-05" {
+     description
+       "Fix bugs in when statements";
+     reference
+       "0.10.1";
+   }
+   revision "2018-02-19" {
+     description
+       "Add PIM and IGMP to network instance";
+     reference
+       "0.10.0";
+   }
+   revision "2017-12-13" {
+     description
+       "Fix incorrect constraint on SR and MPLS containers";
+     reference
+       "0.9.0";
+   }
+   revision "2017-08-24" {
+     description
+       "Minor formatting fixes";
+     reference
+       "0.8.1";
+   }
+   revision "2017-02-28" {
+     description
+       "Add OSPFv2 to network instance";
+     reference
+       "0.8.0";
+   }
+   revision "2017-01-26" {
+     description
+       "Add policy forwarding to network instance";
+     reference
+       "0.7.0";
+   }
+   revision "2017-01-13" {
+     description
+       "Add AFT to the network instance";
+     reference
+       "0.6.0";
+   }
+   revision "2016-12-15" {
+     description
+       "Add segment routing to network instance";
+     reference
+       "0.5.0";
+   }
+   revision "2016-11-10" {
+     description
+       "Add IS-IS to OpenConfig network instance";
+     reference
+       "0.4.1";
+   }
+   revision "2016-10-12" {
+     description
+       "Update table connections";
+     reference
+       "0.4.0";
+   }
+   revision "2016-09-28" {
+     description
+       "Change L2 instance to submodule; add MAC table";
+     reference
+       "0.3.0";
+   }
+   revision "2016-08-11" {
+     description
+       "Resolve repeated container names in routing protocols";
+     reference
+       "0.2.3";
+   }
+   revision "2016-07-08" {
+     description
+       "Updated with refactored routing protocol models";
+     reference
+       "0.2.1";
+   }
+   revision "2016-03-29" {
+     description
+       "Initial revision";
+     reference
+       "0.2.0";
+   }
+   revision "2015-10-18" {
+     description
+       "Initial revision";
+     reference
+       "0.1.0";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   container network-instances {
+     description
+       "The L2, L3, or L2+L3 forwarding instances that are\nconfigured on the "+
+       "local system";
+     list network-instance {
+       key "name";
+       description
+         "Network instances configured on the local system";
+       leaf name {
+         type "leafref" {
+           path "../config/name";
+         }
+         description
+           "A unique name identifying the network instance";
+       }
+       container fdb {
+         description
+           "Operational state and configuration parameters relating to\nthe "+
+           "forwarding database of the network instance";
+         container config {
+           description
+             "Configuration parameters relating to the FDB";
+           leaf mac-learning {
+             type "boolean";
+             description
+               "When this leaf is set to true, MAC learning is enabled for\nthe "+
+               "network instance, such that MAC addresses are learned\nfrom "+
+               "ingress frames and added to the FDB.";
+             default "true";
+           }
+           leaf mac-aging-time {
+             type "uint32" {
+               range "0|60..1000000";
+             }
+             units "seconds";
+             description
+               "The number of seconds of inactivity after which the entry\nin "+
+               "the local FDB is timed out.";
+           }
+           leaf maximum-entries {
+             type "uint32" {
+               range "1..2048000";
+             }
+             description
+               "The maximum number of MAC address entries that should be\naccept"+
+               "ed into the FDB";
+           }
+         }
+         must "../config/type='oc-ni-types:L2VSI'";
+       }
+       container config {
+         description
+           "Configuration parameters relating to a network\ninstance";
+         leaf name {
+           type "string" {
+             length "1..31";
+           }
+           description
+             "An operator-assigned unique name for the forwarding\ninstance";
+           must "(../name='_public_' and ../type='oc-ni-types:DEFAULT_INSTANCE')"+
+                " or (../name!='_public_' and ../type!='oc-ni-types:DEFAULT_INST"+
+                "ANCE')";
+         }
+         leaf type {
+           type "identityref" {
+             base "oc-ni-types:NETWORK_INSTANCE_TYPE";
+           }
+           description
+             "The type of network instance. The value of this leaf\nindicates "+
+             "the type of forwarding entries that should be\nsupported by this "+
+             "network instance. Signalling protocols\nalso use the network "+
+             "instance type to infer the type of\nservice they advertise; for "+
+             "example MPLS signalling\nfor an L2VSI network instance would infer"+
+             " a VPLS service\nwhereas a type of L2PTP would infer a VPWS "+
+             "(pseudo-wire)\nservice";
+           must "../type='oc-ni-types:DEFAULT_INSTANCE' or ../type='oc-ni-types:"+
+                "L3VRF' or ../type='oc-ni-types:L2P2P' or ../type='oc-ni-types:L"+
+                "2VSI'";
+           mandatory "true";
+         }
+         leaf enabled {
+           type "boolean";
+           description
+             "Whether the network instance should be configured to be\nactive on"+
+             " the network element";
+           must "../type='oc-ni-types:L2VSI' or (not(../type='oc-ni-types:L2VSI'"+
+                ") and .='true')";
+           default "true";
+         }
+         leaf description {
+           type "string" {
+             length "1..242";
+           }
+           description
+             "A free-form string to be used by the network operator to\ndescribe"+
+             " the function of this network instance";
+           must "../type='oc-ni-types:L3VRF' or ((../type='oc-ni-types:L2P2P' or"+
+                " ../type='oc-ni-types:L2VSI') and (string-length(../description"+
+                ") <= 128))";
+         }
+         leaf route-distinguisher {
+           type "union";
+           description
+             "The route distinguisher that should be used for the local\nVRF or "+
+             "VSI instance when it is signalled via BGP.";
+           must "../type='oc-ni-types:L3VRF'";
+         }
+         leaf-list enabled-address-families {
+           type "identityref" {
+             base "oc-types:ADDRESS_FAMILY";
+           }
+           description
+             "The address families that are to be enabled for this\nnetwork "+
+             "instance.";
+           must "../type='oc-ni-types:L3VRF'";
+         }
+       }
+       container encapsulation {
+         when "../config/type != 'DEFAULT_INSTANCE'" {
+           description
+             "Only allow the encapsulation of the instance to be\nset when the "+
+             "instance is not the default instance";
+         }
+         description
+           "Configuration parameters relating to the encapsulation\nused for the"+
+           " network instance";
+         container config {
+           description
+             "Configuration parameters relating to the encapsulation\nof the "+
+             "network instance";
+           leaf encapsulation-type {
+             type "identityref" {
+               base "oc-ni-types:ENCAPSULATION";
+             }
+             description
+               "The on-the-wire encapsulation that should be used when\nsending "+
+               "traffic from this network instance";
+             must ".='oc-ni-types:MPLS'";
+           }
+           leaf label-allocation-mode {
+             type "identityref" {
+               base "oc-ni-types:LABEL_ALLOCATION_MODE";
+             }
+             description
+               "The label allocation mode to be used for L3 entries\nin the "+
+               "network instance";
+             must "../../../config/route-distinguisher and ../../../config/type="+
+                  "'oc-ni-types:L3VRF'";
+           }
+         }
+         must "../config/type='oc-ni-types:L3VRF' or ../config/type='oc-ni-types"+
+              ":L2P2P' or ../config/type='oc-ni-types:L2VSI'";
+       }
+       container inter-instance-policies {
+         description
+           "Policies dictating how RIB or FIB entries are imported\nto and "+
+           "exported from this instance";
+         container apply-policy {
+           description
+             "Anchor point for routing policies in the model.\nImport and export"+
+             " policies are with respect to the local\nrouting table, i.e., "+
+             "export (send) and import (receive),\ndepending on the context.";
+           container config {
+             description
+               "Policy configuration data.";
+             leaf-list import-policy {
+               type "leafref" {
+                 path "/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpo"+
+                      "l:policy-definition/oc-rpol:name";
+               }
+               ordered-by "user";
+               description
+                 "list of policy names in sequence to be applied on\nreceiving a"+
+                 " routing update in the current context, e.g.,\nfor the current"+
+                 " peer group, neighbor, address family,\netc.";
+               max-elements "1";
+               must "../../../../config/route-distinguisher";
+             }
+             leaf-list export-policy {
+               type "leafref" {
+                 path "/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpo"+
+                      "l:policy-definition/oc-rpol:name";
+               }
+               ordered-by "user";
+               description
+                 "list of policy names in sequence to be applied on\nsending a "+
+                 "routing update in the current context, e.g.,\nfor the current "+
+                 "peer group, neighbor, address family,\netc.";
+               max-elements "1";
+               must "../../../../config/route-distinguisher";
+             }
+           }
+         }
+         must "../config/type='oc-ni-types:L3VRF' or ../config/type='oc-ni-types"+
+              ":DEFAULT_INSTANCE'";
+       }
+       container table-connections {
+         description
+           "Policies dictating how RIB or FIB entries are propagated\nbetween "+
+           "tables";
+         list table-connection {
+           key "src-protocol dst-protocol address-family";
+           description
+             "A list of connections between pairs of routing or\nforwarding "+
+             "tables, the leaking of entries between\nwhich is specified by the "+
+             "import policy.\n\nA connection connecting a source table to a "+
+             "destination\ntable implies that routes that match the policy "+
+             "specified\nfor the connection are available for the destination\np"+
+             "rotocol to advertise, or match within its policies.";
+           leaf src-protocol {
+             type "leafref" {
+               path "../config/src-protocol";
+             }
+             description
+               "The name of the protocol associated with the table\nwhich should"+
+               " be utilised as the source of forwarding\nor routing information"+
+               "";
+           }
+           leaf dst-protocol {
+             type "leafref" {
+               path "../config/dst-protocol";
+             }
+             description
+               "The table to which routing entries should be\nexported";
+           }
+           leaf address-family {
+             type "leafref" {
+               path "../config/address-family";
+             }
+             description
+               "The address family associated with the connection";
+           }
+           container config {
+             description
+               "Configuration parameters relating to the connection\nbetween "+
+               "tables";
+             leaf src-protocol {
+               type "leafref" {
+                 path "../../../../protocols/protocol/config/identifier";
+               }
+               description
+                 "The source protocol for the table connection";
+               must "not (../src-protocol=../dst-protocol) and (../src-protocol="+
+                    "'oc-pol-types:STATIC' or ../src-protocol='oc-pol-types:DIRE"+
+                    "CTLY_CONNECTED' or (../src-protocol='oc-pol-types:OSPF' and"+
+                    " ../address-family='oc-types:IPV4'))";
+             }
+             leaf address-family {
+               type "identityref" {
+                 base "oc-types:ADDRESS_FAMILY";
+               }
+               description
+                 "The address family associated with the connection. This\nmust "+
+                 "be defined for the source protocol. The target\naddress family"+
+                 " is implicitly defined by the address family\nspecified for "+
+                 "the source protocol.";
+               must "../address-family='oc-types:IPV4' or ../address-family='oc-"+
+                    "types:IPV6'";
+             }
+             leaf dst-protocol {
+               type "leafref" {
+                 path "../../../../protocols/protocol/config/identifier";
+               }
+               description
+                 "The destination protocol for the table connection";
+               must "../dst-protocol='oc-pol-types:BGP' and ((../address-family="+
+                    "'oc-types:IPV4' and ../../../../protocols/protocol[identifi"+
+                    "er='oc-pol-types:BGP']/bgp/global/afi-safis/afi-safi[afi-sa"+
+                    "fi-name='oc-bgp-types:IPV4_UNICAST']) or (../address-family"+
+                    "='oc-types:IPV6' and ../../../../protocols/protocol[identif"+
+                    "ier='oc-pol-types:BGP']/bgp/global/afi-safis/afi-safi[afi-s"+
+                    "afi-name='oc-bgp-types:IPV6_UNICAST']))";
+             }
+             leaf-list import-policy {
+               type "leafref" {
+                 path "/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpo"+
+                      "l:policy-definition/oc-rpol:name";
+               }
+               ordered-by "user";
+               description
+                 "list of policy names in sequence to be applied on\nreceiving a"+
+                 " routing update in the current context, e.g.,\nfor the current"+
+                 " peer group, neighbor, address family,\netc.";
+               max-elements "1";
+             }
+           }
+         }
+         must "../config/type='oc-ni-types:L3VRF' or ../config/type='oc-ni-types"+
+              ":DEFAULT_INSTANCE'";
+       }
+       container interfaces {
+         description
+           "The interfaces that are associated with this network\ninstance";
+         list interface {
+           key "id";
+           unique "config/interface config/subinterface";
+           description
+             "An interface associated with the network instance";
+           leaf id {
+             type "leafref" {
+               path "../config/id";
+             }
+             description
+               "A reference to an identifier for this interface which\nacts as a"+
+               " key for this list";
+           }
+           container config {
+             description
+               "Configuration parameters relating to the associated\ninterface";
+             leaf id {
+               type "string";
+               description
+                 "A unique identifier for this interface - this is expressed\nas"+
+                 " a free-text string";
+             }
+             leaf interface {
+               type "leafref" {
+                 path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+               }
+               description
+                 "Reference to a base interface.  If a reference to a\nsubinterf"+
+                 "ace is required, this leaf must be specified\nto indicate the "+
+                 "base interface.";
+             }
+             leaf subinterface {
+               type "leafref" {
+                 path "/oc-if:interfaces/oc-if:interface[oc-if:name=current()/.."+
+                      "/interface]/oc-if:subinterfaces/oc-if:subinterface/oc-if:"+
+                      "index";
+               }
+               description
+                 "Reference to a subinterface -- this requires the base\ninterfa"+
+                 "ce to be specified using the interface leaf in\nthis "+
+                 "container.  If only a reference to a base interface\nis "+
+                 "requuired, this leaf should not be set.";
+               must "../interface";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "Operational state parameters relating to the\nassociated "+
+               "interface";
+             leaf id {
+               type "string";
+               description
+                 "A unique identifier for this interface - this is expressed\nas"+
+                 " a free-text string";
+             }
+             leaf interface {
+               type "leafref" {
+                 path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+               }
+               description
+                 "Reference to a base interface.  If a reference to a\nsubinterf"+
+                 "ace is required, this leaf must be specified\nto indicate the "+
+                 "base interface.";
+             }
+             leaf subinterface {
+               type "leafref" {
+                 path "/oc-if:interfaces/oc-if:interface[oc-if:name=current()/.."+
+                      "/interface]/oc-if:subinterfaces/oc-if:subinterface/oc-if:"+
+                      "index";
+               }
+               description
+                 "Reference to a subinterface -- this requires the base\ninterfa"+
+                 "ce to be specified using the interface leaf in\nthis "+
+                 "container.  If only a reference to a base interface\nis "+
+                 "requuired, this leaf should not be set.";
+             }
+           }
+         }
+       }
+       container connection-points {
+         description
+           "The set of connection points within a forwarding\ninstance";
+         list connection-point {
+           key "connection-point-id";
+           description
+             "A connection point within a Layer 2 network instance.\nEach "+
+             "connection-point consists of a set of interfaces\nonly one of "+
+             "which is active at any one time. Other than\nthe specification of "+
+             "whether an interface is local\n(i.e., exists within this "+
+             "network-instance), or remote,\nall configuration and state "+
+             "parameters are common";
+           leaf connection-point-id {
+             type "leafref" {
+               path "../config/connection-point-id";
+             }
+             description
+               "A locally significant reference for the\nconnection-point";
+           }
+           container config {
+             description
+               "Configuration parameters relating to a Layer 2\nnetwork instance"+
+               " connection point";
+             leaf connection-point-id {
+               type "string" {
+                 length "1..15";
+               }
+               description
+                 "An identifier for a connection point";
+             }
+           }
+           container endpoints {
+             when "../../../config/type = 'L2P2P' or ../../../config/type = "+
+                  "'L2VSI'" {
+               description
+                 "Configuration parameters to associate interfaces\ninto a "+
+                 "common group for use in Layer 2 network\ninstances";
+             }
+             description
+               "The set of endpoints which are grouped within the\nconnection "+
+               "point";
+             list endpoint {
+               key "endpoint-id";
+               description
+                 "A list of the endpoints (interfaces or remote\nconnection "+
+                 "points that can be used for this\nconnection point). The "+
+                 "active endpoint is selected\nbased on the precedence that it "+
+                 "is configured\nwith";
+               leaf endpoint-id {
+                 type "leafref" {
+                   path "../config/endpoint-id";
+                 }
+                 description
+                   "A pointer to the configured identifier for the\nendpoint";
+               }
+               container config {
+                 description
+                   "Configuration parameters relating to the\nendpoint";
+                 leaf endpoint-id {
+                   type "string" {
+                     length "1..15";
+                   }
+                   description
+                     "An identifier for the endpoint";
+                 }
+                 leaf precedence {
+                   type "uint16" {
+                     range "1..32";
+                   }
+                   description
+                     "The precedence of the endpoint - the lowest precendence\nv"+
+                     "iable endpoint will be utilised as the active endpoint\nwi"+
+                     "thin a connection";
+                   mandatory "true";
+                 }
+                 leaf type {
+                   type "identityref" {
+                     base "oc-ni-types:ENDPOINT_TYPE";
+                   }
+                   description
+                     "The type of endpoint that is referred to by the current\ne"+
+                     "ndpoint";
+                   must ".='oc-ni-types:REMOTE'";
+                   mandatory "true";
+                 }
+               }
+               container remote {
+                 when "../config/type = 'REMOTE'" {
+                   description
+                     "Only include the remote configuration when\nthe endpoint "+
+                     "is specified to be remote to\nthe network element";
+                 }
+                 description
+                   "Configuration and operational state parameters\nrelating to "+
+                   "a remote interface";
+                 container config {
+                   description
+                     "Configuration parameters relating to a remote\nendpoint";
+                   leaf remote-system {
+                     type "string" {
+                       length "0..18446744073709551615";
+                       pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-"+
+                               "5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4]"+
+                               "[0-9]|25[0-5])";
+                     }
+                     description
+                       "The IP address of the device which hosts the\nremote "+
+                       "end-point";
+                     mandatory "true";
+                   }
+                   leaf virtual-circuit-identifier {
+                     type "uint32" {
+                       range "1..4294967295";
+                     }
+                     description
+                       "The virtual-circuit identifier that identifies "+
+                       "the\nconnection at the remote end-point";
+                     mandatory "true";
+                   }
+                 }
+               }
+               max-elements "2";
+               unique "config/precedence";
+             }
+           }
+         }
+         must "../config/type='oc-ni-types:L2P2P' or ../config/type='oc-ni-types"+
+              ":L2VSI'";
+       }
+       container mpls {
+         description
+           "Anchor point for mpls configuration and operational\ndata";
+         container global {
+           description
+             "general mpls configuration applicable to any\ntype of LSP and "+
+             "signaling protocol - label ranges,\nentropy label supportmay be "+
+             "added here";
+           container interface-attributes {
+             description
+               "Parameters related to MPLS interfaces";
+             list interface {
+               key "interface-id";
+               description
+                 "List of TE interfaces";
+               leaf interface-id {
+                 type "leafref" {
+                   path "../config/interface-id";
+                 }
+                 description
+                   "Reference to the interface id list key";
+               }
+               container config {
+                 description
+                   "Configuration parameters related to MPLS interfaces:";
+                 leaf interface-id {
+                   type "oc-if:interface-id";
+                   description
+                     "Indentifier for the MPLS interface";
+                 }
+                 leaf mpls-enabled {
+                   type "boolean";
+                   description
+                     "Enable MPLS forwarding on this interface";
+                   must "../mpls-enabled='true'";
+                   mandatory "true";
+                 }
+               }
+             }
+           }
+         }
+         container te-interface-attributes {
+           description
+             "traffic engineering attributes specific\nfor interfaces";
+           list interface {
+             key "interface-id";
+             description
+               "List of TE interfaces";
+             leaf interface-id {
+               type "leafref" {
+                 path "../config/interface-id";
+               }
+               description
+                 "Reference to the interface id list key";
+             }
+             container config {
+               description
+                 "Configuration parameters related to TE interfaces:";
+               leaf interface-id {
+                 type "leafref" {
+                   path "../../../../global/interface-attributes/interface/inter"+
+                        "face-id";
+                 }
+                 description
+                   "Id of the interface";
+               }
+             }
+           }
+         }
+         container signaling-protocols {
+           description
+             "top-level signaling protocol configuration";
+           container rsvp-te {
+             description
+               "RSVP-TE global signaling protocol configuration";
+             container interface-attributes {
+               description
+                 "Attributes relating to RSVP-TE enabled interfaces";
+               list interface {
+                 key "interface-id";
+                 description
+                   "list of per-interface RSVP configurations";
+                 leaf interface-id {
+                   type "leafref" {
+                     path "../config/interface-id";
+                   }
+                   description
+                     "reference to the interface-id data";
+                 }
+                 container config {
+                   description
+                     "Configuration of per-interface RSVP parameters";
+                   leaf interface-id {
+                     type "leafref" {
+                       path "../../../../../../te-interface-attributes/interface"+
+                            "/interface-id";
+                     }
+                     description
+                       "Identifier for the interface";
+                   }
+                 }
+               }
+             }
+           }
+           container ldp {
+             description
+               "LDP global signaling configuration";
+             container global {
+               description
+                 "Platform wide LDP configuration and state";
+               container config {
+                 description
+                   "Global LDP configuration attributes.";
+                 leaf lsr-id {
+                   type "union";
+                   description
+                     "Global label switch router identifier\nconfiguration.";
+                   reference
+                     "RFC5036 LDP Specification";
+                 }
+               }
+             }
+             container targeted {
+               description
+                 "Top container for targeted LDP state and configuration\nattrib"+
+                 "utes.";
+               container address-families {
+                 description
+                   "Global container for IPv4 and IPv6 attributes for LDP.";
+                 list address-family {
+                   key "afi-name";
+                   description
+                     "List of address families for targeted LDP\nconfiguration";
+                   leaf afi-name {
+                     type "leafref" {
+                       path "../config/afi-name";
+                     }
+                     description
+                       "Adress-family name atttibute (IPv4, IPv6).";
+                   }
+                   container config {
+                     description
+                       "Address-family configuration for targeted LDP";
+                     leaf afi-name {
+                       description
+                         "Adress-family name atttibute (IPv4, IPv6).";
+                       type "oc-ldp:mpls-ldp-afi";
+                     }
+                   }
+                   container targets {
+                     description
+                       "Container aggregating all targeted sessions and\ntheir "+
+                       "LDP-specific attributes.";
+                     list target {
+                       key "remote-address";
+                       description
+                         "List of LDP targets configuration";
+                       leaf remote-address {
+                         type "leafref" {
+                           path "../config/remote-address";
+                         }
+                         description
+                           "Neighbor address of the targeted LDP session";
+                       }
+                       container config {
+                         description
+                           "Configuration parameters of a targeted LDP\nadjacenc"+
+                           "y";
+                         leaf remote-address {
+                           type "union";
+                           description
+                             "Configuration of neighbor address of the\ntargeted"+
+                             " LDP adjacency";
+                         }
+                         leaf local-address {
+                           type "union";
+                           description
+                             "Local IP address of the LDP adjacency";
+                         }
+                         leaf enabled {
+                           type "boolean";
+                           description
+                             "When set to true, the functionality within which "+
+                             "this leaf is\ndefined is enabled, when set to "+
+                             "false it is explicitly disabled.";
+                           must "../enabled='true'";
+                           mandatory "true";
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }
+         container lsps {
+           description
+             "LSP definitions and configuration";
+           container constrained-path {
+             description
+               "traffic-engineered LSPs supporting different\npath computation "+
+               "and signaling methods";
+             container tunnels {
+               description
+                 "Enclosing container for tunnels";
+               list tunnel {
+                 key "name";
+                 description
+                   "List of TE tunnels. This list contains only the LSPs that "+
+                   "the\ncurrent device originates (i.e., for which it is the "+
+                   "head-end).\nWhere the signaling protocol utilised for an LSP"+
+                   " allows a mid-point\nor tail device to be aware of the LSP "+
+                   "(e.g., RSVP-TE), then the\nassociated sessions are "+
+                   "maintained per protocol";
+                 leaf name {
+                   type "leafref" {
+                     path "../config/name";
+                   }
+                   description
+                     "The tunnel name";
+                 }
+                 container config {
+                   description
+                     "Configuration parameters related to TE tunnels:";
+                   leaf name {
+                     type "string";
+                     description
+                       "The tunnel name";
+                   }
+                   leaf type {
+                     type "identityref" {
+                       base "oc-mplst:TUNNEL_TYPE";
+                     }
+                     description
+                       "Tunnel type, p2p or p2mp";
+                     mandatory "true";
+                   }
+                   leaf signaling-protocol {
+                     type "identityref" {
+                       base "oc-mplst:PATH_SETUP_PROTOCOL";
+                     }
+                     description
+                       "Signaling protocol used to set up this tunnel";
+                     mandatory "true";
+                   }
+                   leaf shortcut-eligible {
+                     type "boolean";
+                     default "false";
+                     description
+                       "Whether this LSP is considered to be eligible for us as "+
+                       "a\nshortcut in the IGP. In the case that this leaf is "+
+                       "set to\ntrue, the IGP SPF calculation uses the metric "+
+                       "specified to\ndetermine whether traffic should be "+
+                       "carried over this LSP";
+                   }
+                   leaf source {
+                     when "../signaling-protocol = 'PATH_SETUP_RSVP'" {
+                       description
+                         "When the signaling protocol is RSVP-TE ";
+                     }
+                     type "union";
+                     description
+                       "RSVP-TE tunnel source address";
+                   }
+                 }
+                 container bandwidth {
+                   description
+                     "Bandwidth configuration for TE LSPs";
+                   container config {
+                     description
+                       "Configuration parameters related to bandwidth on "+
+                       "TE\ntunnels:";
+                     leaf specification-type {
+                       type "oc-mpls:te-bandwidth-type";
+                       default "SPECIFIED";
+                       description
+                         "The method used for settign the bandwidth, either "+
+                         "explicitly\nspecified or configured";
+                     }
+                     leaf set-bandwidth {
+                       when "../specification-type = 'SPECIFIED'" {
+                         description
+                           "The bandwidth value when bandwidth is explicitly\nsp"+
+                           "ecified";
+                       }
+                       type "uint64" {
+                         range "0..4000000000";
+                       }
+                       description
+                         "set bandwidth explicitly, e.g., using\noffline "+
+                         "calculation";
+                       default "0";
+                       units "kbit/s";
+                     }
+                   }
+                 }
+                 container p2p-tunnel-attributes {
+                   when "../config/type = 'P2P'" {
+                     description
+                       "Include this container for LSPs of type P2P";
+                   }
+                   description
+                     "Parameters related to LSPs of type P2P";
+                   container config {
+                     description
+                       "Configuration parameters for P2P LSPs";
+                     leaf destination {
+                       type "string" {
+                         length "0..18446744073709551615";
+                         pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25["+
+                                 "0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2["+
+                                 "0-4][0-9]|25[0-5])";
+                       }
+                       description
+                         "P2P tunnel destination address";
+                     }
+                   }
+                   container p2p-primary-path {
+                     description
+                       "Primary paths associated with the LSP";
+                     list p2p-primary-path {
+                       key "name";
+                       description
+                         "List of p2p primary paths for a tunnel";
+                       leaf name {
+                         type "leafref" {
+                           path "../config/name";
+                         }
+                         description
+                           "Path name";
+                       }
+                       container config {
+                         description
+                           "Configuration parameters related to paths";
+                         leaf name {
+                           type "string";
+                           description
+                             "Path name";
+                         }
+                         leaf path-computation-method {
+                           type "identityref" {
+                             base "oc-mplst:PATH_COMPUTATION_METHOD";
+                           }
+                           default "oc-mplst:LOCALLY_COMPUTED";
+                           description
+                             "The method used for computing the path, either\nlo"+
+                             "cally computed, queried from a server or "+
+                             "not\ncomputed at all (explicitly configured).";
+                         }
+                         leaf use-cspf {
+                           when "../path-computation-method = 'LOCALLY_COMPUTED'"+
+                                "" {
+                             description
+                               "The use of cspf when the path-computation method"+
+                               " is\nlocal computation";
+                           }
+                           type "boolean";
+                           description
+                             "Flag to enable CSPF for locally computed LSPs";
+                           default "true";
+                         }
+                         leaf path-computation-server {
+                           when "../path-computation-method = 'EXTERNALLY_QUERIE"+
+                                "D'" {
+                             description
+                               "The path-computation server when the path "+
+                               "is\nexternally queried";
+                           }
+                           type "union";
+                           description
+                             "Address of the external path computation\nserver";
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }
+       }
+       container protocols {
+         description
+           "The routing protocols that are enabled for this\nnetwork-instance.";
+         list protocol {
+           key "identifier name";
+           description
+             "A process (instance) of a routing protocol. Some\nsystems may not "+
+             "support more than one instance of\na particular routing protocol";
+           leaf identifier {
+             type "leafref" {
+               path "../config/identifier";
+             }
+             description
+               "The protocol name for the routing or forwarding\nprotocol to be "+
+               "instantiated";
+           }
+           leaf name {
+             type "leafref" {
+               path "../config/name";
+             }
+             description
+               "An operator-assigned identifier for the routing\nor forwarding "+
+               "protocol. For some processes this\nleaf may be system defined.";
+           }
+           container config {
+             description
+               "Configuration parameters relating to the routing\nprotocol "+
+               "instance";
+             leaf identifier {
+               type "identityref" {
+                 base "oc-pol-types:INSTALL_PROTOCOL_TYPE";
+               }
+               description
+                 "The protocol identifier for the instance";
+               must "(../identifier='oc-pol-types:BGP' and /network-instances/ne"+
+                    "twork-instance[name='_public_']/protocols/protocol[identifi"+
+                    "er='oc-pol-types:BGP']) or (../identifier='oc-pol-types:STA"+
+                    "TIC' or ../identifier='oc-pol-types:DIRECTLY_CONNECTED' or "+
+                    "../identifier='oc-pol-types:OSPF')";
+             }
+             leaf name {
+               type "string";
+               description
+                 "A unique name for the protocol instance";
+               must "((../identifier='oc-pol-types:STATIC' or ../identifier='oc-"+
+                    "pol-types:DIRECTLY_CONNECTED' or ../identifier='oc-pol-type"+
+                    "s:BGP') and ../name='default') or (../identifier='oc-pol-ty"+
+                    "pes:OSPF')";
+             }
+           }
+           container state {
+             config "false";
+             description
+               "State parameters relating to the routing protocol\ninstance";
+             leaf identifier {
+               type "identityref" {
+                 base "oc-pol-types:INSTALL_PROTOCOL_TYPE";
+               }
+               description
+                 "The protocol identifier for the instance";
+             }
+             leaf name {
+               type "string";
+               description
+                 "A unique name for the protocol instance";
+             }
+           }
+           container static-routes {
+             description
+               "Enclosing container for the list of static routes";
+             list static {
+               key "prefix";
+               description
+                 "List of locally configured static routes";
+               leaf prefix {
+                 type "leafref" {
+                   path "../config/prefix";
+                 }
+                 description
+                   "Reference to the destination prefix list key.";
+               }
+               container config {
+                 description
+                   "Configuration data for static routes";
+                 leaf prefix {
+                   type "union";
+                   description
+                     "Destination prefix for the static route, either IPv4 "+
+                     "or\nIPv6.";
+                 }
+               }
+               container state {
+                 config "false";
+                 description
+                   "Operational state data for static routes";
+                 leaf prefix {
+                   type "oc-inet:ip-prefix";
+                   description
+                     "Destination prefix for the static route, either IPv4 "+
+                     "or\nIPv6.";
+                 }
+               }
+               container next-hops {
+                 description
+                   "Configuration and state parameters relating to the\nnext-hop"+
+                   "s that are to be utilised for the static\nroute being "+
+                   "specified";
+                 list next-hop {
+                   key "index";
+                   description
+                     "A list of next-hops to be utilised for the static\nroute "+
+                     "being specified.";
+                   leaf index {
+                     type "leafref" {
+                       path "../config/index";
+                     }
+                     description
+                       "A reference to the index of the current next-hop.\nThe "+
+                       "index is intended to be a user-specified value\nwhich "+
+                       "can be used to reference the next-hop in\nquestion, "+
+                       "without any other semantics being\nassigned to it.";
+                   }
+                   container config {
+                     description
+                       "Configuration parameters relating to the next-hop\nentry"+
+                       "";
+                     leaf index {
+                       type "string" {
+                         length "1..103";
+                       }
+                       description
+                         "An user-specified identifier utilised to uniquely "+
+                         "reference\nthe next-hop entry in the next-hop list. "+
+                         "The value of this\nindex has no semantic meaning other"+
+                         " than for referencing\nthe entry.";
+                     }
+                     leaf next-hop {
+                       type "union";
+                       description
+                         "The next-hop that is to be used for the static "+
+                         "route\n- this may be specified as an IP address, an "+
+                         "interface\nor a pre-defined next-hop type - for "+
+                         "instance, DROP or\nLOCAL_LINK. When this leaf is not "+
+                         "set, and the interface-ref\nvalue is specified for the"+
+                         " next-hop, then the system should\ntreat the prefix as"+
+                         " though it is directly connected to the\ninterface.";
+                     }
+                     leaf metric {
+                       type "uint32" {
+                         range "1..4294967295";
+                       }
+                       description
+                         "A metric which is utilised to specify the preference "+
+                         "of\nthe next-hop entry when it is injected into the "+
+                         "RIB. The\nlower the metric, the more preferable the "+
+                         "prefix is. When\nthis value is not specified the "+
+                         "metric is inherited from\nthe default metric utilised "+
+                         "for static routes within the\nnetwork instance that "+
+                         "the static routes are being\ninstantiated. When "+
+                         "multiple next-hops are specified for a\nstatic route, "+
+                         "the metric is utilised to determine which of\nthe "+
+                         "next-hops is to be installed in the RIB. When "+
+                         "multiple\nnext-hops have the same metric (be it "+
+                         "specified, or simply\nthe default) then these "+
+                         "next-hops should all be installed\nin the RIB";
+                     }
+                   }
+                   container state {
+                     config "false";
+                     description
+                       "Operational state parameters relating to the\nnext-hop "+
+                       "entry";
+                     leaf index {
+                       type "string" {
+                         length "1..103";
+                       }
+                       description
+                         "An user-specified identifier utilised to uniquely "+
+                         "reference\nthe next-hop entry in the next-hop list. "+
+                         "The value of this\nindex has no semantic meaning other"+
+                         " than for referencing\nthe entry.";
+                     }
+                     leaf next-hop {
+                       type "union" {
+                         type "oc-inet:ip-address";
+                         type "oc-loc-rt:local-defined-next-hop";
+                       }
+                       description
+                         "The next-hop that is to be used for the static "+
+                         "route\n- this may be specified as an IP address, an "+
+                         "interface\nor a pre-defined next-hop type - for "+
+                         "instance, DROP or\nLOCAL_LINK. When this leaf is not "+
+                         "set, and the interface-ref\nvalue is specified for the"+
+                         " next-hop, then the system should\ntreat the prefix as"+
+                         " though it is directly connected to the\ninterface.";
+                     }
+                     leaf metric {
+                       type "uint32" {
+                         range "1..4294967295";
+                       }
+                       description
+                         "A metric which is utilised to specify the preference "+
+                         "of\nthe next-hop entry when it is injected into the "+
+                         "RIB. The\nlower the metric, the more preferable the "+
+                         "prefix is. When\nthis value is not specified the "+
+                         "metric is inherited from\nthe default metric utilised "+
+                         "for static routes within the\nnetwork instance that "+
+                         "the static routes are being\ninstantiated. When "+
+                         "multiple next-hops are specified for a\nstatic route, "+
+                         "the metric is utilised to determine which of\nthe "+
+                         "next-hops is to be installed in the RIB. When "+
+                         "multiple\nnext-hops have the same metric (be it "+
+                         "specified, or simply\nthe default) then these "+
+                         "next-hops should all be installed\nin the RIB";
+                     }
+                   }
+                   container interface-ref {
+                     description
+                       "Reference to an interface or subinterface";
+                     container config {
+                       description
+                         "Configured reference to interface / subinterface";
+                       leaf interface {
+                         type "string" {
+                           length "0..63";
+                         }
+                         description
+                           "Reference to a base interface.  If a reference to "+
+                           "a\nsubinterface is required, this leaf must be "+
+                           "specified\nto indicate the base interface.";
+                       }
+                       leaf subinterface {
+                         type "leafref" {
+                           path "/oc-if:interfaces/oc-if:interface[oc-if:name=cu"+
+                                "rrent()/../interface]/oc-if:subinterfaces/oc-if"+
+                                ":subinterface/oc-if:index";
+                         }
+                         description
+                           "Reference to a subinterface -- this requires the "+
+                           "base\ninterface to be specified using the interface "+
+                           "leaf in\nthis container.  If only a reference to a "+
+                           "base interface\nis requuired, this leaf should not "+
+                           "be set.";
+                         must "../interface";
+                       }
+                     }
+                     container state {
+                       config "false";
+                       description
+                         "Operational state for interface-ref";
+                       leaf interface {
+                         type "string" {
+                           length "0..63";
+                         }
+                         description
+                           "Reference to a base interface.  If a reference to "+
+                           "a\nsubinterface is required, this leaf must be "+
+                           "specified\nto indicate the base interface.";
+                       }
+                       leaf subinterface {
+                         type "leafref" {
+                           path "/oc-if:interfaces/oc-if:interface[oc-if:name=cu"+
+                                "rrent()/../interface]/oc-if:subinterfaces/oc-if"+
+                                ":subinterface/oc-if:index";
+                         }
+                         description
+                           "Reference to a subinterface -- this requires the "+
+                           "base\ninterface to be specified using the interface "+
+                           "leaf in\nthis container.  If only a reference to a "+
+                           "base interface\nis requuired, this leaf should not "+
+                           "be set.";
+                         must "../interface";
+                       }
+                     }
+                   }
+                   min-elements "1";
+                 }
+               }
+             }
+           }
+           container bgp {
+             description
+               "Top-level configuration and state for the BGP router";
+             container global {
+               description
+                 "Global configuration for the BGP router";
+               container config {
+                 description
+                   "Configuration parameters relating to the global BGP router";
+                 leaf as {
+                   type "oc-inet:as-number";
+                   mandatory "true";
+                   description
+                     "Local autonomous system number of the router.  Uses\nthe "+
+                     "32-bit as-number type from the model in RFC 6991.";
+                 }
+                 leaf router-id {
+                   type "string" {
+                     length "0..18446744073709551615";
+                     pattern "[0-9\\.]*";
+                     pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"+
+                             ")\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9"+
+                             "]|25[0-5])(%[\\p{N}\\p{L}]+)?";
+                   }
+                   description
+                     "Router id of the router - an unsigned 32-bit integer\nexpr"+
+                     "essed in dotted quad notation.";
+                   reference
+                     "RFC4271 - A Border Gateway Protocol 4 (BGP-4),\nSection "+
+                     "4.2";
+                 }
+               }
+               container state {
+                 config "false";
+                 description
+                   "State information relating to the global BGP router";
+                 leaf as {
+                   type "oc-inet:as-number";
+                   mandatory "true";
+                   description
+                     "Local autonomous system number of the router.  Uses\nthe "+
+                     "32-bit as-number type from the model in RFC 6991.";
+                 }
+                 leaf router-id {
+                   type "oc-yang:dotted-quad";
+                   description
+                     "Router id of the router - an unsigned 32-bit integer\nexpr"+
+                     "essed in dotted quad notation.";
+                   reference
+                     "RFC4271 - A Border Gateway Protocol 4 (BGP-4),\nSection "+
+                     "4.2";
+                 }
+               }
+               container graceful-restart {
+                 description
+                   "Parameters relating the graceful restart mechanism for BGP";
+                 container config {
+                   description
+                     "Configuration parameters relating to graceful-restart";
+                   leaf enabled {
+                     type "boolean";
+                     description
+                       "Enable or disable the graceful-restart capability.";
+                     default "false";
+                   }
+                   must "../../../../../../name='_public_'";
+                 }
+               }
+               container afi-safis {
+                 description
+                   "Address family specific configuration";
+                 list afi-safi {
+                   key "afi-safi-name";
+                   description
+                     "AFI,SAFI configuration available for the\nneighbour or "+
+                     "group";
+                   leaf afi-safi-name {
+                     type "leafref" {
+                       path "../config/afi-safi-name";
+                     }
+                     description
+                       "Reference to the AFI-SAFI name used as a key\nfor the "+
+                       "AFI-SAFI list";
+                   }
+                   container config {
+                     description
+                       "Configuration parameters for the AFI-SAFI";
+                     leaf afi-safi-name {
+                       type "identityref" {
+                         base "oc-bgp-types:AFI_SAFI_TYPE";
+                       }
+                       description
+                         "AFI,SAFI";
+                       must "../afi-safi-name='oc-bgp-types:IPV4_UNICAST' or "+
+                            "../afi-safi-name='oc-bgp-types:IPV6_UNICAST' or "+
+                            "../afi-safi-name='oc-bgp-types:IPV4_LABELED_UNICAST"+
+                            "' or ../afi-safi-name='oc-bgp-types:L3VPN_IPV4_UNIC"+
+                            "AST' or ../afi-safi-name='oc-bgp-types:L3VPN_IPV6_U"+
+                            "NICAST' or ../afi-safi-name='oc-bgp-types:L2VPN_VPL"+
+                            "S' or ../afi-safi-name='oc-bgp-types:L2VPN_EVPN' or"+
+                            " ../afi-safi-name='oc-bgp-types:SRTE_POLICY_IPV4' "+
+                            "or ../afi-safi-name='oc-bgp-types:SRTE_POLICY_IPV6'"+
+                            "";
+                       must "../../../../../../../../name='_public_' or "+
+                            "(../../../../../../../../name!='_public_' and "+
+                            "(((../afi-safi-name='oc-bgp-types:IPV4_UNICAST' or "+
+                            "../afi-safi-name='oc-bgp-types:IPV4_LABELED_UNICAST"+
+                            "') and ../../../../../../../../config/enabled-addre"+
+                            "ss-families[.='oc-types:IPV4'])  or (../afi-safi-na"+
+                            "me='oc-bgp-types:IPV6_UNICAST' and ../../../../../."+
+                            "./../../config/enabled-address-families[.='oc-types"+
+                            ":IPV6'])))";
+                     }
+                   }
+                   container state {
+                     config "false";
+                     description
+                       "State information relating to the AFI-SAFI";
+                     leaf afi-safi-name {
+                       type "identityref" {
+                         base "oc-bgp-types:AFI_SAFI_TYPE";
+                       }
+                       description
+                         "AFI,SAFI";
+                     }
+                     leaf enabled {
+                       type "boolean";
+                       default "false";
+                       description
+                         "This leaf indicates whether the AFI-SAFI is\nenabled "+
+                         "for the neighbour or group";
+                     }
+                   }
+                 }
+               }
+             }
+             container neighbors {
+               description
+                 "Configuration for BGP neighbors";
+               list neighbor {
+                 key "neighbor-address";
+                 description
+                   "List of BGP neighbors configured on the local system,\nuniqu"+
+                   "ely identified by peer IPv[46] address";
+                 leaf neighbor-address {
+                   type "leafref" {
+                     path "../config/neighbor-address";
+                   }
+                   description
+                     "Reference to the address of the BGP neighbor used as\na "+
+                     "key in the neighbor list";
+                 }
+                 container config {
+                   description
+                     "Configuration parameters relating to the BGP neighbor "+
+                     "or\ngroup";
+                   leaf neighbor-address {
+                     type "union";
+                     description
+                       "Address of the BGP peer, either in IPv4 or IPv6";
+                   }
+                   leaf enabled {
+                     type "boolean";
+                     default "true";
+                     description
+                       "Whether the BGP peer is enabled. In cases where "+
+                       "the\nenabled leaf is set to false, the local system "+
+                       "should not\ninitiate connections to the neighbor, and "+
+                       "should not\nrespond to TCP connections attempts from the"+
+                       " neighbor. If\nthe state of the BGP session is "+
+                       "ESTABLISHED at the time\nthat this leaf is set to false,"+
+                       " the BGP session should be\nceased.";
+                   }
+                   leaf peer-as {
+                     type "oc-inet:as-number";
+                     description
+                       "AS number of the peer.";
+                     mandatory "true";
+                   }
+                   leaf local-as {
+                     type "oc-inet:as-number";
+                     description
+                       "The local autonomous system number that is to be "+
+                       "used\nwhen establishing sessions with the remote peer or"+
+                       " peer\ngroup, if this differs from the global BGP "+
+                       "router\nautonomous system number.";
+                   }
+                   leaf auth-password {
+                     type "oc-types:routing-password";
+                     description
+                       "Configures an MD5 authentication password for use "+
+                       "with\nneighboring devices.";
+                   }
+                   leaf description {
+                     type "string" {
+                       length "1..255";
+                     }
+                     description
+                       "An optional textual description (intended primarily for "+
+                       "use\nwith a peer or group";
+                   }
+                 }
+                 container state {
+                   config "false";
+                   description
+                     "State information relating to the BGP neighbor";
+                   leaf neighbor-address {
+                     type "oc-inet:ip-address";
+                     description
+                       "Address of the BGP peer, either in IPv4 or IPv6";
+                   }
+                   leaf enabled {
+                     type "boolean";
+                     default "true";
+                     description
+                       "Whether the BGP peer is enabled. In cases where "+
+                       "the\nenabled leaf is set to false, the local system "+
+                       "should not\ninitiate connections to the neighbor, and "+
+                       "should not\nrespond to TCP connections attempts from the"+
+                       " neighbor. If\nthe state of the BGP session is "+
+                       "ESTABLISHED at the time\nthat this leaf is set to false,"+
+                       " the BGP session should be\nceased.";
+                   }
+                   leaf peer-as {
+                     type "oc-inet:as-number";
+                     description
+                       "AS number of the peer.";
+                   }
+                   leaf local-as {
+                     type "oc-inet:as-number";
+                     description
+                       "The local autonomous system number that is to be "+
+                       "used\nwhen establishing sessions with the remote peer or"+
+                       " peer\ngroup, if this differs from the global BGP "+
+                       "router\nautonomous system number.";
+                   }
+                   leaf peer-type {
+                     type "oc-bgp-types:peer-type";
+                     description
+                       "Explicitly designate the peer or peer group as "+
+                       "internal\n(iBGP) or external (eBGP).";
+                   }
+                   leaf description {
+                     type "string";
+                     description
+                       "An optional textual description (intended primarily for "+
+                       "use\nwith a peer or group";
+                   }
+                   leaf session-state {
+                     type "enumeration" {
+                       enum "IDLE" {
+                         description
+                           "neighbor is down, and in the Idle state of the\nFSM";
+                       }
+                       enum "CONNECT" {
+                         description
+                           "neighbor is down, and the session is waiting "+
+                           "for\nthe underlying transport session to be "+
+                           "established";
+                       }
+                       enum "ACTIVE" {
+                         description
+                           "neighbor is down, and the local system is awaiting\n"+
+                           "a conncetion from the remote peer";
+                       }
+                       enum "OPENSENT" {
+                         description
+                           "neighbor is in the process of being established.\nTh"+
+                           "e local system has sent an OPEN message";
+                       }
+                       enum "OPENCONFIRM" {
+                         description
+                           "neighbor is in the process of being established.\nTh"+
+                           "e local system is awaiting a NOTIFICATION or\nKEEPAL"+
+                           "IVE message";
+                       }
+                       enum "ESTABLISHED" {
+                         description
+                           "neighbor is up - the BGP session with the peer "+
+                           "is\nestablished";
+                       }
+                     }
+                     description
+                       "Operational state of the BGP peer";
+                   }
+                 }
+                 container ebgp-multihop {
+                   description
+                     "eBGP multi-hop parameters for the BGPgroup";
+                   container config {
+                     description
+                       "Configuration parameters relating to eBGP multihop for "+
+                       "the\nBGP group";
+                     leaf multihop-ttl {
+                       type "uint8" {
+                         range "1..255";
+                       }
+                       description
+                         "Time-to-live value to use when packets are sent to "+
+                         "the\nreferenced group or neighbors and ebgp-multihop "+
+                         "is enabled";
+                     }
+                   }
+                 }
+                 container afi-safis {
+                   description
+                     "Per-address-family configuration parameters associated "+
+                     "with\nthe neighbor";
+                   list afi-safi {
+                     key "afi-safi-name";
+                     description
+                       "AFI,SAFI configuration available for the\nneighbour or "+
+                       "group";
+                     leaf afi-safi-name {
+                       type "leafref" {
+                         path "../config/afi-safi-name";
+                       }
+                       description
+                         "Reference to the AFI-SAFI name used as a key\nfor the "+
+                         "AFI-SAFI list";
+                     }
+                     container config {
+                       description
+                         "Configuration parameters for the AFI-SAFI";
+                       leaf afi-safi-name {
+                         type "identityref" {
+                           base "oc-bgp-types:AFI_SAFI_TYPE";
+                         }
+                         description
+                           "AFI,SAFI";
+                         must "../../../../../../global/afi-safis/afi-safi[afi-s"+
+                              "afi-name = current()]";
+                       }
+                     }
+                     container state {
+                       config "false";
+                       description
+                         "State information relating to the AFI-SAFI";
+                       leaf afi-safi-name {
+                         type "identityref" {
+                           base "oc-bgp-types:AFI_SAFI_TYPE";
+                         }
+                         description
+                           "AFI,SAFI";
+                       }
+                       leaf enabled {
+                         type "boolean";
+                         default "false";
+                         description
+                           "This leaf indicates whether the AFI-SAFI is\nenabled"+
+                           " for the neighbour or group";
+                       }
+                     }
+                     container apply-policy {
+                       description
+                         "Anchor point for routing policies in the model.\nImpor"+
+                         "t and export policies are with respect to the "+
+                         "local\nrouting table, i.e., export (send) and import "+
+                         "(receive),\ndepending on the context.";
+                       container config {
+                         description
+                           "Policy configuration data.";
+                         leaf-list import-policy {
+                           type "leafref" {
+                             path "/oc-rpol:routing-policy/oc-rpol:policy-defini"+
+                                  "tions/oc-rpol:policy-definition/oc-rpol:name";
+                           }
+                           ordered-by "user";
+                           description
+                             "list of policy names in sequence to be applied "+
+                             "on\nreceiving a routing update in the current "+
+                             "context, e.g.,\nfor the current peer group, "+
+                             "neighbor, address family,\netc.";
+                           max-elements "1";
+                         }
+                         leaf-list export-policy {
+                           type "leafref" {
+                             path "/oc-rpol:routing-policy/oc-rpol:policy-defini"+
+                                  "tions/oc-rpol:policy-definition/oc-rpol:name";
+                           }
+                           ordered-by "user";
+                           description
+                             "list of policy names in sequence to be applied "+
+                             "on\nsending a routing update in the current "+
+                             "context, e.g.,\nfor the current peer group, "+
+                             "neighbor, address family,\netc.";
+                           max-elements "1";
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+           container ospfv2 {
+             description
+               "Top-level configuration and operational state for\nOpen Shortest"+
+               " Path First (OSPF) v2";
+             container global {
+               description
+                 "Configuration and operational state parameters for settings\nt"+
+                 "hat are global to the OSPFv2 instance";
+               container config {
+                 description
+                   "Global configuration parameters for OSPFv2";
+                 leaf router-id {
+                   type "yang:dotted-quad";
+                   description
+                     "A 32-bit number represented as a dotted quad assigned "+
+                     "to\neach router running the OSPFv2 protocol. This number "+
+                     "should\nbe unique within the autonomous system";
+                   reference
+                     "rfc2828";
+                 }
+               }
+             }
+             container areas {
+               description
+                 "Configuration and operational state relating to an\nOSPFv2 "+
+                 "area.";
+               list area {
+                 key "identifier";
+                 description
+                   "The OSPFv2 areas within which the local system exists";
+                 leaf identifier {
+                   type "leafref" {
+                     path "../config/identifier";
+                   }
+                   description
+                     "A reference to the identifier for the area.";
+                 }
+                 container config {
+                   description
+                     "Configuration parameters relating to an OSPFv2 area";
+                   leaf identifier {
+                     type "oc-ospf-types:ospf-area-identifier";
+                     description
+                       "An identifier for the OSPFv2 area - described as either "+
+                       "a\n32-bit unsigned integer, or a dotted-quad";
+                   }
+                 }
+                 container interfaces {
+                   description
+                     "Enclosing container for a list of interfaces enabled "+
+                     "within\nthis area";
+                   list interface {
+                     key "id";
+                     description
+                       "List of interfaces which are enabled within this area";
+                     leaf id {
+                       type "leafref" {
+                         path "../config/id";
+                       }
+                       description
+                         "A pointer to the identifier for the interface.";
+                     }
+                     container config {
+                       description
+                         "Configuration parameters for the interface on "+
+                         "which\nOSPFv2 is enabled";
+                       leaf id {
+                         type "string";
+                         description
+                           "An operator-specified string utilised to uniquely\nr"+
+                           "eference this interface";
+                       }
+                       leaf network-type {
+                         type "identityref" {
+                           base "oc-ospf-types:OSPF_NETWORK_TYPE";
+                         }
+                         description
+                           "The type of network that OSPFv2 should use for the "+
+                           "specified\ninterface.";
+                       }
+                       leaf authentication-type {
+                         type "string";
+                         description
+                           "The type of authentication that should be used on "+
+                           "this\ninterface";
+                       }
+                       leaf passive {
+                         type "boolean";
+                         description
+                           "When this leaf is set to true, the interface should "+
+                           "be\nadvertised within the OSPF area but OSPF "+
+                           "adjacencies should\nnot be established over the "+
+                           "interface";
+                         default "true";
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }
+         must "../config/type='oc-ni-types:L3VRF' or ../config/type='oc-ni-types"+
+              ":DEFAULT_INSTANCE'";
+       }
+       must "((./config/type='oc-ni-types:L2P2P' and (count(./interfaces/interfa"+
+            "ce)=1) and (count(./connection-points/connection-point)=1) and "+
+            "./connection-points/connection-point/endpoints/endpoint/config/prec"+
+            "edence<=2 and ./connection-points/connection-point/endpoints/endpoi"+
+            "nt/config[precedence=1]) or\n./config/type!='oc-ni-types:L2P2P')";
+     }
+   }
+ }
+

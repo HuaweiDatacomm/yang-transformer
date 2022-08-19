@@ -1,0 +1,67 @@
+ /*
+Copyright (C) 2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ module huawei-fim-ifmtrunk-notif {
+   yang-version "1";
+   namespace "urn:huawei:yang:huawei-fim-ifmtrunk-notif";
+   prefix "fim-ifmtrunk-notif";
+   import huawei-extension {
+     prefix "ext";
+   }
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Notification of Trunk.";
+   revision "2021-03-01" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   ext:task-name "forwarding";
+   notification fim-trunk-bandwidth-imbalance {
+     description
+       "The bandwidth of the member interfaces of trunk differs greatly. "+
+       "Backpressure may occur on member interfaces with low bandwidth, "+
+       "affecting traffic forwarding.";
+     leaf trunk-name {
+       type "string" {
+         length "1..63";
+       }
+       description
+         "Name of a Trunk interface.";
+     }
+     leaf interface-name {
+       type "string" {
+         length "1..63";
+       }
+       description
+         "Name of a Trunk member interface.";
+     }
+   }
+   notification fim-trunk-bandwidth-imbalance-resume {
+     description
+       "The bandwidth ratio between trunk member interfaces is within the normal"+
+       " range.";
+     leaf trunk-name {
+       type "string" {
+         length "1..63";
+       }
+       description
+         "Name of a Trunk interface.";
+     }
+     leaf interface-name {
+       type "string" {
+         length "1..63";
+       }
+       description
+         "Name of a Trunk member interface.";
+     }
+   }
+ }
+

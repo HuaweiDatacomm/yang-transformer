@@ -1,0 +1,238 @@
+ module ietf-yang-types {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-yang-types";
+   prefix "yang";
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\n\nWG Chair: David Kessens\n          <mailto:david.kessens@nsn.com"+
+     ">\n\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@ja"+
+     "cobs-university.de>\n\nEditor:   Juergen Schoenwaelder\n          "+
+     "<mailto:j.schoenwaelder@jacobs-university.de>";
+   description
+     "This module contains a collection of generally useful derived\nYANG data "+
+     "types.\n\nCopyright (c) 2013 IETF Trust and the persons identified "+
+     "as\nauthors of the code.  All rights reserved.\n\nRedistribution and use "+
+     "in source and binary forms, with or\nwithout modification, is permitted "+
+     "pursuant to, and subject\nto the license terms contained in, the "+
+     "Simplified BSD License\nset forth in Section 4.c of the IETF Trust's Legal"+
+     " Provisions\nRelating to IETF Documents\n(http://trustee.ietf.org/license-"+
+     "info).\n\nThis version of this YANG module is part of RFC 6991; see\nthe "+
+     "RFC itself for full legal notices.";
+   revision "2013-07-15" {
+     description
+       "This revision adds the following new data types:\n- yang-identifier\n- "+
+       "hex-string\n- uuid\n- dotted-quad";
+     reference
+       "RFC 6991: Common YANG Data Types";
+   }
+   revision "2010-09-24" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 6021: Common YANG Data Types";
+   }
+   typedef counter32 {
+     type "uint32";
+     description
+       "The counter32 type represents a non-negative integer\nthat monotonically"+
+       " increases until it reaches a\nmaximum value of 2^32-1 (4294967295 "+
+       "decimal), when it\nwraps around and starts increasing again from "+
+       "zero.\n\nCounters have no defined 'initial' value, and thus, a\nsingle "+
+       "value of a counter has (in general) no information\ncontent.  Discontinu"+
+       "ities in the monotonically increasing\nvalue normally occur at "+
+       "re-initialization of the\nmanagement system, and at other times as "+
+       "specified in the\ndescription of a schema node using this type.  If "+
+       "such\nother times can occur, for example, the creation of\na schema node"+
+       " of type counter32 at times other than\nre-initialization, then a "+
+       "corresponding schema node\nshould be defined, with an appropriate type, "+
+       "to indicate\nthe last discontinuity.\n\nThe counter32 type should not be"+
+       " used for configuration\nschema nodes.  A default statement SHOULD NOT "+
+       "be used in\ncombination with the type counter32.\n\nIn the value set and"+
+       " its semantics, this type is equivalent\nto the Counter32 type of the "+
+       "SMIv2.";
+     reference
+       "RFC 2578: Structure of Management Information Version 2\n        "+
+       "(SMIv2)";
+   }
+   typedef zero-based-counter32 {
+     type "yang:counter32";
+     default "0";
+     description
+       "The zero-based-counter32 type represents a counter32\nthat has the "+
+       "defined 'initial' value zero.\n\nA schema node of this type will be set "+
+       "to zero (0) on creation\nand will thereafter increase monotonically "+
+       "until it reaches\na maximum value of 2^32-1 (4294967295 decimal), when "+
+       "it\nwraps around and starts increasing again from zero.\n\nProvided that"+
+       " an application discovers a new schema node\nof this type within the "+
+       "minimum time to wrap, it can use the\n'initial' value as a delta.  It is"+
+       " important for a management\nstation to be aware of this minimum time "+
+       "and the actual time\nbetween polls, and to discard data if the actual "+
+       "time is too\nlong or there is no defined minimum time.\n\nIn the value "+
+       "set and its semantics, this type is equivalent\nto the ZeroBasedCounter3"+
+       "2 textual convention of the SMIv2.";
+     reference
+       "RFC 4502: Remote Network Monitoring Management Information\n        Base"+
+       " Version 2";
+   }
+   typedef counter64 {
+     type "uint64";
+     description
+       "The counter64 type represents a non-negative integer\nthat monotonically"+
+       " increases until it reaches a\nmaximum value of 2^64-1 (1844674407370955"+
+       "1615 decimal),\nwhen it wraps around and starts increasing again from "+
+       "zero.\n\nCounters have no defined 'initial' value, and thus, a\nsingle "+
+       "value of a counter has (in general) no information\ncontent.  Discontinu"+
+       "ities in the monotonically increasing\nvalue normally occur at "+
+       "re-initialization of the\nmanagement system, and at other times as "+
+       "specified in the\ndescription of a schema node using this type.  If "+
+       "such\nother times can occur, for example, the creation of\na schema node"+
+       " of type counter64 at times other than\nre-initialization, then a "+
+       "corresponding schema node\nshould be defined, with an appropriate type, "+
+       "to indicate\nthe last discontinuity.\n\nThe counter64 type should not be"+
+       " used for configuration\nschema nodes.  A default statement SHOULD NOT "+
+       "be used in\ncombination with the type counter64.\n\nIn the value set and"+
+       " its semantics, this type is equivalent\nto the Counter64 type of the "+
+       "SMIv2.";
+     reference
+       "RFC 2578: Structure of Management Information Version 2\n        "+
+       "(SMIv2)";
+   }
+   typedef gauge64 {
+     type "uint64";
+     description
+       "The gauge64 type represents a non-negative integer, which\nmay increase "+
+       "or decrease, but shall never exceed a maximum\nvalue, nor fall below a "+
+       "minimum value.  The maximum value\ncannot be greater than 2^64-1 "+
+       "(18446744073709551615), and\nthe minimum value cannot be smaller than 0."+
+       "  The value of\na gauge64 has its maximum value whenever the information"+
+       "\nbeing modeled is greater than or equal to its maximum\nvalue, and has "+
+       "its minimum value whenever the information\nbeing modeled is smaller "+
+       "than or equal to its minimum value.\nIf the information being modeled "+
+       "subsequently decreases\nbelow (increases above) the maximum (minimum) "+
+       "value, the\ngauge64 also decreases (increases).\n\nIn the value set and "+
+       "its semantics, this type is equivalent\nto the CounterBasedGauge64 SMIv2"+
+       " textual convention defined\nin RFC 2856";
+     reference
+       "RFC 2856: Textual Conventions for Additional High Capacity\n        Data"+
+       " Types";
+   }
+   typedef yang-identifier {
+     type "string" {
+       length "1..max";
+       pattern "[a-zA-Z_][a-zA-Z0-9\\-_.]*";
+       pattern ".|..|[^xX].*|.[^mM].*|..[^lL].*";
+     }
+     description
+       "A YANG identifier string as defined by the 'identifier'\nrule in Section"+
+       " 12 of RFC 6020.  An identifier must\nstart with an alphabetic character"+
+       " or an underscore\nfollowed by an arbitrary sequence of alphabetic "+
+       "or\nnumeric characters, underscores, hyphens, or dots.\n\nA YANG "+
+       "identifier MUST NOT start with any possible\ncombination of the "+
+       "lowercase or uppercase character\nsequence 'xml'.";
+     reference
+       "RFC 6020: YANG - A Data Modeling Language for the Network\n        "+
+       "Configuration Protocol (NETCONF)";
+   }
+   typedef date-and-time {
+     type "string" {
+       pattern "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d"+
+               "+)?(Z|[\\+\\-]\\d{2}:\\d{2})";
+     }
+     description
+       "The date-and-time type is a profile of the ISO 8601\nstandard for "+
+       "representation of dates and times using the\nGregorian calendar.  The "+
+       "profile is defined by the\ndate-time production in Section 5.6 of RFC "+
+       "3339.\n\nThe date-and-time type is compatible with the dateTime "+
+       "XML\nschema type with the following notable exceptions:\n\n(a) The "+
+       "date-and-time type does not allow negative years.\n\n(b) The date-and-ti"+
+       "me time-offset -00:00 indicates an unknown\n    time zone (see RFC 3339)"+
+       " while -00:00 and +00:00 and Z\n    all represent the same time zone in "+
+       "dateTime.\n\n(c) The canonical format (see below) of data-and-time "+
+       "values\n    differs from the canonical format used by the dateTime XML\n"+
+       "    schema type, which requires all times to be in UTC using\n    the "+
+       "time-offset 'Z'.\n\nThis type is not equivalent to the DateAndTime "+
+       "textual\nconvention of the SMIv2 since RFC 3339 uses a different\nsepara"+
+       "tor between full-date and full-time and provides\nhigher resolution of "+
+       "time-secfrac.\n\nThe canonical format for date-and-time values with a "+
+       "known time\nzone uses a numeric time zone offset that is calculated "+
+       "using\nthe device's configured known offset to UTC time.  A change "+
+       "of\nthe device's offset to UTC time will cause date-and-time values\nto "+
+       "change accordingly.  Such changes might happen periodically\nin case a "+
+       "server follows automatically daylight saving time\n(DST) time zone "+
+       "offset changes.  The canonical format for\ndate-and-time values with an "+
+       "unknown time zone (usually\nreferring to the notion of local time) uses "+
+       "the time-offset\n-00:00.";
+     reference
+       "RFC 3339: Date and Time on the Internet: Timestamps\nRFC 2579: Textual "+
+       "Conventions for SMIv2\nXSD-TYPES: XML Schema Part 2: Datatypes Second "+
+       "Edition";
+   }
+   typedef timeticks {
+     type "uint32";
+     description
+       "The timeticks type represents a non-negative integer that\nrepresents "+
+       "the time, modulo 2^32 (4294967296 decimal), in\nhundredths of a second "+
+       "between two epochs.  When a schema\nnode is defined that uses this type,"+
+       " the description of\nthe schema node identifies both of the reference "+
+       "epochs.\n\nIn the value set and its semantics, this type is equivalent\n"+
+       "to the TimeTicks type of the SMIv2.";
+     reference
+       "RFC 2578: Structure of Management Information Version 2\n        "+
+       "(SMIv2)";
+   }
+   typedef phys-address {
+     type "string" {
+       pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+     }
+     description
+       "Represents media- or physical-level addresses represented\nas a sequence"+
+       " octets, each octet represented by two hexadecimal\nnumbers.  Octets are"+
+       " separated by colons.  The canonical\nrepresentation uses lowercase "+
+       "characters.\n\nIn the value set and its semantics, this type is "+
+       "equivalent\nto the PhysAddress textual convention of the SMIv2.";
+     reference
+       "RFC 2579: Textual Conventions for SMIv2";
+   }
+   typedef xpath1.0 {
+     type "string";
+     description
+       "This type represents an XPATH 1.0 expression.\n\nWhen a schema node is "+
+       "defined that uses this type, the\ndescription of the schema node MUST "+
+       "specify the XPath\ncontext in which the XPath expression is evaluated.";
+     reference
+       "XPATH: XML Path Language (XPath) Version 1.0";
+   }
+   typedef hex-string {
+     type "string" {
+       pattern "([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})*)?";
+     }
+     description
+       "A hexadecimal string with octets represented as hex digits\nseparated by"+
+       " colons.  The canonical representation uses\nlowercase characters.";
+   }
+   typedef uuid {
+     type "string" {
+       pattern "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9"+
+               "a-fA-F]{12}";
+     }
+     description
+       "A Universally Unique IDentifier in the string representation\ndefined in"+
+       " RFC 4122.  The canonical representation uses\nlowercase characters.\n\n"+
+       "The following is an example of a UUID in string representation:\nf81d4fa"+
+       "e-7dec-11d0-a765-00a0c91e6bf6\n      ";
+     reference
+       "RFC 4122: A Universally Unique IDentifier (UUID) URN\n        Namespace";
+   }
+   typedef dotted-quad {
+     type "string" {
+       pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-"+
+               "9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
+     }
+     description
+       "An unsigned 32-bit number expressed in the dotted-quad\nnotation, i.e., "+
+       "four octets written as decimal numbers\nand separated with the '.' (full"+
+       " stop) character.";
+   }
+ }
+

@@ -1,0 +1,61 @@
+ /*
+Copyright (C) 2019-2021 Huawei Technologies Co., Ltd. All rights reserved.
+*/
+
+ submodule huawei-nqa-reflector {
+   yang-version "1";
+   belongs-to huawei-nqa {
+     prefix "nqa";
+   }
+   include huawei-nqa-type;
+   include huawei-nqa-test-flow;
+   organization
+     "Huawei Technologies Co., Ltd.";
+   contact
+     "Huawei Industrial Base\nBantian, Longgang\nShenzhen 518129\nPeople's "+
+     "Republic of China\nWebsite: http://www.huawei.com\nEmail: support@huawei.c"+
+     "om";
+   description
+     "Description of submodule nqa-reflector.";
+   revision "2021-04-29" {
+     description
+       "Modify test-flow and exclusive.";
+     reference
+       "Huawei private.";
+   }
+   revision "2020-02-29" {
+     description
+       "Modify range for PE-VLAN and CE-VLAN.";
+     reference
+       "Huawei private.";
+   }
+   revision "2019-10-25" {
+     description
+       "Initial revision.";
+     reference
+       "Huawei private.";
+   }
+   typedef reflect-type {
+     type "enumeration" {
+       enum "flow-general" {
+         value "2";
+         description
+           "General flow.";
+       }
+     }
+     description
+       "Description of reflect-type.";
+   }
+   typedef exclusive-mode-type {
+     type "enumeration" {
+       enum "exclusive" {
+         value "1";
+         description
+           "Specify the exclusive mode on an interface.";
+       }
+     }
+     description
+       "Description of exclusive-mode-type.";
+   }
+ }
+

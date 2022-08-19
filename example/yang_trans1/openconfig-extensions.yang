@@ -1,0 +1,138 @@
+ module openconfig-extensions {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/openconfig-ext";
+   prefix "oc-ext";
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "This module provides extensions to the YANG language to allow\nOpenConfig "+
+     "specific functionality and meta-data to be defined.";
+   revision "2018-10-17" {
+     description
+       "Add extension for regular expression type.";
+     reference
+       "0.4.0";
+   }
+   revision "2017-04-11" {
+     description
+       "rename password type to 'hashed' and clarify description";
+     reference
+       "0.3.0";
+   }
+   revision "2017-01-29" {
+     description
+       "Added extension for annotating encrypted values.";
+     reference
+       "0.2.0";
+   }
+   revision "2015-10-09" {
+     description
+       "Initial OpenConfig public release";
+     reference
+       "0.1.0";
+   }
+   extension openconfig-version {
+     argument semver {
+       yin-element "false";
+     }
+     description
+       "The OpenConfig version number for the module. This is\nexpressed as a "+
+       "semantic version number of the form:\n  x.y.z\nwhere:\n  * x corresponds"+
+       " to the major version,\n  * y corresponds to a minor version,\n  * z "+
+       "corresponds to a patch version.\nThis version corresponds to the model "+
+       "file within which it is\ndefined, and does not cover the whole set of "+
+       "OpenConfig models.\nIndividual YANG modules are versioned independently "+
+       "-- the\nsemantic version is generally incremented only when there is "+
+       "a\nchange in the corresponding file.  Submodules should always\nhave the"+
+       " same semantic version as their parent modules.\nA major version number "+
+       "of 0 indicates that this model is still\nin development (whether within "+
+       "OpenConfig or with industry\npartners), and is potentially subject to "+
+       "change.\nFollowing a release of major version 1, all modules will\nincre"+
+       "ment major revision number where backwards incompatible\nchanges to the "+
+       "model are made.\nThe minor version is changed when features are added to"+
+       " the\nmodel that do not impact current clients use of the model.\nThe "+
+       "patch-level version is incremented when non-feature changes\n(such as "+
+       "bugfixes or clarifications to human-readable\ndescriptions that do not "+
+       "impact model functionality) are made\nthat maintain backwards compatibil"+
+       "ity.\nThe version number is stored in the module meta-data.";
+   }
+   extension openconfig-hashed-value {
+     description
+       "This extension provides an annotation on schema nodes to\nindicate that "+
+       "the corresponding value should be stored and\nreported in hashed "+
+       "form.\nHash algorithms are by definition not reversible. Clients\nreadin"+
+       "g the configuration or applied configuration for the node\nshould expect"+
+       " to receive only the hashed value. Values written\nin cleartext will be "+
+       "hashed. This annotation may be used on\nnodes such as secure passwords "+
+       "in which the device never reports\na cleartext value, even if the input "+
+       "is provided as cleartext.";
+   }
+   extension regexp-posix {
+     description
+       "This extension indicates that the regular expressions included\nwithin "+
+       "the YANG module specified are conformant with the POSIX\nregular "+
+       "expression format rather than the W3C standard that is\nspecified by "+
+       "RFC6020 and RFC7950.";
+   }
+   extension telemetry-on-change {
+     description
+       "The telemetry-on-change annotation is specified in the context\nof a "+
+       "particular subtree (container, or list) or leaf within the\nYANG schema."+
+       " Where specified, it indicates that the value stored\nby the nodes "+
+       "within the context change their value only in response\nto an event "+
+       "occurring. The event may be local to the target, for\nexample - a "+
+       "configuration change, or external - such as the failure\nof a link.\nWhe"+
+       "n a telemetry subscription allows the target to determine whether\nto "+
+       "export the value of a leaf in a periodic or event-based fashion\n(e.g., "+
+       "TARGET_DEFINED mode in gNMI), leaves marked as\ntelemetry-on-change "+
+       "should only be exported when they change,\ni.e., event-based.";
+   }
+   extension telemetry-atomic {
+     description
+       "The telemetry-atomic annotation is specified in the context of\na "+
+       "subtree (containre, or list), and indicates that all nodes\nwithin the "+
+       "subtree are always updated together within the data\nmodel. For example,"+
+       " all elements under the subtree may be updated\nas a result of a new "+
+       "alarm being raised, or the arrival of a new\n protocol message.\nTranspo"+
+       "rt protocols may use the atomic specification to determine\noptimisation"+
+       "s for sending or storing the corresponding data.";
+   }
+   extension operational {
+     description
+       "The operational annotation is specified in the context of a\ngrouping, "+
+       "leaf, or leaf-list within a YANG module. It indicates\nthat the nodes "+
+       "within the context are derived state on the device.\nOpenConfig data "+
+       "models divide nodes into the following three categories:\n - intended "+
+       "configuration - these are leaves within a container named\n   'config', "+
+       "and are the writable configuration of a target.\n - applied configuratio"+
+       "n - these are leaves within a container named\n   'state' and are the "+
+       "currently running value of the intended configuration.\n - derived state"+
+       " - these are the values within the 'state' container which\n   are not "+
+       "part of the applied configuration of the device. Typically, they\n   "+
+       "represent state values reflecting underlying operational counters, or\n "+
+       "  protocol statuses.";
+   }
+   extension catalog-organization {
+     argument org {
+       yin-element "false";
+     }
+     description
+       "This extension specifies the organization name that should be used "+
+       "within\nthe module catalogue on the device for the specified YANG "+
+       "module. It stores\na pithy string where the YANG organization statement "+
+       "may contain more\ndetails.";
+   }
+   extension origin {
+     argument origin {
+       yin-element "false";
+     }
+     description
+       "This extension specifies the name of the origin that the YANG module\nfa"+
+       "lls within. This allows multiple overlapping schema trees to be used\non"+
+       " a single network element without requiring module based prefixing\nof "+
+       "paths.";
+   }
+ }
+

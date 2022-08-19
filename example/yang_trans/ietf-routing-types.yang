@@ -1,0 +1,98 @@
+ module ietf-routing-types {
+   namespace "urn:ietf:params:xml:ns:yang:ietf-routing-types";
+   prefix "rt-types";
+   organization
+     "IETF RTGWG - Routing Area Working Group";
+   contact
+     "WG Web:   <https://datatracker.ietf.org/wg/rtgwg/>\nWG List:  <mailto:rtgw"+
+     "g@ietf.org>\n\nEditors:  Xufeng Liu\n          <mailto:Xufeng_Liu@jabail.c"+
+     "om>\n          Yingzhen Qu\n          <mailto:yingzhen.qu@huawei.com>\n   "+
+     "       Acee Lindem\n          <mailto:acee@cisco.com>\n          Christian"+
+     " Hopps\n          <mailto:chopps@chopps.org>\n          Lou Berger\n      "+
+     "    <mailto:lberger@labn.com>";
+   description
+     "This module contains a collection of YANG data types\nconsidered generally"+
+     " useful for routing protocols.\n\nCopyright (c) 2017 IETF Trust and the "+
+     "persons\nidentified as authors of the code.  All rights reserved.\n\nRedis"+
+     "tribution and use in source and binary forms, with or\nwithout modificatio"+
+     "n, is permitted pursuant to, and subject\nto the license terms contained "+
+     "in, the Simplified BSD License\nset forth in Section 4.c of the IETF "+
+     "Trust's Legal Provisions\nRelating to IETF Documents\n(https://trustee.iet"+
+     "f.org/license-info).\n\nThis version of this YANG module is part of RFC "+
+     "8294; see\nthe RFC itself for full legal notices.";
+   revision "2017-12-04" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 8294: Common YANG Data Types for the Routing Area.\nSection 3.";
+   }
+   identity mpls-label-special-purpose-value {
+     description
+       "Base identity for deriving identities describing\nspecial-purpose "+
+       "Multiprotocol Label Switching (MPLS) label\nvalues.";
+     reference
+       "RFC 7274: Allocating and Retiring Special-Purpose MPLS\nLabels.";
+   }
+   identity ipv4-explicit-null-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the IPv4 Explicit NULL Label.";
+     reference
+       "RFC 3032: MPLS Label Stack Encoding.  Section 2.1.";
+   }
+   identity router-alert-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the Router Alert Label.";
+     reference
+       "RFC 3032: MPLS Label Stack Encoding.  Section 2.1.";
+   }
+   identity ipv6-explicit-null-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the IPv6 Explicit NULL Label.";
+     reference
+       "RFC 3032: MPLS Label Stack Encoding.  Section 2.1.";
+   }
+   identity implicit-null-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the Implicit NULL Label.";
+     reference
+       "RFC 3032: MPLS Label Stack Encoding.  Section 2.1.";
+   }
+   identity entropy-label-indicator {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the Entropy Label Indicator.";
+     reference
+       "RFC 6790: The Use of Entropy Labels in MPLS Forwarding.\nSections 3 and "+
+       "10.1.";
+   }
+   identity gal-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the Generic Associated Channel\n(G-ACh) Label "+
+       "(GAL).";
+     reference
+       "RFC 5586: MPLS Generic Associated Channel.\nSections 4 and 10.";
+   }
+   identity oam-alert-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the OAM Alert Label.";
+     reference
+       "RFC 3429: Assignment of the 'OAM Alert Label' for\nMultiprotocol Label "+
+       "Switching Architecture (MPLS)\nOperation and Maintenance (OAM) "+
+       "Functions.\nSections 3 and 6.";
+   }
+   identity extension-label {
+     base "mpls-label-special-purpose-value";
+     description
+       "This identity represents the Extension Label.";
+     reference
+       "RFC 7274: Allocating and Retiring Special-Purpose MPLS\nLabels.  "+
+       "Sections 3.1 and 5.";
+   }
+ }
+

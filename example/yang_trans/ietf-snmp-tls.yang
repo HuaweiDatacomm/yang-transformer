@@ -1,0 +1,287 @@
+ submodule ietf-snmp-tls {
+   belongs-to ietf-snmp {
+     prefix "snmp";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   import ietf-x509-cert-to-name {
+     prefix "x509c2n";
+   }
+   include ietf-snmp-common;
+   include ietf-snmp-engine;
+   include ietf-snmp-target;
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\nWG Chair: Thomas Nadeau\n          <mailto:tnadeau@lucidvision.com"+
+     ">\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@jaco"+
+     "bs-university.de>\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-"+
+     "f.com>\nEditor:   Juergen Schoenwaelder\n          <mailto:j.schoenwaelder"+
+     "@jacobs-university.de>";
+   description
+     "This submodule contains a collection of YANG definitions for\nconfiguring "+
+     "the Transport Layer Security Transport Model (TLSTM)\nof SNMP.\nCopyright "+
+     "(c) 2014 IETF Trust and the persons identified as\nauthors of the code.  "+
+     "All rights reserved.\nRedistribution and use in source and binary forms, "+
+     "with or\nwithout modification, is permitted pursuant to, and subject\nto "+
+     "the license terms contained in, the Simplified BSD License\nset forth in "+
+     "Section 4.c of the IETF Trust's Legal Provisions\nRelating to IETF "+
+     "Documents\n(http://trustee.ietf.org/license-info).\nThis version of this "+
+     "YANG module is part of RFC 7407; see\nthe RFC itself for full legal "+
+     "notices.";
+   reference
+     "RFC 6353: Transport Layer Security (TLS) Transport Model for\nthe Simple "+
+     "Network Management Protocol (SNMP)";
+   revision "2014-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7407: A YANG Data Model for SNMP Configuration";
+   }
+   feature tlstm {
+     description
+       "A server implements this feature if it supports the\nTransport Layer "+
+       "Security Transport Model for SNMP.";
+     reference
+       "RFC 6353: Transport Layer Security (TLS) Transport Model for\nthe Simple"+
+       " Network Management Protocol (SNMP)";
+   }
+   augment "/snmp:snmp/snmp:engine/snmp:listen/snmp:transport" {
+     if-feature "tlstm";
+     case tls {
+       container tls {
+         description
+           "A list of IPv4 and IPv6 addresses and ports to which the\nengine "+
+           "listens for SNMP messages over TLS.";
+         leaf ip {
+           type "inet:ip-address";
+           mandatory "true";
+           description
+             "The IPv4 or IPv6 address on which the engine listens\nfor SNMP "+
+             "messages over TLS.";
+         }
+         leaf port {
+           type "inet:port-number";
+           description
+             "The TCP port on which the engine listens for SNMP\nmessages over "+
+             "TLS.\nIf the port is not configured, an engine that\nacts as a "+
+             "Command Responder uses port 10161, and\nan engine that acts as a "+
+             "Notification Receiver\nuses port 10162.";
+         }
+       }
+     }
+     case dtls {
+       container dtls {
+         description
+           "A list of IPv4 and IPv6 addresses and ports to which the\nengine "+
+           "listens for SNMP messages over DTLS.";
+         leaf ip {
+           type "inet:ip-address";
+           mandatory "true";
+           description
+             "The IPv4 or IPv6 address on which the engine listens\nfor SNMP "+
+             "messages over DTLS.";
+         }
+         leaf port {
+           type "inet:port-number";
+           description
+             "The UDP port on which the engine listens for SNMP\nmessages over "+
+             "DTLS.\nIf the port is not configured, an engine that\nacts as a "+
+             "Command Responder uses port 10161, and\nan engine that acts as a "+
+             "Notification Receiver\nuses port 10162.";
+         }
+       }
+     }
+   }
+   augment "/snmp:snmp" {
+     if-feature "tlstm";
+     container tlstm {
+       list cert-to-name {
+         key "id";
+         description
+           "This list defines how certificates are mapped to names.\nThe name is"+
+           " derived by considering each cert-to-name\nlist entry in order.  The"+
+           " cert-to-name entry's fingerprint\ndetermines whether the list entry"+
+           " is a match:\n\n1) If the cert-to-name list entry's fingerprint "+
+           "value\n   matches that of the presented certificate, then consider\n"+
+           "   the list entry a successful match.\n\n2) If the cert-to-name list"+
+           " entry's fingerprint value\n   matches that of a locally held copy "+
+           "of a trusted CA\n   certificate, and that CA certificate was part of"+
+           " the CA\n   certificate chain to the presented certificate, then\n  "+
+           " consider the list entry a successful match.\n\nOnce a matching "+
+           "cert-to-name list entry has been found, the\nmap-type is used to "+
+           "determine how the name associated with\nthe certificate should be "+
+           "determined.  See the map-type\nleaf's description for details on "+
+           "determining the name value.\nIf it is impossible to determine a name"+
+           " from the cert-to-name\nlist entry's data combined with the data "+
+           "presented in the\ncertificate, then additional cert-to-name list "+
+           "entries MUST\nbe searched to look for another potential match.\n\nSe"+
+           "curity administrators are encouraged to make use of\ncertificates "+
+           "with subjectAltName fields that can be mapped to\nnames so that a "+
+           "single root CA certificate can allow all\nchild certificates' "+
+           "subjectAltName fields to map directly to\na name via a 1:1 "+
+           "transformation.";
+         reference
+           "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+           "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTlst"+
+           "mCertToTSNEntry";
+         leaf id {
+           type "uint32";
+           description
+             "The id specifies the order in which the entries in the\ncert-to-na"+
+             "me list are searched.  Entries with lower\nnumbers are searched "+
+             "first.";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol\n(SNMP).\nSNMP-TLS-TM-MIB.snmpT"+
+             "lstmCertToTSNID";
+         }
+         leaf fingerprint {
+           type "x509c2n:tls-fingerprint";
+           mandatory "true";
+           description
+             "Specifies a value with which the fingerprint of the\nfull "+
+             "certificate presented by the peer is compared.  If\nthe fingerprin"+
+             "t of the full certificate presented by the\npeer does not match "+
+             "the fingerprint configured, then the\nentry is skipped, and the "+
+             "search for a match continues.";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol\n(SNMP).\nSNMP-TLS-TM-MIB.snmpT"+
+             "lstmCertToTSNFingerprint";
+         }
+         leaf map-type {
+           type "identityref" {
+             base "x509c2n:cert-to-name";
+           }
+           mandatory "true";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol\n(SNMP).\nSNMP-TLS-TM-MIB.snmpT"+
+             "lstmCertToTSNMapType";
+           description
+             "Mappings that use the snmpTlstmCertToTSNData column\nneed to "+
+             "augment the cert-to-name list with\nadditional configuration "+
+             "objects corresponding\nto the snmpTlstmCertToTSNData value.  Such "+
+             "objects\nshould use the 'when' statement to make them\nconditional"+
+             " based on the map-type.";
+         }
+         leaf name {
+           when "../map-type = 'x509c2n:specified'";
+           type "string";
+           mandatory "true";
+           description
+             "Directly specifies the NETCONF username when the\nmap-type is "+
+             "'specified'.";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol\n(SNMP).\nSNMP-TLS-TM-MIB.snmpT"+
+             "lstmCertToTSNData";
+         }
+       }
+     }
+   }
+   augment "/snmp:snmp/snmp:target/snmp:transport" {
+     if-feature "tlstm";
+     case tls {
+       reference
+         "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+         "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTLSTCP"+
+         "Domain";
+       container tls {
+         leaf ip {
+           type "inet:host";
+           mandatory "true";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetAddrTAddress\nRFC 6353: Transport "+
+             "Layer Security (TLS) Transport Model\n  for the Simple Network "+
+             "Management Protocol (SNMP).\n  SNMP-TLS-TM-MIB.SnmpTLSAddress";
+         }
+         leaf port {
+           type "inet:port-number";
+           default "10161";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetAddrTAddress\nRFC 6353: Transport "+
+             "Layer Security (TLS) Transport Model\n  for the Simple Network "+
+             "Management Protocol (SNMP).\n  SNMP-TLS-TM-MIB.SnmpTLSAddress";
+         }
+         leaf client-fingerprint {
+           type "x509c2n:tls-fingerprint";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmParamsClientFingerprint";
+         }
+         leaf server-fingerprint {
+           type "x509c2n:tls-fingerprint";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmAddrServerFingerprint";
+         }
+         leaf server-identity {
+           type "snmp:admin-string";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmAddrServerIdentity";
+         }
+       }
+     }
+   }
+   augment "/snmp:snmp/snmp:target/snmp:transport" {
+     if-feature "tlstm";
+     case dtls {
+       reference
+         "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+         "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpDTLSUD"+
+         "PDomain";
+       container dtls {
+         leaf ip {
+           type "inet:host";
+           mandatory "true";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetAddrTAddress\nRFC 6353: Transport "+
+             "Layer Security (TLS) Transport Model\n  for the Simple Network "+
+             "Management Protocol (SNMP).\n  SNMP-TLS-TM-MIB.SnmpTLSAddress";
+         }
+         leaf port {
+           type "inet:port-number";
+           default "10161";
+           reference
+             "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications"+
+             ".\nSNMP-TARGET-MIB.snmpTargetAddrTAddress\nRFC 6353: Transport "+
+             "Layer Security (TLS) Transport Model\n  for the Simple Network "+
+             "Management Protocol (SNMP).\n  SNMP-TLS-TM-MIB.SnmpTLSAddress";
+         }
+         leaf client-fingerprint {
+           type "x509c2n:tls-fingerprint";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmParamsClientFingerprint";
+         }
+         leaf server-fingerprint {
+           type "x509c2n:tls-fingerprint";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmAddrServerFingerprint";
+         }
+         leaf server-identity {
+           type "snmp:admin-string";
+           reference
+             "RFC 6353: Transport Layer Security (TLS) Transport Model\nfor the "+
+             "Simple Network Management Protocol (SNMP).\nSNMP-TLS-TM-MIB.snmpTl"+
+             "stmAddrServerIdentity";
+         }
+       }
+     }
+   }
+ }
+

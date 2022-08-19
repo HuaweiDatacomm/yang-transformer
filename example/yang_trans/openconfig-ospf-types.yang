@@ -1,0 +1,673 @@
+ module openconfig-ospf-types {
+   yang-version "1";
+   namespace "http://openconfig.net/yang/ospf-types";
+   prefix "oc-ospf-types";
+   import ietf-yang-types {
+     prefix "yang";
+   }
+   import openconfig-extensions {
+     prefix "oc-ext";
+   }
+   organization
+     "OpenConfig working group";
+   contact
+     "OpenConfig working group\nwww.openconfig.net";
+   description
+     "Type definitions for OSPF";
+   oc-ext:openconfig-version "0.1.3";
+   revision "2018-11-21" {
+     description
+       "Add OpenConfig module metadata extensions.";
+     reference
+       "0.1.3";
+   }
+   revision "2018-06-05" {
+     description
+       "Bug fixes in when statements in lsdb";
+     reference
+       "0.1.2";
+   }
+   revision "2017-08-24" {
+     description
+       "Minor formatting fixes.";
+     reference
+       "0.1.1";
+   }
+   revision "2017-02-28" {
+     description
+       "Initial public release of OSPFv2";
+     reference
+       "0.1.0";
+   }
+   revision "2016-06-24" {
+     description
+       "Initial revision";
+     reference
+       "0.0.1";
+   }
+   oc-ext:regexp-posix;
+   oc-ext:catalog-organization "openconfig";
+   oc-ext:origin "openconfig";
+   typedef ospf-area-identifier {
+     type "union" {
+       type "uint32";
+       type "yang:dotted-quad";
+     }
+     description
+       "An identifier for an area with OSPF version 2 or 3. This value\nis "+
+       "expressed as either a dotted-quad, or a unsigned 32-bit\nnumber";
+   }
+   identity OSPF_LSA_TYPE {
+     description
+       "Base identity for an OSPF LSA type. This identity is intended\nto be "+
+       "used across both OSPFv2 and OSPFv3. Identity values that\ncorrespond to "+
+       "only one OSPF version are marked as such.";
+   }
+   identity ROUTER_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 1 - ROUTER_LSA. An LSA originated by each router within\nthe area "+
+       "describing the state and cost of the router's links\nin the area.";
+     reference
+       "RFC2328";
+   }
+   identity NETWORK_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 2 - NETWORK_LSA. An LSA originated for each broadcast and\nnon-broa"+
+       "dcast multiple access (NBMA) in the area. This LSA is\noriginated by the"+
+       " designated router.";
+     reference
+       "RFC2328";
+   }
+   identity SUMMARY_IP_NETWORK_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 3 - SUMMARY_IP_NETWORK_LSA. An LSA originated by area\nborder "+
+       "routers describing inter-area destinations. This LSA type\nis used when "+
+       "the destination is an IP network";
+     reference
+       "RFC2328";
+   }
+   identity SUMMARY_ASBR_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 4 - SUMMARY_ASBR_LSA. An LSA originated by an area border\nrouter "+
+       "describing inter-area destinations. This LSA type is used\nwhen the "+
+       "destination is an AS boundary router.";
+     reference
+       "RFC2328";
+   }
+   identity AS_EXTERNAL_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 5 - AS_EXTERNAL_LSA. This LSA type is used to describe\ndestination"+
+       "s external to the autonomous system, and is\noriginated by an AS "+
+       "boundary router (ASBR).";
+     reference
+       "RFC2328";
+   }
+   identity NSSA_AS_EXTERNAL_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 7 - NSSA_AS_EXTERNAL_LSA. This LSA type is used by\nsystems within "+
+       "a not-so-stubby-area (NSSA) to inject external\nprefixes into the LSDB. "+
+       "They are translated to Type 5 LSAs\nat an ABR device.";
+     reference
+       "RFC3101";
+   }
+   identity OSPFV2_LINK_SCOPE_OPAQUE_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 9 - OSPFV2_LINK_SCOPE_OPAQUE_LSA. This LSA type is used\nin OSPFv2 "+
+       "to distribute arbitrary information via the OSPF\nprotocol. The contents"+
+       " is specific to the application defining\nthe Opaque Type specified "+
+       "within the LSDB. LSAs with Type 9 have\na scope of the link that they "+
+       "are being transmitted on (and the\nassociated network or subnetwork).";
+     reference
+       "RFC5250";
+   }
+   identity OSPFV2_AREA_SCOPE_OPAQUE_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 10 - OSPFV2_AREA_SCOPE_OPAQUE_LSA. This LSA type is used\nin OSPFv2"+
+       " to distribute arbitrary information via the OSPF\nprotocol. The "+
+       "contents is specific to the application defining\nthe Opaque Type "+
+       "specified within the LSDB. LSAs with Type 10 have\na scope of the area "+
+       "that they are transmitted within.";
+     reference
+       "RFC5250";
+   }
+   identity OSPFV2_AS_SCOPE_OPAQUE_LSA {
+     base "OSPF_LSA_TYPE";
+     description
+       "Type 11 - OSPFV2_AS_SCOPE_OPAQUE_LSA. This LSA type is used\nin OSPFv2 "+
+       "to distribute arbitrary information via the OSPF\nprotocol. The contents"+
+       " is specific to the application defining\nthe Opaque Type specified "+
+       "within the LSDB. LSAs with Type 11\nhave a scope of the autonomous "+
+       "system that they are transmitted\nwithin.";
+     reference
+       "RFC5250";
+   }
+   identity ROUTER_LSA_TYPES {
+     description
+       "Sub-types of the router LSA";
+   }
+   identity ROUTER_LSA_P2P {
+     base "ROUTER_LSA_TYPES";
+     description
+       "The LSA represents a point-to-point connection to another\nrouter";
+   }
+   identity ROUTER_LSA_TRANSIT_NETWORK {
+     base "ROUTER_LSA_TYPES";
+     description
+       "The LSA represents a connection to a transit network";
+   }
+   identity ROUTER_LSA_STUB_NETWORK {
+     base "ROUTER_LSA_TYPES";
+     description
+       "The LSA represents a connection to a stub network";
+   }
+   identity ROUTER_LSA_VIRTUAL_LINK {
+     base "ROUTER_LSA_TYPES";
+     description
+       "The LSA represents a virtual link connection";
+   }
+   identity OSPF_NEIGHBOR_STATE {
+     description
+       "The state of an adjacency between the local system and a remote\ndevice";
+   }
+   identity DOWN {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "The initial state of a neighbor, indicating that no recent\ninformation "+
+       "has been received from the neighbor.";
+     reference
+       "RFC2328";
+   }
+   identity ATTEMPT {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "Utilised for neighbors that are attached to NBMA networks, it\nindicates"+
+       " that no information has been recently received from\nthe neighbor but "+
+       "that Hello packets should be directly sent\nto that neighbor.";
+     reference
+       "RFC2328";
+   }
+   identity INIT {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "Indicates that a Hello packet has been received from the\nneighbor but "+
+       "bi-directional communication has not yet been\nestablished. That is to "+
+       "say that the local Router ID does\nnot appear in the list of neighbors "+
+       "in the remote system's\nHello packet.";
+     reference
+       "RFC2328";
+   }
+   identity TWO_WAY {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "Communication between the local and remote system is\nbi-directional "+
+       "such that the local system's Router ID is listed\nin the received remote"+
+       " system's Hello packet.";
+     reference
+       "RFC2328";
+   }
+   identity EXSTART {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "An adjacency with the remote system is being formed. The local\nsystem "+
+       "is currently transmitting empty database description\npackets in order "+
+       "to establish the master/slave relationship for\nthe adjacency.";
+     reference
+       "RFC2328";
+   }
+   identity EXCHANGE {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "The local and remote systems are currently exchanging database\ndescript"+
+       "ion packets in order to determine which elements of\ntheir local LSDBs "+
+       "are out of date.";
+     reference
+       "RFC2328";
+   }
+   identity LOADING {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "The local system is sending Link State Request packets to the\nremote "+
+       "system in order to receive the more recently LSAs that\nwere discovered "+
+       "during the Exchange phase of the procedure\nestablishing the adjacency.";
+     reference
+       "RFC2328";
+   }
+   identity FULL {
+     base "OSPF_NEIGHBOR_STATE";
+     description
+       "The neighboring routers are fully adjacent such that both\nLSDBs are "+
+       "synchronized. The adjacency will appear in Router and\nNetwork LSAs";
+     reference
+       "RFC2328";
+   }
+   identity OSPF_NETWORK_TYPE {
+     description
+       "Types of network that OSPF should consider attached to an\ninterface";
+   }
+   identity POINT_TO_POINT_NETWORK {
+     base "OSPF_NETWORK_TYPE";
+     description
+       "A interface that connects two routers.";
+     reference
+       "RFC2328";
+   }
+   identity BROADCAST_NETWORK {
+     base "OSPF_NETWORK_TYPE";
+     description
+       "An interface that supports >2 attached routers which has the\nability to"+
+       " address all connected systems via a single\n(broadcast) address.";
+   }
+   identity NON_BROADCAST_NETWORK {
+     base "OSPF_NETWORK_TYPE";
+     description
+       "An interface that supports >2 attached rotuers which does not\nhave the "+
+       "ability to address all connected systems with a\nbroadcast address.";
+   }
+   identity OSPF_OPAQUE_LSA_TYPE {
+     description
+       "This identity is the base used for opaque LSA types. The values\nthat "+
+       "extend this base are those that are described in the IANA\nOSPF Opaque "+
+       "Link-State Advertisements (LSA) Option Types registry";
+   }
+   identity TRAFFIC_ENGINEERING {
+     base "OSPF_OPAQUE_LSA_TYPE";
+     description
+       "The Traffic Engineering LSA. This type is used only with area-scope\nOpa"+
+       "que LSAs - and is used to describe routers, point-to-point links\nand "+
+       "connections to multi-access networks for traffic engineering\npurposes.";
+     reference
+       "RFC3630";
+   }
+   identity GRACE_LSA {
+     base "OSPF_OPAQUE_LSA_TYPE";
+     description
+       "Grace LSAs are announced by a system undergoing graceful-restart.\nA "+
+       "system that is attempting an OSPF graceful restart announces\nGrace-LSAs"+
+       " with a specified grace period, indicating the intention\nto have "+
+       "completed an restart within the specified period.";
+     reference
+       "RFC3623";
+   }
+   identity ROUTER_INFORMATION {
+     base "OSPF_OPAQUE_LSA_TYPE";
+     description
+       "The Router Information LSA is used by an OSPFv2 system to announce\nopti"+
+       "onal capabilities of the local system, over and above those that\nare "+
+       "included within the OSPF hello message field.  The flooding scope\nof "+
+       "the LSA can be link-, area-, or AS-wide (i.e., the LSA type can\nbe 9, "+
+       "10 or 11).";
+     reference
+       "RFC7770";
+   }
+   identity OSPFV2_EXTENDED_PREFIX {
+     base "OSPF_OPAQUE_LSA_TYPE";
+     description
+       "The Extended Prefix LSA is used in OSPFv2 to carry a set of attributes\n"+
+       "that are to be associated with a prefix that is advertised in OSPF. "+
+       "The\nattributes are carried as one or more TLV tuples. The flooding "+
+       "scope\nof the LSA can be link-, area-, or AS-wide as specified by "+
+       "the\nadvertising system. The flooding scope of the LSA may exceed the "+
+       "scope\nof the corresponding prefix.";
+     reference
+       "RFC7684";
+   }
+   identity OSPFV2_EXTENDED_LINK {
+     base "OSPF_OPAQUE_LSA_TYPE";
+     description
+       "The Extended Link LSA is used in OSPFv2 to carry a set of attributes\nth"+
+       "at are to be associated with a link that is advertised in OSPF. "+
+       "The\nlink attributes are carried as one or more TLV tuples. The "+
+       "flooding\nscope of the link LSA is area-local - i.e., it is carried in a"+
+       " Type 10\nopaque LSA.";
+     reference
+       "RFC7684";
+   }
+   identity OSPF_TE_LSA_TLV_TYPE {
+     description
+       "This identity is the base used for the type field of TLVs that "+
+       "are\nincluded within the Traffic Engineering Opaque LSA.";
+   }
+   identity TE_ROUTER_ADDRESS {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "A stable IP address of the advertising router that is always reachable\n"+
+       "if the node has connectivity.";
+   }
+   identity TE_LINK {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "A single link within a traffic engineering topology. A set of sub-TLVs\n"+
+       "are carried within this attribute to indicate traffic engineering\nchara"+
+       "cteristics of the link.";
+   }
+   identity TE_ROUTER_IPV6_ADDRESS {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "A stable IPv6 address of the advertising router that is always\nreachabl"+
+       "e if the node has connectivity. This TLV is used only with\nOSPFv3";
+     reference
+       "RFC5329";
+   }
+   identity TE_LINK_LOCAL {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "Attributes associated with the local link by the system.";
+     reference
+       "RFC4203";
+   }
+   identity TE_NODE_ATTRIBUTE {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "Attributes associted with the local system";
+     reference
+       "RFC5786";
+   }
+   identity TE_OPTICAL_NODE_PROPERTY {
+     base "OSPF_TE_LSA_TLV_TYPE";
+     description
+       "Attributes associated with the local optical node. A set of sub-TLVs\nar"+
+       "e carried within this TLV which are used within the GMPLS control\nplane"+
+       " when using OSPF";
+   }
+   identity OSPF_TE_LINK_TLV_TYPE {
+     description
+       "This identity is the based used for the type field for sub-TLVs of "+
+       "the\nLink TLV of the OSPF Traffic Engineering Opaque LSA";
+   }
+   identity TE_LINK_TYPE {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Link Type sub-TLV appears exactly once per OSPF-TE Link\nand"+
+       " describes the type of the link";
+   }
+   identity TE_LINK_ID {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Link ID sub-TLV appears exactly once per OSPF-TE link "+
+       "and\nidentifies the remote end of the link.";
+   }
+   identity TE_LINK_LOCAL_IP {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Local IP specifies a list of the interface addresses of "+
+       "the\nlocal system corresponding to the traffic engineering link.";
+   }
+   identity TE_LINK_REMOTE_IP {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Remote IP specifies a list of IP addresses of the remote\nne"+
+       "ighbors associated with the traffic engineering link.";
+   }
+   identity TE_LINK_METRIC {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Metric specifies the link metric for traffic engineering\npu"+
+       "rposes";
+   }
+   identity TE_LINK_MAXIMUM_BANDWIDTH {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Maximum Bandwidth specifies the maximum bandwidth of "+
+       "the\nlink that it is associated with.";
+   }
+   identity TE_LINK_MAXIMUM_RESERVABLE_BANDWIDTH {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE Maximum Reservable Bandwidth specifies the maximum\nbandwidt"+
+       "h that may be reserved on the link in bytes per second";
+   }
+   identity TE_LINK_UNRESERVED_BANDWIDTH {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE unreserved bandwidth indicates the amount of bandwidth\nat "+
+       "each priority level that is currently not reserved";
+   }
+   identity TE_LINK_ADMIN_GROUP {
+     base "OSPF_TE_LINK_TLV_TYPE";
+     description
+       "The OSPF-TE administrative group indicates the administrative group\ntha"+
+       "t the is assigned to the interface";
+   }
+   identity TE_NODE_ATTRIBUTE_TLV_TYPE {
+     description
+       "This identity forms the base for sub-TLVs of the Node Attribute TLV\nof "+
+       "the Traffic Engineering LSA";
+   }
+   identity NODE_IPV4_LOCAL_ADDRESS {
+     base "TE_NODE_ATTRIBUTE_TLV_TYPE";
+     description
+       "The Node Attribute Sub-TLV contains a list of the IPv4 addresses of\nthe"+
+       " local system";
+   }
+   identity NODE_IPV6_LOCAL_ADDRESS {
+     base "TE_NODE_ATTRIBUTE_TLV_TYPE";
+     description
+       "The Node Attribute Sub-TLV contains a list of the IPv6 addresses of\nthe"+
+       " local system";
+   }
+   identity GRACE_LSA_TLV_TYPES {
+     description
+       "This identity is used as the base for TLVs within the Grace LSA";
+   }
+   identity GRACE_PERIOD {
+     base "GRACE_LSA_TLV_TYPES";
+     description
+       "This sub-TLV describes the period for which adjacencies should "+
+       "be\nmaintained with the restarting system";
+   }
+   identity GRACE_RESTART_REASON {
+     base "GRACE_LSA_TLV_TYPES";
+     description
+       "This sub-TLV describes the reason for the OSPF restart of the system\nth"+
+       "at is restarting";
+   }
+   identity GRACE_IP_INTERFACE_ADDRESS {
+     base "GRACE_LSA_TLV_TYPES";
+     description
+       "This sub-TLV specifies the restarting system's IP address on the\ninterf"+
+       "ace via which it is advertising the Grace LSA";
+   }
+   identity RI_LSA_TLV_TYPES {
+     description
+       "This identity is used as the base for the TLVs within the Router\nInform"+
+       "ation LSA";
+     reference
+       "RFC7770";
+   }
+   identity RI_INFORMATIONAL_CAPABILITIES {
+     base "RI_LSA_TLV_TYPES";
+     description
+       "Informational capabilities of the advertising system";
+     reference
+       "RFC7770";
+   }
+   identity RI_FUNCTIONAL_CAPABILITIES {
+     base "RI_LSA_TLV_TYPES";
+     description
+       "Functional capabilities of the advertising system";
+     reference
+       "RFC7770";
+   }
+   identity RI_NODE_ADMIN_TAG {
+     base "RI_LSA_TLV_TYPES";
+     description
+       "Operator-defined administrative tags associated with the advertising\nsy"+
+       "stem";
+     reference
+       "RFC7777";
+   }
+   identity RI_SR_SID_LABEL_RANGE {
+     base "RI_LSA_TLV_TYPES";
+     description
+       "SID or Label ranges for use with segment routing when forwarding to\nthe"+
+       " advertising system";
+     reference
+       "draft-ietf-ospf-segment-routing-extensions";
+   }
+   identity RI_SR_ALGORITHM {
+     base "RI_LSA_TLV_TYPES";
+     description
+       "The algorithms that are supported for segment routing by the\nadvertisin"+
+       "g system";
+     reference
+       "draft-ietf-ospf-segment-routing-extensions";
+   }
+   identity SR_ALGORITHM {
+     description
+       "This identity is used as a base for the algorithms that can be\nsupporte"+
+       "d for segment routing and are advertised by a system in the RI\nLSA";
+   }
+   identity SPF {
+     base "SR_ALGORITHM";
+     description
+       "The standard shortest path algorithm based on link metric,\nas used by "+
+       "the OSPF protocol";
+   }
+   identity STRICT_SPF {
+     base "SR_ALGORITHM";
+     description
+       "The standard shortest path algorithm based on link metric, with "+
+       "the\nrequirement that all nodes along the path honor the SPF decision. "+
+       "That\nis to say that the SPF decision cannot be altered by local policy "+
+       "at\nthe node";
+   }
+   identity OSPF_RI_SR_SID_LABEL_TLV_TYPES {
+     description
+       "This identity is used as a base for the sub-TLVs of the Segment\nRouting"+
+       " SID/Label Range TLV";
+   }
+   identity SR_SID_LABEL_TLV {
+     base "OSPF_RI_SR_SID_LABEL_TLV_TYPES";
+     description
+       "A range of SID/Label values used by the local system";
+     reference
+       "draft-ietf-ospf-segment-routing-extensions";
+   }
+   identity OSPFV2_ROUTER_LINK_TYPE {
+     description
+       "OSPFv2 Router Link Types as per the IANA registry defined in\nRFC2740";
+   }
+   identity POINT_TO_POINT_LINK {
+     base "OSPFV2_ROUTER_LINK_TYPE";
+     description
+       "The link is a point-to-point connection to another router";
+   }
+   identity TRANSIT_NETWORK_LINK {
+     base "OSPFV2_ROUTER_LINK_TYPE";
+     description
+       "The link is a connection to a transit network";
+   }
+   identity STUB_NETWORK_LINK {
+     base "OSPFV2_ROUTER_LINK_TYPE";
+     description
+       "The link is a connection to a stub network";
+   }
+   identity VIRTUAL_LINK {
+     base "OSPFV2_ROUTER_LINK_TYPE";
+     description
+       "The link is a virtual connection to another router";
+   }
+   identity OSPFV2_EXTENDED_PREFIX_SUBTLV_TYPE {
+     description
+       "Sub-TLVs of the OSPFv2 Extended Prefix LSA as defined by\nRFC7684";
+   }
+   identity EXTENDED_PREFIX_RANGE {
+     base "OSPFV2_EXTENDED_PREFIX_SUBTLV_TYPE";
+     description
+       "The attributes being described relate to a range of prefixes";
+   }
+   identity PREFIX_SID {
+     base "OSPFV2_EXTENDED_PREFIX_SUBTLV_TYPE";
+     description
+       "The TLV describes a Segment Routing Prefix Segment Identifier\nassociate"+
+       "d with a prefix";
+   }
+   identity SID_LABEL_BINDING {
+     base "OSPFV2_EXTENDED_PREFIX_SUBTLV_TYPE";
+     description
+       "The TLV describes a binding of a SID to a path to the prefix,\nwhich may"+
+       " have associated path characteristics";
+   }
+   identity OSPFV2_EXTENDED_PREFIX_SID_LABEL_BINDING_SUBTLV_TYPE {
+     description
+       "Sub-TLV types carried in the SID/Label Binding Sub-TLV of\nthe Extended "+
+       "Prefix Sub-TLV";
+   }
+   identity SID_MPLS_LABEL_BINDING {
+     base "OSPFV2_EXTENDED_PREFIX_SID_LABEL_BINDING_SUBTLV_TYPE";
+     description
+       "This sub-TLV indicates a binding between an SR SID and an\nMPLS label "+
+       "and must be present in the sub-TLV";
+   }
+   identity ERO_METRIC {
+     base "OSPFV2_EXTENDED_PREFIX_SID_LABEL_BINDING_SUBTLV_TYPE";
+     description
+       "This sub-TLV indicates the cost of the ERO path being\nadvertised in the"+
+       " SID/Label TLV";
+   }
+   identity ERO_PATH {
+     base "OSPFV2_EXTENDED_PREFIX_SID_LABEL_BINDING_SUBTLV_TYPE";
+     description
+       "This sub-TLV indicates the path associated with an ERO\nbeing advertised"+
+       " in the SID/Label TLV";
+   }
+   identity OSPFV2_EXTPREFIX_BINDING_ERO_PATH_SEGMENT_TYPE {
+     description
+       "The types of segment included within an ERO Path described\nwithin the "+
+       "SID/Label binding sub-TLV";
+   }
+   identity IPV4_SEGMENT {
+     base "OSPFV2_EXTPREFIX_BINDING_ERO_PATH_SEGMENT_TYPE";
+     description
+       "The segment is specified as an IPv4 address";
+   }
+   identity UNNUMBERED_INTERFACE_SEGMENT {
+     base "OSPFV2_EXTPREFIX_BINDING_ERO_PATH_SEGMENT_TYPE";
+     description
+       "The segment is specified as an unnumbered interface of\na remote system";
+   }
+   identity OSPFV2_EXTENDED_LINK_SUBTLV_TYPE {
+     description
+       "Sub-TLVs of the Extended Link TLV for OSPFv2";
+   }
+   identity ADJACENCY_SID {
+     base "OSPFV2_EXTENDED_LINK_SUBTLV_TYPE";
+     description
+       "The extended link sub-TLV indicates an Adjacency SID";
+   }
+   identity MAX_METRIC_TRIGGER {
+     description
+       "Triggers which cause the maximum metric to be set for\nentities "+
+       "advertised in OSPF";
+   }
+   identity MAX_METRIC_ON_SYSTEM_BOOT {
+     base "MAX_METRIC_TRIGGER";
+     description
+       "Set the maximum metric when the system boots.";
+   }
+   identity MAX_METRIC_INCLUDE {
+     description
+       "Entities that may optionally be included when advertising\nthe maximum "+
+       "metric.";
+   }
+   identity MAX_METRIC_INCLUDE_STUB {
+     base "MAX_METRIC_INCLUDE";
+     description
+       "Include stub networks when advertising the maximum metric.";
+   }
+   identity MAX_METRIC_INCLUDE_TYPE2_EXTERNAL {
+     base "MAX_METRIC_INCLUDE";
+     description
+       "Include OSPF Type 2 external routes when advertising\nthe maximum "+
+       "metric.";
+   }
+ }
+

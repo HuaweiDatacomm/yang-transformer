@@ -1,0 +1,149 @@
+ submodule ietf-snmp-target {
+   belongs-to ietf-snmp {
+     prefix "snmp";
+   }
+   import ietf-inet-types {
+     prefix "inet";
+   }
+   include ietf-snmp-common;
+   organization
+     "IETF NETMOD (NETCONF Data Modeling Language) Working Group";
+   contact
+     "WG Web:   <http://tools.ietf.org/wg/netmod/>\nWG List:  <mailto:netmod@iet"+
+     "f.org>\nWG Chair: Thomas Nadeau\n          <mailto:tnadeau@lucidvision.com"+
+     ">\nWG Chair: Juergen Schoenwaelder\n          <mailto:j.schoenwaelder@jaco"+
+     "bs-university.de>\nEditor:   Martin Bjorklund\n          <mailto:mbj@tail-"+
+     "f.com>\nEditor:   Juergen Schoenwaelder\n          <mailto:j.schoenwaelder"+
+     "@jacobs-university.de>";
+   description
+     "This submodule contains a collection of YANG definitions\nfor configuring "+
+     "SNMP targets.\nCopyright (c) 2014 IETF Trust and the persons identified "+
+     "as\nauthors of the code.  All rights reserved.\nRedistribution and use in "+
+     "source and binary forms, with or\nwithout modification, is permitted "+
+     "pursuant to, and subject\nto the license terms contained in, the "+
+     "Simplified BSD License\nset forth in Section 4.c of the IETF Trust's Legal"+
+     " Provisions\nRelating to IETF Documents\n(http://trustee.ietf.org/license-"+
+     "info).\nThis version of this YANG module is part of RFC 7407; see\nthe RFC"+
+     " itself for full legal notices.";
+   reference
+     "RFC 3413: Simple Network Management Protocol (SNMP)\nApplications";
+   revision "2014-12-10" {
+     description
+       "Initial revision.";
+     reference
+       "RFC 7407: A YANG Data Model for SNMP Configuration";
+   }
+   augment "/snmp:snmp" {
+     list target {
+       key "name";
+       description
+         "List of targets.";
+       reference
+         "RFC 3413: Simple Network Management Protocol (SNMP)\nApplications.\nSN"+
+         "MP-TARGET-MIB.snmpTargetAddrTable";
+       leaf name {
+         type "snmp:identifier";
+         description
+           "Identifies the target.";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP)\nApplications.\n"+
+           "SNMP-TARGET-MIB.snmpTargetAddrName";
+       }
+       choice transport {
+         mandatory "true";
+         description
+           "Transport address of the target.\nThe snmpTargetAddrTDomain and "+
+           "snmpTargetAddrTAddress\nobjects are mapped to transport-specific "+
+           "YANG nodes.  Each\ntransport is configured as a separate case in "+
+           "this\nchoice.  Submodules providing configuration for additional\ntr"+
+           "ansports are expected to augment this choice.";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP)\nApplications.\n"+
+           "SNMP-TARGET-MIB.snmpTargetAddrTDomain\nSNMP-TARGET-MIB.snmpTargetAdd"+
+           "rTAddress";
+         case udp {
+           reference
+             "RFC 3417: Transport Mappings for the Simple Network\nManagement "+
+             "Protocol (SNMP).\nSNMPv2-TM.snmpUDPDomain\nRFC 3419: Textual "+
+             "Conventions for Transport Addresses.\n  TRANSPORT-ADDRESS-MIB.tran"+
+             "sportDomainUdpIpv4\n  TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv4"+
+             "z\n  TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv6\n  TRANSPORT-ADD"+
+             "RESS-MIB.transportDomainUdpIpv6z";
+           container udp {
+             leaf ip {
+               type "inet:ip-address";
+               mandatory "true";
+               reference
+                 "RFC 3413: Simple Network Management Protocol (SNMP).\nSNMP-TAR"+
+                 "GET-MIB.snmpTargetAddrTAddress";
+             }
+             leaf port {
+               type "inet:port-number";
+               default "162";
+               description
+                 "UDP port number.";
+               reference
+                 "RFC 3413: Simple Network Management Protocol (SNMP).\nSNMP-TAR"+
+                 "GET-MIB.snmpTargetAddrTAddress";
+             }
+           }
+         }
+       }
+       leaf-list tag {
+         type "snmp:tag-value";
+         description
+           "List of tag values used to select target addresses.";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications."+
+           "\nSNMP-TARGET-MIB.snmpTargetAddrTagList";
+       }
+       leaf timeout {
+         type "uint32" {
+           range "100..180000";
+         }
+         units "0.01 seconds";
+         default "1500";
+         description
+           "Needed only if this target can receive\nInformRequest-PDUs.";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications."+
+           "\nSNMP-TARGET-MIB.snmpTargetAddrTimeout";
+       }
+       leaf retries {
+         type "uint8" {
+           range "0..10";
+         }
+         default "3";
+         description
+           "Needed only if this target can receive\nInformRequest-PDUs.";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications."+
+           "\nSNMP-TARGET-MIB.snmpTargetAddrRetryCount";
+       }
+       leaf target-params {
+         type "snmp:identifier";
+         mandatory "true";
+         reference
+           "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications."+
+           "\nSNMP-TARGET-MIB.snmpTargetAddrParams";
+       }
+     }
+     list target-params {
+       key "name";
+       description
+         "List of target parameters.";
+       reference
+         "RFC 3413: Simple Network Management Protocol (SNMP).\nApplications.\nS"+
+         "NMP-TARGET-MIB.snmpTargetParamsTable";
+       leaf name {
+         type "snmp:identifier";
+       }
+       choice params {
+         description
+           "This choice is augmented with case nodes containing\nconfiguration "+
+           "parameters specific to the security model.";
+       }
+     }
+   }
+ }
+
