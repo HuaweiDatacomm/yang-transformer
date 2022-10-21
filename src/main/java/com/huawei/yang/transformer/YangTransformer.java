@@ -234,11 +234,11 @@ public class YangTransformer {
                     }
                 }
                 if (isMultiInstance) {
-                    YangUnknown orig = (YangUnknown) target.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
-                    if (orig != null) {
-                        target.removeChild(orig);
-
-                    }
+//                    YangUnknown orig = (YangUnknown) target.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
+//                    if (orig != null) {
+//                        target.removeChild(orig);
+//
+//                    }
                 } else {
                     List<YangStatement> origs = target.getSubStatement(unknown.getYangKeyword());
                     if (!origs.isEmpty()) {
@@ -1410,10 +1410,17 @@ public class YangTransformer {
         try {
             YangSchemaContext schemaContext = YangYinParser.parse(yangDir);
             ValidatorResult validatorResult = schemaContext.validate();
-            //System.out.println(validatorResult);
+            if(!validatorResult.isOk()){
+                System.out.println("[WARNING]failed to parse the source yang files.");
+                System.out.println(validatorResult);
+            }
             if(noDeviations){
                 transform(schemaContext);
                 validatorResult = schemaContext.validate();
+                if(!validatorResult.isOk()){
+                    System.out.println("[WARNING]failed to transform the source yang files.");
+                    System.out.println(validatorResult);
+                }
             }
 
             //System.out.println(validatorResult);
@@ -1493,7 +1500,11 @@ public class YangTransformer {
             }
             YangSchemaContext outSchemaContext = YangYinParser.parse(outDir);
             validatorResult = outSchemaContext.validate();
-            System.out.println(validatorResult);
+            if(!validatorResult.isOk()){
+                System.out.println("[WARNING]failed to parse the transformed yang files.");
+                System.out.println(validatorResult);
+            }
+            System.out.println("[INFO] The source yang files have been transformed, the reuslt is in dir:"+ outDir);
 
         } catch (IOException e) {
             e.printStackTrace();
