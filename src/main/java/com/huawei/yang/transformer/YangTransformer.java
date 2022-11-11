@@ -103,7 +103,7 @@ public class YangTransformer {
             YangStatement yangStatement = (YangStatement) statement;
             String localArg = new FName(yangStatement.getArgStr()).getLocalName();
             yangStatement.setArgStr(
-                ((im != null) ? im.getPrefix().getArgStr() : originalModule.getMainModule().getSelfPrefix()) + ":" + localArg);
+                    ((im != null) ? im.getPrefix().getArgStr() : originalModule.getMainModule().getSelfPrefix()) + ":" + localArg);
 
             return linkageInfo;
         }
@@ -234,11 +234,11 @@ public class YangTransformer {
                     }
                 }
                 if (isMultiInstance) {
-//                    YangUnknown orig = (YangUnknown) target.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
-//                    if (orig != null) {
-//                        target.removeChild(orig);
-//
-//                    }
+                    //                    YangUnknown orig = (YangUnknown) target.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
+                    //                    if (orig != null) {
+                    //                        target.removeChild(orig);
+                    //
+                    //                    }
                 } else {
                     List<YangStatement> origs = target.getSubStatement(unknown.getYangKeyword());
                     if (!origs.isEmpty()) {
@@ -282,19 +282,19 @@ public class YangTransformer {
                 }
             }
             //if (hasInActiveDescendant(uses)) {
-                TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE, target, new ArrayList<>());
-                transformerResult.addStatement(null, schemaNode);
-                transformerResults.add(transformerResult);
-                uses.getRefGrouping().delReference(uses);
-                List<SchemaNode> schemaNodes = uses.getSchemaNodeChildren();
-                TransformerResult sonTransformerResult = new TransformerResult(TransformerType.ADD, target, new ArrayList<>());
-                YangStatement pre = uses;
-                for (SchemaNode sonSchemaNode : schemaNodes) {
-                    sonTransformerResult.addStatement(pre, sonSchemaNode);
-                    pre = sonSchemaNode;
-                }
-                transformerResults.add(sonTransformerResult);
-                //return transformerResults;
+            TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE, target, new ArrayList<>());
+            transformerResult.addStatement(null, schemaNode);
+            transformerResults.add(transformerResult);
+            uses.getRefGrouping().delReference(uses);
+            List<SchemaNode> schemaNodes = uses.getSchemaNodeChildren();
+            TransformerResult sonTransformerResult = new TransformerResult(TransformerType.ADD, target, new ArrayList<>());
+            YangStatement pre = uses;
+            for (SchemaNode sonSchemaNode : schemaNodes) {
+                sonTransformerResult.addStatement(pre, sonSchemaNode);
+                pre = sonSchemaNode;
+            }
+            transformerResults.add(sonTransformerResult);
+            //return transformerResults;
             //}
         }
         if(schemaNode instanceof SchemaNodeContainer){
@@ -332,9 +332,9 @@ public class YangTransformer {
             return true;
         } else if (statement instanceof SchemaNode){
             SchemaNode schemaNode = (SchemaNode) statement;
-//            if(!schemaNode.isActive()){
-//                return true;
-//            }
+            //            if(!schemaNode.isActive()){
+            //                return true;
+            //            }
         } else if(statement instanceof Type){
             Type type = (Type) statement;
             YangStatement parent = type.getParentStatement();
@@ -354,6 +354,503 @@ public class YangTransformer {
         }
         return null;
     }
+    private static boolean canMigrate(List<String> prefixes,Deviate deviate,Module curModule){
+        SchemaNode targetNode = deviate.getTarget();
+        if(targetNode == null){
+            return false;
+        }
+        boolean canMigrate = true;
+        for(String prefix:prefixes){
+            Optional<ModuleId> moduleOp = curModule.findModuleByPrefix(prefix);
+            if(moduleOp.isPresent()){
+                Namespace targetNs = targetNode.getContext().getNamespace();
+                List<Module> modules = targetNode.getContext().getSchemaContext()
+                        .getModule(targetNs.getUri());
+                if(modules.isEmpty()){
+                    canMigrate = false;
+                    break;
+                }
+                Module targetModule = modules.get(0);
+                Optional<Module> importModuleOp = curModule.getContext().getSchemaContext()
+                        .getModule(moduleOp.get());
+                if(!importModuleOp.isPresent()){
+                    canMigrate = false;
+                    break;
+                }
+                if(getImport(importModuleOp.get(),targetModule.getArgStr()) != null){
+                    //circle dependency
+                    canMigrate = false;
+                    break;
+                }
+            }
+        }
+        return canMigrate;
+    }
+    private static boolean transformDeviateAdd(List<TransformerResult> transformerResults,
+                                               Deviate deviate,Module curModule){
+        boolean deviateMigrate = true;
+        SchemaNode targetNode = deviate.getTarget();
+        TransformerResult delResult = new TransformerResult(TransformerType.DELETE,
+                deviate,new ArrayList<>());
+        transformerResults.add(delResult);
+        TransformerResult transformerResult = new TransformerResult(TransformerType.ADD,targetNode,new ArrayList<>());
+        transformerResults.add(transformerResult);
+        //must
+        List<Must> musts = deviate.getMusts();
+        if(musts.size() > 0){
+            for(Must must:musts){
+                YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
+                List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
+                //remove duplicate prefixes
+                List<String> prefixes = new ArrayList<>();
+                for(String prefix:result){
+                    if(prefixes.contains(prefix)){
+                        continue;
+                    }
+                    prefixes.add(prefix);
+                }
+                boolean canMigrate = canMigrate(prefixes,deviate,curModule);
+                if(canMigrate){
+                    transformerResult.addStatement(null,must);
+                    delResult.addStatement(null,must);
+                } else {
+                    deviateMigrate = false;
+                }
+
+            }
+        }
+        //default
+        List<Default> defaults = deviate.getDefaults();
+        if(!defaults.isEmpty()) {
+            for(Default dflt:defaults){
+                transformerResult.addStatement(null,dflt);
+                delResult.addStatement(null,dflt);
+            }
+        }
+        //mandatory
+        Mandatory mandatory = deviate.getMandatory();
+        if(mandatory != null){
+            transformerResult.addStatement(null,mandatory);
+            delResult.addStatement(null,mandatory);
+        }
+        //max-elements
+        MaxElements maxElements = deviate.getMaxElements();
+        if(maxElements != null){
+            transformerResult.addStatement(null,maxElements);
+            delResult.addStatement(null,maxElements);
+        }
+        //min-elements
+        MinElements minElements = deviate.getMinElements();
+        if(minElements != null){
+            transformerResult.addStatement(null,minElements);
+            delResult.addStatement(null,minElements);
+        }
+        //unique
+        List<Unique> uniques = deviate.getUniques();
+        if(!uniques.isEmpty()){
+            for(Unique unique:uniques){
+                transformerResult.addStatement(null,unique);
+                delResult.addStatement(null,unique);
+            }
+        }
+        //units
+        Units units = deviate.getUnits();
+        if(units != null){
+            transformerResult.addStatement(null,units);
+            delResult.addStatement(null,units);
+        }
+        //unknowns
+        List<YangUnknown> unknowns = deviate.getUnknowns();
+        if(!unknowns.isEmpty()){
+            for(YangUnknown unknown:unknowns){
+                transformerResult.addStatement(null,unknown);
+                delResult.addStatement(null,unknown);
+            }
+
+        }
+        return deviateMigrate;
+    }
+    private static boolean transformDeviateDelete(List<TransformerResult> transformerResults,
+                                                  Deviate deviate,Module curModule){
+        SchemaNode targetNode = deviate.getTarget();
+        TransformerResult delResult = new TransformerResult(TransformerType.DELETE,
+                deviate,new ArrayList<>());
+        transformerResults.add(delResult);
+        TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,targetNode,new ArrayList<>());
+        transformerResults.add(transformerResult);
+        //must
+        List<Must> musts = deviate.getMusts();
+        if(musts.size() > 0){
+            for(Must must:musts){
+                YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.MUST.getQName(),must.getArgStr());
+                if(targetStmt == null){
+                    continue;
+                }
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,must);
+            }
+        }
+        //default
+        List<Default> defaults = deviate.getDefaults();
+        if(!defaults.isEmpty()){
+            for(Default dflt: defaults){
+                YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.DEFAULT.getQName(),
+                        dflt.getArgStr());
+                if(targetStmt == null){
+                    continue;
+                }
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,dflt);
+            }
+        }
+        //mandatory
+        Mandatory mandatory = deviate.getMandatory();
+        if(mandatory != null){
+            YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.MANDATORY.getQName(),
+                    mandatory.getArgStr());
+            if(targetStmt != null){
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,mandatory);
+            }
+        }
+        //max-elements
+        MaxElements maxElements = deviate.getMaxElements();
+        if(maxElements != null){
+            YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.MAXELEMENTS.getQName(),
+                    maxElements.getArgStr());
+            if(targetStmt != null){
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,maxElements);
+            }
+        }
+        //min-elements
+        MinElements minElements = deviate.getMinElements();
+        if(minElements != null){
+            YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.MINELEMENTS.getQName(),
+                    minElements.getArgStr());
+            if(targetStmt != null){
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,minElements);
+            }
+        }
+        //unique
+        List<Unique> uniques = deviate.getUniques();
+        if(!uniques.isEmpty()){
+            for(Unique unique:uniques){
+                YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.UNIQUE.getQName(),
+                        unique.getArgStr());
+                if(targetStmt == null){
+                    continue;
+                }
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,unique);
+            }
+        }
+        //units
+        Units units = deviate.getUnits();
+        if(units != null){
+            YangStatement targetStmt = targetNode.getSubStatement(YangBuiltinKeyword.UNITS.getQName(),
+                    units.getArgStr());
+            if(targetStmt != null){
+                transformerResult.addStatement(null,targetStmt);
+                delResult.addStatement(null,units);
+            }
+        }
+        //unknowns
+        List<YangUnknown> unknowns = deviate.getUnknowns();
+        for(YangUnknown unknown:unknowns){
+            YangStatement targetStmt = targetNode.getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
+            if(targetStmt == null){
+                continue;
+            }
+            transformerResult.addStatement(null,targetStmt);
+            delResult.addStatement(null,unknown);
+        }
+        return true;
+    }
+    private static boolean transformDeviateReplace(List<TransformerResult> transformerResults,Deviate deviate,
+                                                   Module curModule){
+        SchemaNode targetNode = deviate.getTarget();
+        boolean deviateMigrate = true;
+        TransformerResult delResult = new TransformerResult(TransformerType.DELETE,
+                deviate,new ArrayList<>());
+        transformerResults.add(delResult);
+        //type
+        Type type = deviate.getType();
+        if(type != null){
+            List<YangStatement> targets = targetNode.getSubStatement(type.getYangKeyword());
+            if(!targets.isEmpty()){
+                YangStatement targetType = targets.get(0);
+                int pos = targetNode.getChildIndex(targetType);
+                targetNode.updateChild(pos,type);
+                if(type.isDerivedType() ||(type.getRestriction() instanceof Union)){
+                    String arg = type.getBuiltinType().getArgStr();
+                    Type newType = (Type) YangStatementRegister.getInstance().getYangStatementInstance(YangBuiltinKeyword.TYPE.getQName(), arg);
+                    List<YangStatement> subStatements = type.getEffectiveSubStatements();
+                    for(YangStatement subStatement:subStatements){
+                        newType.addChild(subStatement);
+                    }
+                    newType.setContext(new YangContext(targetNode.getContext()));
+                    //newType.init();
+                    //newType.build();
+                    targetNode.updateChild(pos,newType);
+                    if(type.isDerivedType()){
+                        TypedDataNode target = (TypedDataNode) targetNode;
+                        Typedef typedef = type.getDerived();
+                        //default
+                        boolean hasDefault =false;
+                        if(target instanceof Leaf){
+                            if(((Leaf) target).getDefault()!= null){
+                                hasDefault = true;
+                            }
+                        } else {
+                            LeafList leafList = (LeafList) target;
+                            if(!leafList.getDefaults().isEmpty()){
+                                hasDefault = true;
+                            }
+                        }
+                        if(!hasDefault){
+                            if(typedef.getDefault() != null){
+                                TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
+                                addTransformerResult.addStatement(null,typedef.getDefault());
+                                transformerResults.add(addTransformerResult);
+                            }
+                        }
+                        //units
+                        if((target.getUnits() == null) && (typedef.getUnits() != null)){
+                            TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
+                            addTransformerResult.addStatement(null,typedef.getUnits());
+                            transformerResults.add(addTransformerResult);
+                        }
+
+
+                    }
+                }
+                delResult.addStatement(null,type);
+            }
+
+        }
+        //config
+        Config config = deviate.getConfig();
+        if (config != null){
+            List<YangStatement> targetStmts = targetNode.getSubStatement(config.getYangKeyword());
+            if(targetStmts.isEmpty()){
+                TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
+                addTransformerResult.addStatement(null,config);
+                transformerResults.add(addTransformerResult);
+            }
+            else {
+                YangStatement targetStmt = targetStmts.get(0);
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,config);
+            }
+            delResult.addStatement(null,config);
+        }
+        //default
+        List<Default> defaults = deviate.getDefaults();
+        if(!defaults.isEmpty()){
+            if(targetNode instanceof LeafList){
+                for(Default dflt:defaults){
+                    YangStatement targetStmt = targetNode.getSubStatement(dflt.getYangKeyword(), dflt.getArgStr());
+                    if(targetStmt == null){
+                        continue;
+                    }
+                    int pos = targetNode.getChildIndex(targetStmt);
+                    targetNode.updateChild(pos,dflt);
+                    delResult.addStatement(null,dflt);
+                }
+            } else {
+                Default dflt = defaults.get(0);
+                List<YangStatement> targets = targetNode.getSubStatement(dflt.getYangKeyword());
+                if(!targets.isEmpty()){
+                    YangStatement targetStmt = targets.get(0);
+                    int pos = targetNode.getChildIndex(targetStmt);
+                    targetNode.updateChild(pos,dflt);
+                    delResult.addStatement(null,dflt);
+                }
+
+            }
+        }
+        //mandatory
+        Mandatory mandatory = deviate.getMandatory();
+        if(mandatory != null){
+            List<YangStatement> targets = targetNode.getSubStatement(mandatory.getYangKeyword());
+            if(!targets.isEmpty()){
+                YangStatement targetStmt = targets.get(0);
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,mandatory);
+                delResult.addStatement(null,mandatory);
+            }
+        }
+        //max-elements
+        MaxElements maxElements = deviate.getMaxElements();
+        if(maxElements != null){
+            List<YangStatement> targets = targetNode.getSubStatement(maxElements.getYangKeyword());
+            if(!targets.isEmpty()){
+                YangStatement targetStmt = targets.get(0);
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,maxElements);
+                delResult.addStatement(null,maxElements);
+            }
+
+        }
+        //min-elements
+        MinElements minElements = deviate.getMinElements();
+        if(minElements != null){
+            List<YangStatement> targets = targetNode.getSubStatement(minElements.getYangKeyword());
+            if(!targets.isEmpty()){
+                YangStatement targetStmt = targets.get(0);
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,minElements);
+                delResult.addStatement(null,minElements);
+            }
+
+        }
+        //units
+        Units units = deviate.getUnits();
+        if(units != null){
+            List<YangStatement> targets = targetNode.getSubStatement(units.getYangKeyword());
+            if(!targets.isEmpty()){
+                YangStatement targetStmt = targets.get(0);
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,units);
+                delResult.addStatement(null,units);
+            }
+
+        }
+        //must
+        List<Must> musts = deviate.getMusts();
+        if(!musts.isEmpty()){
+            for(Must must:musts){
+                YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
+                List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
+                //remove duplicate prefixes
+                List<String> prefixes = new ArrayList<>();
+                for(String prefix:result){
+                    if(prefixes.contains(prefix)){
+                        continue;
+                    }
+                    prefixes.add(prefix);
+                }
+                boolean canMigrate = canMigrate(prefixes,deviate,curModule);
+                if(canMigrate){
+                    YangStatement targetStmt = targetNode.getSubStatement(must.getYangKeyword(),must.getArgStr());
+                    if(targetStmt == null){
+                        continue;
+                    }
+                    int pos = targetNode.getChildIndex(targetStmt);
+                    targetNode.updateChild(pos,must);
+                    delResult.addStatement(null,must);
+                } else {
+                    deviateMigrate = false;
+                }
+
+            }
+        }
+        //unique
+        List<Unique> uniques = deviate.getUniques();
+        if(!uniques.isEmpty()){
+            for(Unique unique:uniques){
+                YangStatement targetStmt = targetNode.getSubStatement(unique.getYangKeyword(),unique.getArgStr());
+                int pos = targetNode.getChildIndex(targetStmt);
+                targetNode.updateChild(pos,unique);
+                delResult.addStatement(null,unique);
+            }
+        }
+        //unknowns
+        List<YangUnknown> unknowns = deviate.getUnknowns();
+        if(!unknowns.isEmpty()){
+            YangSpecification yangSpecification = targetNode.getContext().getYangSpecification();
+            YangStatementDef statementDef = yangSpecification.getStatementDef(targetNode.getYangKeyword());
+
+            for(YangUnknown unknown:unknowns){
+                boolean multiInstance =true;
+                if(statementDef != null){
+                    Cardinality cardinality = statementDef.getSubStatementCardinality(unknown.getYangKeyword());
+                    if(cardinality != null && !cardinality.isUnbounded() && cardinality.getMaxElements() <=1){
+                        multiInstance = false;
+                    }
+                }
+                if(multiInstance){
+                    YangStatement targetStmt = targetNode.getSubStatement(unknown.getYangKeyword(),
+                            unknown.getArgStr());
+                    if(targetStmt == null){
+                        continue;
+                    }
+                    int pos = targetNode.getChildIndex(targetStmt);
+                    targetNode.updateChild(pos,unknown);
+                } else {
+                    List<YangStatement> targets = targetNode.getSubStatement(unknown.getYangKeyword());
+                    if(!targets.isEmpty()){
+                        YangStatement targetStmt = targets.get(0);
+                        int pos = targetNode.getChildIndex(targetStmt);
+                        targetNode.updateChild(pos,unknown);
+                    }
+                }
+                delResult.addStatement(null,unknown);
+            }
+        }
+        return deviateMigrate;
+    }
+    private static boolean transformDeviate(List<TransformerResult> transformerResults,
+                                            Deviate deviate,Module curModule){
+
+        SchemaNode targetNode = deviate.getTarget();
+        boolean deviateMigrate = true;
+        TransformerResult delResult = new TransformerResult(TransformerType.DELETE,
+                deviate,new ArrayList<>());
+        transformerResults.add(delResult);
+        switch (deviate.getDeviateType()){
+            case ADD:{
+                deviateMigrate = transformDeviateAdd(transformerResults,deviate,curModule);
+                break;
+            }
+            case DELETE:{
+                deviateMigrate = transformDeviateDelete(transformerResults,deviate,curModule);
+                break;
+            }
+            case REPLACE:{
+                deviateMigrate = transformDeviateReplace(transformerResults,deviate,curModule);
+                break;
+            }
+        }
+        if(deviateMigrate){
+            TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,
+                    deviate.getParentStatement(),new ArrayList<>());
+            transformerResult.addStatement(null,deviate);
+            transformerResults.add(transformerResult);
+        }
+        return deviateMigrate;
+    }
+
+    private static void transformDeviation(List<TransformerResult> transformerResults,Deviation deviation,Module curModule){
+        SchemaNode targetNode = deviation.getTarget();
+        if(targetNode == null){
+            return;
+        }
+        boolean deviationMigrate = true;
+        if (deviation.getDeviates().size() == 1) {
+            Deviate deviate = deviation.getDeviates().get(0);
+            if (deviate.getDeviateType() == DeviateType.NOT_SUPPORTED) {
+                TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE, deviation.getParentStatement(),
+                        new ArrayList<>());
+                transformerResult.addStatement(null, deviation);
+                transformerResults.add(transformerResult);
+                return;
+            }
+        }
+        for(Deviate deviate: deviation.getDeviates()){
+            boolean deviateMigrate = transformDeviate(transformerResults,deviate,curModule);
+            if(!deviateMigrate){
+                deviationMigrate = false;
+            }
+        }
+        if(deviationMigrate){
+            TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,deviation.getParentStatement(),new ArrayList<>());
+            transformerResult.addStatement(null,deviation);
+            transformerResults.add(transformerResult);
+        }
+    }
 
     /**
      * delete deviation(not-supported),inactive node, delete uses who has inactive descendent and add active node.
@@ -365,424 +862,7 @@ public class YangTransformer {
         List<TransformerResult> transformerResults = new ArrayList<>();
         if (statement instanceof Deviation) {
             Deviation deviation = (Deviation) statement;
-            SchemaNode targetNode = deviation.getTarget();
-            if(targetNode == null){
-                return transformerResults;
-            }
-            boolean deviationMigrate = true;
-            if (deviation.getDeviates().size() == 1) {
-                Deviate deviate = deviation.getDeviates().get(0);
-                if (deviate.getDeviateType() == DeviateType.NOT_SUPPORTED) {
-                    TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE, deviation.getParentStatement(),
-                        new ArrayList<>());
-                    transformerResult.addStatement(null, statement);
-                    transformerResults.add(transformerResult);
-                    return transformerResults;
-                }
-            }
-            for(Deviate deviate: deviation.getDeviates()){
-                boolean deviateMigrate = true;
-                TransformerResult delResult = new TransformerResult(TransformerType.DELETE,
-                        deviate,new ArrayList<>());
-                transformerResults.add(delResult);
-                switch (deviate.getDeviateType()){
-                    case ADD:{
-                        TransformerResult transformerResult = new TransformerResult(TransformerType.ADD,deviation.getTarget(),new ArrayList<>());
-                        transformerResults.add(transformerResult);
-                        //must
-                         List<Must> musts = deviate.getMusts();
-                         if(musts.size() > 0){
-                             for(Must must:musts){
-                                 YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
-                                 List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
-                                 //remove duplicate prefixes
-                                 List<String> prefixes = new ArrayList<>();
-                                 for(String prefix:result){
-                                     if(prefixes.contains(prefix)){
-                                         continue;
-                                     }
-                                     prefixes.add(prefix);
-                                 }
-                                 boolean canMigrate = true;
-                                 for(String prefix:prefixes){
-                                     Optional<ModuleId> moduleOp = curModule.findModuleByPrefix(prefix);
-                                     if(moduleOp.isPresent()){
-                                         Namespace targetNs = targetNode.getContext().getNamespace();
-                                         List<Module> modules = targetNode.getContext().getSchemaContext()
-                                                 .getModule(targetNs.getUri());
-                                         if(modules.isEmpty()){
-                                             canMigrate = false;
-                                             break;
-                                         }
-                                         Module targetModule = modules.get(0);
-                                         Optional<Module> importModuleOp = curModule.getContext().getSchemaContext()
-                                                 .getModule(moduleOp.get());
-                                         if(!importModuleOp.isPresent()){
-                                             canMigrate = false;
-                                             break;
-                                         }
-                                         if(getImport(importModuleOp.get(),targetModule.getArgStr()) != null){
-                                             //circle dependency
-                                             canMigrate = false;
-                                             break;
-                                         }
-                                     }
-                                 }
-                                 if(canMigrate){
-                                     transformerResult.addStatement(null,must);
-                                     delResult.addStatement(null,must);
-                                 } else {
-                                     deviateMigrate = false;
-                                 }
-
-                             }
-                         }
-                         //default
-                        List<Default> defaults = deviate.getDefaults();
-                        if(!defaults.isEmpty()) {
-                            for(Default dflt:defaults){
-                                transformerResult.addStatement(null,dflt);
-                                delResult.addStatement(null,dflt);
-                            }
-                        }
-                        //mandatory
-                        Mandatory mandatory = deviate.getMandatory();
-                        if(mandatory != null){
-                            transformerResult.addStatement(null,mandatory);
-                            delResult.addStatement(null,mandatory);
-                        }
-                        //max-elements
-                        MaxElements maxElements = deviate.getMaxElements();
-                        if(maxElements != null){
-                            transformerResult.addStatement(null,maxElements);
-                            delResult.addStatement(null,maxElements);
-                        }
-                        //min-elements
-                        MinElements minElements = deviate.getMinElements();
-                        if(minElements != null){
-                            transformerResult.addStatement(null,minElements);
-                            delResult.addStatement(null,minElements);
-                        }
-                        //unique
-                        List<Unique> uniques = deviate.getUniques();
-                        if(!uniques.isEmpty()){
-                            for(Unique unique:uniques){
-                                transformerResult.addStatement(null,unique);
-                                delResult.addStatement(null,unique);
-                            }
-                        }
-                        //units
-                        Units units = deviate.getUnits();
-                        if(units != null){
-                            transformerResult.addStatement(null,units);
-                            delResult.addStatement(null,units);
-                        }
-                        //unknowns
-                        List<YangUnknown> unknowns = deviate.getUnknowns();
-                        if(!unknowns.isEmpty()){
-                            for(YangUnknown unknown:unknowns){
-                                transformerResult.addStatement(null,unknown);
-                                delResult.addStatement(null,unknown);
-                            }
-
-                        }
-                        break;
-                    }
-                    case DELETE:{
-                        TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,deviation.getTarget(),new ArrayList<>());
-                        transformerResults.add(transformerResult);
-                        //must
-                        List<Must> musts = deviate.getMusts();
-                        if(musts.size() > 0){
-                            for(Must must:musts){
-                                YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.MUST.getQName(),must.getArgStr());
-                                transformerResult.addStatement(null,targetStmt);
-                                delResult.addStatement(null,must);
-                            }
-                        }
-                        //default
-                        List<Default> defaults = deviate.getDefaults();
-                        if(!defaults.isEmpty()){
-                            for(Default dflt: defaults){
-                                YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.DEFAULT.getQName(),
-                                        dflt.getArgStr());
-                                transformerResult.addStatement(null,targetStmt);
-                                delResult.addStatement(null,dflt);
-                            }
-                        }
-                        //mandatory
-                        Mandatory mandatory = deviate.getMandatory();
-                        if(mandatory != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.MANDATORY.getQName(),
-                                    mandatory.getArgStr());
-                            transformerResult.addStatement(null,targetStmt);
-                            delResult.addStatement(null,mandatory);
-                        }
-                        //max-elements
-                        MaxElements maxElements = deviate.getMaxElements();
-                        if(maxElements != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.MAXELEMENTS.getQName(),
-                                    maxElements.getArgStr());
-                            transformerResult.addStatement(null,targetStmt);
-                            delResult.addStatement(null,maxElements);
-                        }
-                        //min-elements
-                        MinElements minElements = deviate.getMinElements();
-                        if(minElements != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.MINELEMENTS.getQName(),
-                                    minElements.getArgStr());
-                            transformerResult.addStatement(null,targetStmt);
-                            delResult.addStatement(null,minElements);
-                        }
-                        //unique
-                        List<Unique> uniques = deviate.getUniques();
-                        if(!uniques.isEmpty()){
-                            for(Unique unique:uniques){
-                                YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.UNIQUE.getQName(),
-                                        unique.getArgStr());
-                                transformerResult.addStatement(null,targetStmt);
-                                delResult.addStatement(null,unique);
-                            }
-                        }
-                        //units
-                        Units units = deviate.getUnits();
-                        if(units != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(YangBuiltinKeyword.UNITS.getQName(),
-                                    units.getArgStr());
-                            transformerResult.addStatement(null,targetStmt);
-                            delResult.addStatement(null,units);
-                        }
-                        //unknowns
-                        List<YangUnknown> unknowns = deviate.getUnknowns();
-                        for(YangUnknown unknown:unknowns){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(unknown.getYangKeyword(), unknown.getArgStr());
-                            transformerResult.addStatement(null,targetStmt);
-                            delResult.addStatement(null,unknown);
-                        }
-                        break;
-                    }
-                    case REPLACE:{
-                        //type
-                        Type type = deviate.getType();
-                        if(type != null){
-                            YangStatement targetType = deviation.getTarget().getSubStatement(type.getYangKeyword()).get(0);
-                            int pos = deviation.getTarget().getChildIndex(targetType);
-                            deviation.getTarget().updateChild(pos,type);
-                            if(type.isDerivedType() ||(type.getRestriction() instanceof Union)){
-                                String arg = type.getBuiltinType().getArgStr();
-                                Type newType = (Type) YangStatementRegister.getInstance().getYangStatementInstance(YangBuiltinKeyword.TYPE.getQName(), arg);
-                                List<YangStatement> subStatements = type.getEffectiveSubStatements();
-                                for(YangStatement subStatement:subStatements){
-                                    newType.addChild(subStatement);
-                                }
-                                newType.setContext(new YangContext(deviation.getTarget().getContext()));
-                                //newType.init();
-                                //newType.build();
-                                deviation.getTarget().updateChild(pos,newType);
-                                if(type.isDerivedType()){
-                                    TypedDataNode target = (TypedDataNode) deviation.getTarget();
-                                    Typedef typedef = type.getDerived();
-                                    //default
-                                    boolean hasDefault =false;
-                                    if(target instanceof Leaf){
-                                        if(((Leaf) target).getDefault()!= null){
-                                            hasDefault = true;
-                                        }
-                                    } else {
-                                        LeafList leafList = (LeafList) target;
-                                        if(!leafList.getDefaults().isEmpty()){
-                                            hasDefault = true;
-                                        }
-                                    }
-                                    if(!hasDefault){
-                                        if(typedef.getDefault() != null){
-                                            TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
-                                            addTransformerResult.addStatement(null,typedef.getDefault());
-                                            transformerResults.add(addTransformerResult);
-                                        }
-                                    }
-                                    //units
-                                    if((target.getUnits() == null) && (typedef.getUnits() != null)){
-                                        TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
-                                        addTransformerResult.addStatement(null,typedef.getUnits());
-                                        transformerResults.add(addTransformerResult);
-                                    }
-
-
-                                }
-                            }
-                            delResult.addStatement(null,type);
-                        }
-                        //config
-                        Config config = deviate.getConfig();
-                        if (config != null){
-                            List<YangStatement> targetStmts = deviation.getTarget().getSubStatement(config.getYangKeyword());
-                            if(targetStmts.isEmpty()){
-                                TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, deviation.getTarget(),new ArrayList<>());
-                                addTransformerResult.addStatement(null,config);
-                                transformerResults.add(addTransformerResult);
-                            }
-                            else {
-                                YangStatement targetStmt = targetStmts.get(0);
-                                int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                deviation.getTarget().updateChild(pos,config);
-                            }
-                            delResult.addStatement(null,config);
-                        }
-                        //default
-                        List<Default> defaults = deviate.getDefaults();
-                        if(!defaults.isEmpty()){
-                            if(deviation.getTarget() instanceof LeafList){
-                                for(Default dflt:defaults){
-                                    YangStatement targetStmt = deviation.getTarget().getSubStatement(dflt.getYangKeyword(), dflt.getArgStr());
-                                    int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                    deviation.getTarget().updateChild(pos,dflt);
-                                    delResult.addStatement(null,dflt);
-                                }
-                            } else {
-                                Default dflt = defaults.get(0);
-                                YangStatement targetStmt = deviation.getTarget().getSubStatement(dflt.getYangKeyword()).get(0);
-                                int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                deviation.getTarget().updateChild(pos,dflt);
-                                delResult.addStatement(null,dflt);
-                            }
-                        }
-                        //mandatory
-                        Mandatory mandatory = deviate.getMandatory();
-                        if(mandatory != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(mandatory.getYangKeyword()).get(0);
-                            int pos = deviation.getTarget().getChildIndex(targetStmt);
-                            deviation.getTarget().updateChild(pos,mandatory);
-                            delResult.addStatement(null,mandatory);
-                        }
-                        //max-elements
-                        MaxElements maxElements = deviate.getMaxElements();
-                        if(maxElements != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(maxElements.getYangKeyword()).get(0);
-                            int pos = deviation.getTarget().getChildIndex(targetStmt);
-                            deviation.getTarget().updateChild(pos,maxElements);
-                            delResult.addStatement(null,maxElements);
-                        }
-                        //min-elements
-                        MinElements minElements = deviate.getMinElements();
-                        if(minElements != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(minElements.getYangKeyword()).get(0);
-                            int pos = deviation.getTarget().getChildIndex(targetStmt);
-                            deviation.getTarget().updateChild(pos,minElements);
-                            delResult.addStatement(null,minElements);
-                        }
-                        //units
-                        Units units = deviate.getUnits();
-                        if(units != null){
-                            YangStatement targetStmt = deviation.getTarget().getSubStatement(units.getYangKeyword()).get(0);
-                            int pos = deviation.getTarget().getChildIndex(targetStmt);
-                            deviation.getTarget().updateChild(pos,units);
-                            delResult.addStatement(null,units);
-                        }
-                        //must
-                        List<Must> musts = deviate.getMusts();
-                        if(!musts.isEmpty()){
-                            for(Must must:musts){
-                                YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
-                                List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
-                                //remove duplicate prefixes
-                                List<String> prefixes = new ArrayList<>();
-                                for(String prefix:result){
-                                    if(prefixes.contains(prefix)){
-                                        continue;
-                                    }
-                                    prefixes.add(prefix);
-                                }
-                                boolean canMigrate = true;
-                                for(String prefix:prefixes){
-                                    Optional<ModuleId> moduleOp = curModule.findModuleByPrefix(prefix);
-                                    if(moduleOp.isPresent()){
-                                        Namespace targetNs = targetNode.getContext().getNamespace();
-                                        List<Module> modules = targetNode.getContext().getSchemaContext()
-                                                .getModule(targetNs.getUri());
-                                        if(modules.isEmpty()){
-                                            canMigrate = false;
-                                            break;
-                                        }
-                                        Module targetModule = modules.get(0);
-                                        Optional<Module> importModuleOp = curModule.getContext().getSchemaContext()
-                                                .getModule(moduleOp.get());
-                                        if(!importModuleOp.isPresent()){
-                                            canMigrate = false;
-                                            break;
-                                        }
-                                        if(getImport(importModuleOp.get(),targetModule.getArgStr()) != null){
-                                            //circle dependency
-                                            canMigrate = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if(canMigrate){
-                                    YangStatement targetStmt = deviation.getTarget().getSubStatement(must.getYangKeyword(),must.getArgStr());
-                                    int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                    deviation.getTarget().updateChild(pos,must);
-                                    delResult.addStatement(null,must);
-                                } else {
-                                    deviateMigrate = false;
-                                }
-
-                            }
-                        }
-                        //unique
-                        List<Unique> uniques = deviate.getUniques();
-                        if(!uniques.isEmpty()){
-                            for(Unique unique:uniques){
-                                YangStatement targetStmt = deviation.getTarget().getSubStatement(unique.getYangKeyword(),unique.getArgStr());
-                                int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                deviation.getTarget().updateChild(pos,unique);
-                                delResult.addStatement(null,unique);
-                            }
-                        }
-                        //unknowns
-                        List<YangUnknown> unknowns = deviate.getUnknowns();
-                        if(!unknowns.isEmpty()){
-                            YangSpecification yangSpecification = deviation.getTarget().getContext().getYangSpecification();
-                            YangStatementDef statementDef = yangSpecification.getStatementDef(deviation.getTarget().getYangKeyword());
-
-                            for(YangUnknown unknown:unknowns){
-                                boolean multiInstance =true;
-                                if(statementDef != null){
-                                    Cardinality cardinality = statementDef.getSubStatementCardinality(unknown.getYangKeyword());
-                                    if(cardinality != null && !cardinality.isUnbounded() && cardinality.getMaxElements() <=1){
-                                        multiInstance = false;
-                                    }
-                                }
-                                if(multiInstance){
-                                    YangStatement targetStmt = deviation.getTarget().getSubStatement(unknown.getYangKeyword(),
-                                            unknown.getArgStr());
-                                    int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                    deviation.getTarget().updateChild(pos,unknown);
-                                } else {
-                                    YangStatement targetStmt = deviation.getTarget().getSubStatement(unknown.getYangKeyword()).get(0);
-                                    int pos = deviation.getTarget().getChildIndex(targetStmt);
-                                    deviation.getTarget().updateChild(pos,unknown);
-                                }
-                                delResult.addStatement(null,unknown);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-                if(deviateMigrate){
-                    TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,deviation,new ArrayList<>());
-                    transformerResult.addStatement(null,deviate);
-                    transformerResults.add(transformerResult);
-                } else {
-                    deviationMigrate = false;
-                }
-            }
-            if(deviationMigrate){
-                TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,deviation.getParentStatement(),new ArrayList<>());
-                transformerResult.addStatement(null,deviation);
-                transformerResults.add(transformerResult);
-            }
+            transformDeviation(transformerResults,deviation,curModule);
 
         } else if (statement instanceof SchemaNode) {
             SchemaNode schemaNode = (SchemaNode) statement;
@@ -917,7 +997,8 @@ public class YangTransformer {
                 return transformerResults;
             }
         } else if(statement instanceof Augment || statement instanceof Input || statement instanceof Output){
-            if(statement.getSubElements().size() == 0){
+            SchemaNodeContainer schemaNodeContainer = (SchemaNodeContainer) statement;
+            if(schemaNodeContainer.getEffectiveSchemaNodeChildren().size() == 0){
                 TransformerResult transformerResult = new TransformerResult(TransformerType.DELETE,statement.getParentStatement(),new ArrayList<>());
                 transformerResult.addStatement(null,statement);
                 transformerResults.add(transformerResult);
@@ -1271,8 +1352,6 @@ public class YangTransformer {
         procTransformerResult(transformerResults);
         transformStmt(schemaContext);
         transformLinkage(schemaContext);
-
-
     }
 
     /**
@@ -1337,7 +1416,7 @@ public class YangTransformer {
                     System.out.println("duplicate reserve type parameter.");
                     break;
                 }
-               tailorType = TailorType.MODULE;
+                tailorType = TailorType.MODULE;
             } else if(args[i].equals("--namespace")){
                 if(!hasTailor){
                     paraError = true;
@@ -1417,10 +1496,10 @@ public class YangTransformer {
             if(noDeviations){
                 transform(schemaContext);
                 validatorResult = schemaContext.validate();
-                if(!validatorResult.isOk()){
-                    System.out.println("[WARNING]failed to transform the source yang files.");
-                    System.out.println(validatorResult);
-                }
+                // if(!validatorResult.isOk()){
+                //     System.out.println("[WARNING]failed to transform the source yang files.");
+                //     System.out.println(validatorResult);
+                // }
             }
 
             //System.out.println(validatorResult);
@@ -1447,7 +1526,7 @@ public class YangTransformer {
             transformUnUsed(transformedContext);
             //transformUnUsedLinkage(transformedContext);
             //validatorResult = transformedContext.validate();
-           // System.out.println(validatorResult);
+            // System.out.println(validatorResult);
             if(hasTailor){
                 if(onlyHuaweiNative){
                     MatchRule nativeRule = new MatchRule("huawei");
