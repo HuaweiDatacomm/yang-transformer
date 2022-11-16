@@ -11,6 +11,7 @@ import org.yangcentral.yangkit.model.api.schema.ModuleId;
 import org.yangcentral.yangkit.model.api.schema.YangSchemaContext;
 import org.yangcentral.yangkit.model.api.stmt.*;
 import org.yangcentral.yangkit.model.api.stmt.Module;
+import org.yangcentral.yangkit.model.api.stmt.type.Path;
 import org.yangcentral.yangkit.model.impl.stmt.DefaultYangUnknown;
 import org.yangcentral.yangkit.model.impl.stmt.ImportImpl;
 import org.yangcentral.yangkit.model.impl.stmt.IncludeImpl;
@@ -354,8 +355,39 @@ public class YangTransformer {
         }
         return null;
     }
-    private static boolean canMigrate(List<String> prefixes,Deviate deviate,Module curModule){
-        SchemaNode targetNode = deviate.getTarget();
+    private static boolean canMigrate(Type type,SchemaNode targetNode){
+        if(type.getRestriction() instanceof Union){
+            Union union = (Union) type.getRestriction();
+            for(Type subType:union.getTypes()){
+                if(!canMigrate(subType,targetNode)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        if(type.getRestriction() instanceof LeafRef){
+            LeafRef leafRef = (LeafRef) type.getRestriction();
+            Path refPath = leafRef.getEffectivePath();
+            return canMigrate(refPath,targetNode,refPath.getContext().getCurModule());
+        }
+        return true;
+    }
+    private static boolean canMigrate(XPathSupport xPathSupport,SchemaNode targetNode,Module curModule){
+        YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(xPathSupport,curModule);
+        List<String> result = prefixVisitor.visit(xPathSupport.getXPathExpression().getRootExpr(),xPathSupport);
+        //remove duplicate prefixes
+        List<String> prefixes = new ArrayList<>();
+        for(String prefix:result){
+            if(prefixes.contains(prefix)){
+                continue;
+            }
+            prefixes.add(prefix);
+        }
+        return canMigrate(prefixes,targetNode,curModule);
+    }
+
+    private static boolean canMigrate(List<String> prefixes,SchemaNode targetNode,Module curModule){
+
         if(targetNode == null){
             return false;
         }
@@ -399,17 +431,7 @@ public class YangTransformer {
         List<Must> musts = deviate.getMusts();
         if(musts.size() > 0){
             for(Must must:musts){
-                YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
-                List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
-                //remove duplicate prefixes
-                List<String> prefixes = new ArrayList<>();
-                for(String prefix:result){
-                    if(prefixes.contains(prefix)){
-                        continue;
-                    }
-                    prefixes.add(prefix);
-                }
-                boolean canMigrate = canMigrate(prefixes,deviate,curModule);
+                boolean canMigrate = canMigrate(must,targetNode,curModule);;
                 if(canMigrate){
                     transformerResult.addStatement(null,must);
                     delResult.addStatement(null,must);
@@ -578,56 +600,61 @@ public class YangTransformer {
         //type
         Type type = deviate.getType();
         if(type != null){
-            List<YangStatement> targets = targetNode.getSubStatement(type.getYangKeyword());
-            if(!targets.isEmpty()){
-                YangStatement targetType = targets.get(0);
-                int pos = targetNode.getChildIndex(targetType);
-                targetNode.updateChild(pos,type);
-                if(type.isDerivedType() ||(type.getRestriction() instanceof Union)){
-                    String arg = type.getBuiltinType().getArgStr();
-                    Type newType = (Type) YangStatementRegister.getInstance().getYangStatementInstance(YangBuiltinKeyword.TYPE.getQName(), arg);
-                    List<YangStatement> subStatements = type.getEffectiveSubStatements();
-                    for(YangStatement subStatement:subStatements){
-                        newType.addChild(subStatement);
-                    }
-                    newType.setContext(new YangContext(targetNode.getContext()));
-                    //newType.init();
-                    //newType.build();
-                    targetNode.updateChild(pos,newType);
-                    if(type.isDerivedType()){
-                        TypedDataNode target = (TypedDataNode) targetNode;
-                        Typedef typedef = type.getDerived();
-                        //default
-                        boolean hasDefault =false;
-                        if(target instanceof Leaf){
-                            if(((Leaf) target).getDefault()!= null){
-                                hasDefault = true;
-                            }
-                        } else {
-                            LeafList leafList = (LeafList) target;
-                            if(!leafList.getDefaults().isEmpty()){
-                                hasDefault = true;
-                            }
+            if(!canMigrate(type,targetNode)){
+                deviateMigrate = false;
+            } else {
+                List<YangStatement> targets = targetNode.getSubStatement(type.getYangKeyword());
+                if(!targets.isEmpty()){
+                    YangStatement targetType = targets.get(0);
+                    int pos = targetNode.getChildIndex(targetType);
+                    targetNode.updateChild(pos,type);
+                    if(type.isDerivedType() ||(type.getRestriction() instanceof Union)){
+                        String arg = type.getBuiltinType().getArgStr();
+                        Type newType = (Type) YangStatementRegister.getInstance().getYangStatementInstance(YangBuiltinKeyword.TYPE.getQName(), arg);
+                        List<YangStatement> subStatements = type.getEffectiveSubStatements();
+                        for(YangStatement subStatement:subStatements){
+                            newType.addChild(subStatement);
                         }
-                        if(!hasDefault){
-                            if(typedef.getDefault() != null){
+                        newType.setContext(new YangContext(targetNode.getContext()));
+                        //newType.init();
+                        //newType.build();
+                        targetNode.updateChild(pos,newType);
+                        if(type.isDerivedType()){
+                            TypedDataNode target = (TypedDataNode) targetNode;
+                            Typedef typedef = type.getDerived();
+                            //default
+                            boolean hasDefault =false;
+                            if(target instanceof Leaf){
+                                if(((Leaf) target).getDefault()!= null){
+                                    hasDefault = true;
+                                }
+                            } else {
+                                LeafList leafList = (LeafList) target;
+                                if(!leafList.getDefaults().isEmpty()){
+                                    hasDefault = true;
+                                }
+                            }
+                            if(!hasDefault){
+                                if(typedef.getDefault() != null){
+                                    TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
+                                    addTransformerResult.addStatement(null,typedef.getDefault());
+                                    transformerResults.add(addTransformerResult);
+                                }
+                            }
+                            //units
+                            if((target.getUnits() == null) && (typedef.getUnits() != null)){
                                 TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
-                                addTransformerResult.addStatement(null,typedef.getDefault());
+                                addTransformerResult.addStatement(null,typedef.getUnits());
                                 transformerResults.add(addTransformerResult);
                             }
-                        }
-                        //units
-                        if((target.getUnits() == null) && (typedef.getUnits() != null)){
-                            TransformerResult addTransformerResult = new TransformerResult(TransformerType.ADD, targetNode,new ArrayList<>());
-                            addTransformerResult.addStatement(null,typedef.getUnits());
-                            transformerResults.add(addTransformerResult);
-                        }
 
 
+                        }
                     }
+                    delResult.addStatement(null,type);
                 }
-                delResult.addStatement(null,type);
             }
+
 
         }
         //config
@@ -722,17 +749,7 @@ public class YangTransformer {
         List<Must> musts = deviate.getMusts();
         if(!musts.isEmpty()){
             for(Must must:musts){
-                YangXPathPrefixVisitor prefixVisitor = new YangXPathPrefixVisitor(must,curModule);
-                List<String> result = prefixVisitor.visit(must.getXPathExpression().getRootExpr(),must);
-                //remove duplicate prefixes
-                List<String> prefixes = new ArrayList<>();
-                for(String prefix:result){
-                    if(prefixes.contains(prefix)){
-                        continue;
-                    }
-                    prefixes.add(prefix);
-                }
-                boolean canMigrate = canMigrate(prefixes,deviate,curModule);
+                boolean canMigrate = canMigrate(must,targetNode,curModule);
                 if(canMigrate){
                     YangStatement targetStmt = targetNode.getSubStatement(must.getYangKeyword(),must.getArgStr());
                     if(targetStmt == null){
