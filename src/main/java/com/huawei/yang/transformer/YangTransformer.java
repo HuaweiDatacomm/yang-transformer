@@ -63,6 +63,42 @@ public class YangTransformer {
         return null;
     }
 
+    private static Import getDeepImport(Module curModule, String importModule) {
+        List<Import> imports = new ArrayList<>();
+        getImList(curModule, imports);
+        for (Import im : imports) {
+            if (im.getArgStr().equals(importModule)) {
+                return im;
+            }
+        }
+        return null;
+    }
+
+    private static void getImList(Module curModule, List<Import> importList) {
+        YangSchemaContext yangSchemaContext = curModule.getContext().getSchemaContext();
+        List<Import> imports = curModule.getImports();
+        for (Import im : imports) {
+            if (!containImStr(importList, im.getArgStr())) {
+                importList.add(im);
+                List<Module> modules = yangSchemaContext.getModule(im.getArgStr());
+                if (modules.isEmpty()) {
+                    continue;
+                }
+                Module nextModule = modules.get(0);
+                getImList(nextModule, importList);
+            }
+        }
+    }
+
+    private static boolean containImStr(List<Import> imports, String moduleStr) {
+        for (Import im : imports) {
+            if (im.getArgStr().equals(moduleStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static Include getInclude(Module curModule, String includeModule){
         List<Include> includes =  curModule.getIncludes();
         for(Include include:includes){
