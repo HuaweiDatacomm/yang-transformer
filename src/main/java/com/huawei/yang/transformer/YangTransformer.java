@@ -445,7 +445,7 @@ public class YangTransformer {
                     canMigrate = false;
                     break;
                 }
-                if(getImport(importModuleOp.get(),targetModule.getArgStr()) != null){
+                if(getDeepImport(importModuleOp.get(),targetModule.getArgStr()) != null){
                     //circle dependency
                     canMigrate = false;
                     break;
